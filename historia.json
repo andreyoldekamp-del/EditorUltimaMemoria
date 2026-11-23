@@ -14,7 +14,9 @@
       "id": "char_1795456729131",
       "nome": "_Lewis Thomas",
       "biografia_xhtml": "<h1 style=\"margin-top: 18px; margin-bottom: 12px;\"><span style=\"font-family: &quot;Segoe UI&quot;; font-size: xx-large;\">_Lewis Thomas,</span></h1><p>\n</p><p style=\"margin-top: 12px; margin-bottom: 12px;\"><span style=\" font-family:'Segoe UI'; font-size:12px;\">Capitão da divisão 678 Alfa Bravo, onde o Beacon estava lotado.</span></p>",
-      "papel": ""
+      "papel": "",
+      "imagemUrl": "https://raw.githubusercontent.com/andreyoldekamp-del/EditorUltimaMemoria/main/assets/char_1795456729131_coronel_Lewis_Thomas.png",
+      "caracteristicas": []
     },
     {
       "id": "char_1795456751762",
