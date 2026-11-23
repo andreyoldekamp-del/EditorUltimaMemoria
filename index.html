@@ -294,7 +294,7 @@
       <div class="list-container" id="chaptersList"></div>
     </sidebar>
     <div class="editor-area">
-      <div id="editorContent" contenteditable="true" spellcheck="false" oninput="salvarCapituloAtualNaMemoria()" onkeyup="verificarPalavraDigitada(event)"></div>
+      <div id="editorContent" contenteditable="true" spellcheck="false" oninput="processarTextoDigitado(event)"></div>
     </div>
   </div>
 
@@ -453,12 +453,9 @@
   };
 
   // DETECÇÃO DE PALAVRA AO DIGITAR NO EDITOR
-  function verificarPalavraDigitada(event) {
+function processarTextoDigitado(event) {
+    salvarCapituloAtualNaMemoria();
     if (!document.getElementById("togglePopupAuto").checked) return;
-
-    // Dispara ao pressionar Espaço, Enter ou sinais de pontuação
-    const gatilhos = [" ", "Enter", ".", ",", "!", "?", ";", ":"];
-    if (!gatilhos.includes(event.key)) return;
 
     const sel = window.getSelection();
     if (!sel.rangeCount) return;
@@ -467,40 +464,33 @@
     const node = range.startContainer;
     if (node.nodeType !== Node.TEXT_NODE) return;
 
-    const textoAntesCursor = node.textContent.substring(0, range.startOffset);
-    // Captura a última palavra antes do espaço/pontuação
-    const match = textoAntesCursor.match(/([a-zA-ZÀ-ÿ0-9_-]+)[\s.,!?;:]+$/);
-    if (!match) return;
+    const textoAteCursor = node.textContent.substring(0, range.startOffset);
+    // Pega a última palavra digitada antes do cursor
+    const palavras = textoAteCursor.trim().split(/\s+/);
+    if (palavras.length === 0) return;
 
-    const palavraCrua = match[1];
-    const chave = palavraCrua.toLowerCase();
+    const palavraAtual = palavras[palavras.length - 1].replace(/[.,!?;:()"]/g, "").toLowerCase();
 
-    if (chave.length < 2 || chave === ultimaPalavraVerificada) return;
-    ultimaPalavraVerificada = chave;
+    if (palavraAtual.length < 2 || palavraAtual === ultimaPalavraVerificada) return;
+    ultimaPalavraVerificada = palavraAtual;
 
-    // 1. Testa na lista de Personagens
-    if (indicePersonagens.has(chave)) {
-      const p = indicePersonagens.get(chave);
-      mostrarPopup(
-        "PERSONAGEM",
-        p.nome,
-        `Papel: ${p.papel || 'Não definido'}`,
-        p.biografia_xhtml || "Sem biografia cadastrada."
-      );
+    // 1. Verifica nos Personagens
+    if (indicePersonagens.has(palavraAtual)) {
+      const p = indicePersonagens.get(palavraAtual);
+      mostrarPopup("PERSONAGEM", p.nome, `Papel: ${p.papel || 'Principal'}`, p.biografia_xhtml || "Sem biografia.");
       return;
     }
 
-    // 2. Testa na lista do Dicionário
-    if (indiceDicionario.has(chave)) {
-      const t = indiceDicionario.get(chave);
-      mostrarPopup(
-        "DICIONÁRIO",
-        t.termo,
-        `Categoria: ${t.categoria || 'Geral'}`,
-        t.definicao || "Sem definição cadastrada."
-      );
+    // 2. Verifica no Dicionário
+    if (indiceDicionario.has(palavraAtual)) {
+      const t = indiceDicionario.get(palavraAtual);
+      mostrarPopup("DICIONÁRIO", t.termo, `Categoria: ${t.categoria || 'Geral'}`, t.definicao || "Sem definição.");
       return;
     }
+  }
+
+  function verificarPalavraDigitada(event) {
+    // Mantido para compatibilidade com teclas especiais
   }
 
   function mostrarPopup(tipo, palavra, subtitulo, significadoHtml) {
