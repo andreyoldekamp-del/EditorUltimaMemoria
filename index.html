@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>GraphZO // ÚLTIMA MEMÓRIA [NEON V8]</title>
+  <title>GraphZO // ÚLTIMA MEMÓRIA [NEON V9 - DICIONÁRIO]</title>
   <style>
     :root {
       --bg-base: #030712;
@@ -64,7 +64,7 @@
       flex-wrap: wrap;
     }
 
-    button, select {
+    button, select, label.file-btn {
       background: var(--bg-base);
       color: var(--accent-cyan);
       border: 1px solid var(--accent-cyan);
@@ -74,9 +74,11 @@
       font-size: 11px;
       font-weight: bold;
       transition: 0.2s;
+      display: inline-block;
+      text-align: center;
     }
 
-    button:hover, select:hover {
+    button:hover, select:hover, label.file-btn:hover {
       background: var(--accent-cyan);
       color: var(--bg-base);
     }
@@ -176,26 +178,27 @@
 
   <header>
     <div>
-      <h1>SYS_GRAPHZO // <span>NEON V8</span></h1>
+      <h1>SYS_GRAPHZO // <span>NEON V9 [COM DICIONÁRIO]</span></h1>
       <div id="lastSavedBadge" style="font-size: 10px; color: var(--success); margin-top: 2px;">🕒 Último salvamento: Nenhum nesta sessão</div>
     </div>
     <div style="display: flex; gap: 6px; flex-wrap: wrap;">
       <button onclick="configurarGitHub()">⚙️ Configurar</button>
       <button onclick="puxarDoGitHub()">📥 Recarregar Atual</button>
-      <button class="btn-save" onclick="salvarNoGitHub()">☁️ Salvar (Push)</button>
+      <button class="btn-save" onclick="salvarNoGitHub()">☁️ Salvar Tudo (Push)</button>
     </div>
   </header>
 
   <div class="nav-bar">
     <button onclick="mudarAba('editor')">📂 01. Editor</button>
     <button onclick="mudarAba('personagens')">👤 02. Personagens</button>
+    <button onclick="mudarAba('dicionario')">📖 03. Dicionário</button>
     
     <div style="margin-left: auto; display: flex; gap: 6px; align-items: center; flex-wrap: wrap;">
-      <button onclick="listarCommitsGitHub()">📜 Atualizar Lista de Versões</button>
-      <select id="selectCommits" onchange="carregarVersaoSelecionada()" style="max-width: 260px;">
-        <option value="">-- Selecione uma versão para abrir --</option>
+      <button onclick="listarCommitsGitHub()">📜 Atualizar Versões</button>
+      <select id="selectCommits" onchange="carregarVersaoSelecionada()" style="max-width: 200px;">
+        <option value="">-- Versões Git --</option>
       </select>
-      <button class="btn-danger" onclick="descartarVersaoAtual()" title="Oculta esta versão descartável da lista">🗑️ Descartar Versão</button>
+      <button class="btn-danger" onclick="descartarVersaoAtual()" title="Oculta esta versão da lista">🗑️ Descartar</button>
     </div>
   </div>
 
@@ -233,32 +236,63 @@
       </div>
       <div class="list-container" id="listaPersonagens"></div>
     </sidebar>
-    
     <div style="flex: 1; padding: 30px; overflow-y: auto; background: var(--bg-base);">
-      <div id="formPersonagem" style="max-width: 750px; margin: 0 auto; background: var(--bg-card); padding: 25px; border-radius: 4px; border: 1px solid var(--border-neon);">
-        
+      <div style="max-width: 750px; margin: 0 auto; background: var(--bg-card); padding: 25px; border-radius: 4px; border: 1px solid var(--border-neon);">
         <div style="display: flex; gap: 20px; margin-bottom: 20px; flex-wrap: wrap;">
-          <!-- Área da Imagem do Personagem -->
           <div style="width: 150px; height: 150px; background: var(--bg-base); border: 1px solid var(--accent-cyan); border-radius: 4px; overflow: hidden; display: flex; align-items: center; justify-content: center; flex-direction: column; position: relative;">
             <img id="charAvatarPreview" src="" style="width: 100%; height: 100%; object-fit: cover; display: none;">
-            <span id="charNoPhotoText" style="font-size: 10px; color: var(--text-muted); text-align: center; padding: 5px;">Sem imagem</span>
+            <span id="charNoPhotoText" style="font-size: 10px; color: var(--text-muted);">Sem imagem</span>
             <input type="file" id="charImageInput" accept="image/*" style="display: none;" onchange="carregarImagemPersonagem(event)">
-            <button onclick="document.getElementById('charImageInput').click()" style="position: absolute; bottom: 5px; font-size: 10px; padding: 4px 8px; background: rgba(3,7,18,0.85);">📷 Inserir Foto</button>
+            <button onclick="document.getElementById('charImageInput').click()" style="position: absolute; bottom: 5px; font-size: 10px; padding: 4px 8px; background: rgba(3,7,18,0.85);">📷 Foto</button>
           </div>
-
-          <!-- Campos de Texto -->
           <div style="flex: 1; min-width: 250px; display: flex; flex-direction: column; gap: 10px;">
             <input type="text" id="charNome" placeholder="Nome do Personagem" oninput="atualizarPersonagemAtual()" style="padding: 8px; background: var(--bg-base); color: white; border: 1px solid var(--accent-cyan); border-radius: 2px;">
-            <input type="text" id="charPapel" placeholder="Papel (ex: Protagonista, Antagonista)" oninput="atualizarPersonagemAtual()" style="padding: 8px; background: var(--bg-base); color: white; border: 1px solid var(--accent-cyan); border-radius: 2px;">
-            <input type="text" id="charTags" placeholder="Características (separadas por vírgula)" oninput="atualizarPersonagemAtual()" style="padding: 8px; background: var(--bg-base); color: white; border: 1px solid var(--accent-cyan); border-radius: 2px;">
+            <input type="text" id="charPapel" placeholder="Papel" oninput="atualizarPersonagemAtual()" style="padding: 8px; background: var(--bg-base); color: white; border: 1px solid var(--accent-cyan); border-radius: 2px;">
+            <input type="text" id="charTags" placeholder="Características" oninput="atualizarPersonagemAtual()" style="padding: 8px; background: var(--bg-base); color: white; border: 1px solid var(--accent-cyan); border-radius: 2px;">
           </div>
         </div>
+        <label style="font-size: 11px; color: var(--accent-cyan); display: block; margin-bottom: 6px;">BIOGRAFIA:</label>
+        <div id="charBiografia" contenteditable="true" oninput="atualizarPersonagemAtual()" style="min-height: 180px; background: var(--bg-base); border: 1px solid var(--border-neon); padding: 12px; outline: none; border-radius: 2px;"></div>
+        <div style="margin-top: 15px; text-align: right;"><button class="btn-danger" onclick="deletarPersonagemAtual()">🗑️ Excluir</button></div>
+      </div>
+    </div>
+  </div>
 
-        <label style="font-size: 11px; color: var(--accent-cyan); display: block; margin-bottom: 6px;">BIOGRAFIA E NOTAS:</label>
-        <div id="charBiografia" contenteditable="true" oninput="atualizarPersonagemAtual()" style="min-height: 180px; background: var(--bg-base); border: 1px solid var(--border-neon); padding: 12px; outline: none; border-radius: 2px; line-height: 1.5;"></div>
+  <!-- ABA 3: DICIONÁRIO E GLOSSÁRIO -->
+  <div class="main-container" id="painelDicionario" style="display: none;">
+    <sidebar>
+      <div class="sidebar-header">
+        <span>📖 TERMOS (<span id="termCount">0</span>)</span>
+        <button onclick="criarNovoTermo()">+ NOVO</button>
+      </div>
+      <div class="list-container" id="listaTermos"></div>
+    </sidebar>
+    <div style="flex: 1; padding: 30px; overflow-y: auto; background: var(--bg-base);">
+      <div style="max-width: 750px; margin: 0 auto; background: var(--bg-card); padding: 25px; border-radius: 4px; border: 1px solid var(--border-neon);">
         
-        <div style="margin-top: 15px; text-align: right;">
-          <button class="btn-danger" onclick="deletarPersonagemAtual()">🗑️ Excluir Personagem</button>
+        <!-- Importação da Base .txt -->
+        <div style="margin-bottom: 20px; padding: 12px; background: var(--bg-panel); border: 1px dashed var(--accent-cyan); border-radius: 4px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px;">
+          <div>
+            <strong>Importar Base (.txt):</strong>
+            <div style="font-size: 10px; color: var(--text-muted);">Formato por linha: Termo | Categoria | Descrição</div>
+          </div>
+          <label class="file-btn">
+            📂 Carregar base.txt
+            <input type="file" id="txtBaseInput" accept=".txt" style="display: none;" onchange="importarBaseTxt(event)">
+          </label>
+        </div>
+
+        <div style="display: flex; flex-direction: column; gap: 10px;">
+          <input type="text" id="termoTitulo" placeholder="Termo ou Palavra" oninput="atualizarTermoAtual()" style="padding: 8px; background: var(--bg-base); color: white; border: 1px solid var(--accent-cyan); border-radius: 2px;">
+          <input type="text" id="termoCategoria" placeholder="Categoria (ex: Tecnologia, Local, Facção)" oninput="atualizarTermoAtual()" style="padding: 8px; background: var(--bg-base); color: white; border: 1px solid var(--accent-cyan); border-radius: 2px;">
+        </div>
+
+        <label style="font-size: 11px; color: var(--accent-cyan); display: block; margin: 12px 0 6px 0;">DEFINIÇÃO DO TERMO:</label>
+        <div id="termoDefinicao" contenteditable="true" oninput="atualizarTermoAtual()" style="min-height: 160px; background: var(--bg-base); border: 1px solid var(--border-neon); padding: 12px; outline: none; border-radius: 2px;"></div>
+        
+        <div style="margin-top: 15px; display: flex; justify-content: space-between; align-items: center;">
+          <button onclick="exportarDicionarioJson()">💾 Exportar dicionario.json</button>
+          <button class="btn-danger" onclick="deletarTermoAtual()">🗑️ Excluir Termo</button>
         </div>
       </div>
     </div>
@@ -273,13 +307,22 @@
   let projetoLivro = {
     "metadados": { "titulo": "Última Memória", "autor": "Autor" },
     "capitulos": {
-      "cap_1": { "titulo": "Capítulo 1", "conteudo_xhtml": '<p id="cap_1_p1">Comece a escrever sua história aqui...</p>' }
+      "cap_1": { "titulo": "Capítulo 1", "conteudo_xhtml": '<p id="cap_1_p1">Iniciando editor com dicionário...</p>' }
     },
-    "personagens": []
+    "personagens": [],
+    "dicionario": [
+      {
+        "id": "term_1",
+        "termo": "Rede Neural",
+        "categoria": "Tecnologia",
+        "definicao": "Sistema global de dados que interliga conexões humanas e artificiais."
+      }
+    ]
   };
 
   let capituloAtual = "cap_1";
   let characterSelecionadoId = null;
+  let termoSelecionadoId = "term_1";
 
   function obterDataHoraFormatada() {
     const agora = new Date();
@@ -290,7 +333,6 @@
     if (!localStorage.getItem("gh_repo")) {
       localStorage.setItem("gh_repo", "andreyoldekamp-del/EditorUltimaMemoria");
     }
-    
     renderizarListaCapitulos();
     carregarCapituloNaTela("cap_1");
 
@@ -304,14 +346,18 @@
     document.getElementById('containerEditor').style.display = aba === 'editor' ? 'flex' : 'none';
     document.getElementById('toolbarEditor').style.display = aba === 'editor' ? 'flex' : 'none';
     document.getElementById('painelPersonagens').style.display = aba === 'personagens' ? 'flex' : 'none';
+    document.getElementById('painelDicionario').style.display = aba === 'dicionario' ? 'flex' : 'none';
+    
     if (aba === 'personagens') {
       renderizarListaPersonagens();
-      if (projetoLivro.personagens.length > 0 && !characterSelecionadoId) {
-        selecionarPersonagem(projetoLivro.personagens[0].id);
-      }
+      if (projetoLivro.personagens.length > 0 && !characterSelecionadoId) selecionarPersonagem(projetoLivro.personagens[0].id);
+    } else if (aba === 'dicionario') {
+      renderizarListaTermos();
+      if (projetoLivro.dicionario.length > 0 && !termoSelecionadoId) selecionarTermo(projetoLivro.dicionario[0].id);
     }
   }
 
+  // CAPÍTULOS
   function renderizarListaCapitulos() {
     const lista = document.getElementById('chaptersList');
     lista.innerHTML = '';
@@ -329,10 +375,7 @@
     if (!nome) return;
     salvarCapituloAtualNaMemoria();
     const id = 'cap_' + Date.now();
-    projetoLivro.capitulos[id] = {
-      titulo: nome,
-      conteudo_xhtml: `<p id="${id}_p1">Novo capítulo...</p>`
-    };
+    projetoLivro.capitulos[id] = { titulo: nome, conteudo_xhtml: `<p id="${id}_p1">Novo capítulo...</p>` };
     capituloAtual = id;
     renderizarListaCapitulos();
     carregarCapituloNaTela(id);
@@ -360,7 +403,7 @@
     }
   }
 
-  // GERENCIAMENTO DE PERSONAGENS COM SALVAMENTO INSTANTÂNEO EM MEMÓRIA
+  // PERSONAGENS
   function renderizarListaPersonagens() {
     const lista = document.getElementById('listaPersonagens');
     lista.innerHTML = '';
@@ -370,27 +413,14 @@
     projetoLivro.personagens.forEach(p => {
       const item = document.createElement('div');
       item.className = 'item-card' + (p.id === characterSelecionadoId ? ' active' : '');
-      item.innerHTML = `
-        <div>
-          <strong>${p.nome || 'Sem nome'}</strong><br>
-          <small style="color:var(--text-muted)">${p.papel || 'Sem papel'}</small>
-        </div>
-        ${p.imagemUrl ? '<span>🖼️</span>' : ''}
-      `;
+      item.innerHTML = `<div><strong>${p.nome || 'Sem nome'}</strong><br><small style="color:var(--text-muted)">${p.papel || ''}</small></div>${p.imagemUrl ? '<span>🖼️</span>' : ''}`;
       item.onclick = () => selecionarPersonagem(p.id);
       lista.appendChild(item);
     });
   }
 
   function criarNovoPersonagem() {
-    const novo = { 
-      id: 'char_' + Date.now(), 
-      nome: 'Personagem ' + (projetoLivro.personagens.length + 1), 
-      papel: 'Secundário',
-      caracteristicas: [],
-      imagemUrl: '',
-      biografia_xhtml: '<p>Escreva a história do personagem...</p>' 
-    };
+    const novo = { id: 'char_' + Date.now(), nome: 'Novo Personagem', papel: 'Secundário', caracteristicas: [], imagemUrl: '', biografia_xhtml: '<p>Bio...</p>' };
     if (!projetoLivro.personagens) projetoLivro.personagens = [];
     projetoLivro.personagens.push(novo);
     renderizarListaPersonagens();
@@ -401,7 +431,6 @@
     characterSelecionadoId = id;
     const p = projetoLivro.personagens.find(item => item.id === id);
     if (!p) return;
-    
     document.getElementById('charNome').value = p.nome || '';
     document.getElementById('charPapel').value = p.papel || '';
     document.getElementById('charTags').value = (p.caracteristicas || []).join(', ');
@@ -433,58 +462,142 @@
 
   function deletarPersonagemAtual() {
     if (!characterSelecionadoId) return;
-    if (!confirm("Remover este personagem da lista?")) return;
+    if (!confirm("Excluir personagem?")) return;
     projetoLivro.personagens = projetoLivro.personagens.filter(p => p.id !== characterSelecionadoId);
     characterSelecionadoId = projetoLivro.personagens.length > 0 ? projetoLivro.personagens[0].id : null;
     renderizarListaPersonagens();
-    if (characterSelecionadoId) {
-      selecionarPersonagem(characterSelecionadoId);
-    } else {
-      document.getElementById('charNome').value = '';
-      document.getElementById('charPapel').value = '';
-      document.getElementById('charTags').value = '';
-      document.getElementById('charBiografia').innerHTML = '';
-      document.getElementById('charAvatarPreview').style.display = 'none';
-    }
+    if (characterSelecionadoId) selecionarPersonagem(characterSelecionadoId);
   }
 
-  // UPLOAD DE IMAGEM PARA PASTA ASSETS DO GITHUB
+  // DICIONÁRIO E GLOSSÁRIO
+  function renderizarListaTermos() {
+    const lista = document.getElementById('listaTermos');
+    lista.innerHTML = '';
+    if (!projetoLivro.dicionario) projetoLivro.dicionario = [];
+    document.getElementById('termCount').innerText = projetoLivro.dicionario.length;
+
+    projetoLivro.dicionario.forEach(t => {
+      const item = document.createElement('div');
+      item.className = 'item-card' + (t.id === termoSelecionadoId ? ' active' : '');
+      item.innerHTML = `<div><strong>${t.termo || 'Novo Termo'}</strong><br><small style="color:var(--text-muted)">${t.categoria || 'Geral'}</small></div>`;
+      item.onclick = () => selecionarTermo(t.id);
+      lista.appendChild(item);
+    });
+  }
+
+  function criarNovoTermo() {
+    const novo = { id: 'term_' + Date.now(), termo: 'Novo Termo', categoria: 'Geral', definicao: '<p>Definição...</p>' };
+    if (!projetoLivro.dicionario) projetoLivro.dicionario = [];
+    projetoLivro.dicionario.push(novo);
+    renderizarListaTermos();
+    selecionarTermo(novo.id);
+  }
+
+  function selecionarTermo(id) {
+    termoSelecionadoId = id;
+    const t = projetoLivro.dicionario.find(item => item.id === id);
+    if (!t) return;
+    document.getElementById('termoTitulo').value = t.termo || '';
+    document.getElementById('termoCategoria').value = t.categoria || '';
+    document.getElementById('termoDefinicao').innerHTML = t.definicao || '';
+    renderizarListaTermos();
+  }
+
+  function atualizarTermoAtual() {
+    if (!termoSelecionadoId) return;
+    const t = projetoLivro.dicionario.find(item => item.id === termoSelecionadoId);
+    if (!t) return;
+    t.termo = document.getElementById('termoTitulo').value;
+    t.categoria = document.getElementById('termoCategoria').value;
+    t.definicao = document.getElementById('termoDefinicao').innerHTML;
+    renderizarListaTermos();
+  }
+
+  function deletarTermoAtual() {
+    if (!termoSelecionadoId) return;
+    if (!confirm("Excluir termo do dicionário?")) return;
+    projetoLivro.dicionario = projetoLivro.dicionario.filter(t => t.id !== termoSelecionadoId);
+    termoSelecionadoId = projetoLivro.dicionario.length > 0 ? projetoLivro.dicionario[0].id : null;
+    renderizarListaTermos();
+    if (termoSelecionadoId) selecionarTermo(termoSelecionadoId);
+  }
+
+  // EXPORTAR DICIONARIO.JSON
+  function exportarDicionarioJson() {
+    const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(projetoLivro.dicionario, null, 2));
+    const downloadAnchor = document.createElement('a');
+    downloadAnchor.setAttribute("href", dataStr);
+    downloadAnchor.setAttribute("download", "dicionario.json");
+    document.body.appendChild(downloadAnchor);
+    downloadAnchor.click();
+    downloadAnchor.remove();
+    alert("Arquivo dicionario.json gerado e baixado com sucesso!");
+  }
+
+  // IMPORTAR BASE.TXT E CRIAR JSON
+  function importarBaseTxt(event) {
+    const file = event.target.files[0];
+    if (!file) return;
+
+    const reader = new FileReader();
+    reader.onload = function(e) {
+      const conteudo = e.target.result;
+      const linhas = conteudo.split('\n');
+      let importados = 0;
+
+      linhas.forEach(linha => {
+        const partes = linha.split('|').map(s => s.trim());
+        if (partes.length >= 3) {
+          const novoTermo = {
+            id: 'term_' + Date.now() + Math.floor(Math.random()*1000),
+            termo: partes[0],
+            categoria: partes[1],
+            definicao: `<p>${partes[2]}</p>`
+          };
+          projetoLivro.dicionario.push(novoTermo);
+          importados++;
+        }
+      });
+
+      renderizarListaTermos();
+      if (importados > 0) {
+        selecionarTermo(projetoLivro.dicionario[projetoLivro.dicionario.length - 1].id);
+        alert(`${importados} termos importados da base.txt com sucesso!`);
+      } else {
+        alert("Nenhum termo válido encontrado. Use o formato: Termo | Categoria | Descrição");
+      }
+    };
+    reader.readAsText(file);
+  }
+
+  // GITHUB ASSETS E SALVAMENTO
   async function carregarImagemPersonagem(event) {
     const file = event.target.files[0];
     if (!file || !characterSelecionadoId) return;
-
     const repo = localStorage.getItem("gh_repo") || "andreyoldekamp-del/EditorUltimaMemoria";
     const token = localStorage.getItem("gh_token");
-    if (!token) { alert("Configure o Token do GitHub primeiro!"); return; }
+    if (!token) { alert("Configure o Token do GitHub!"); return; }
 
     const reader = new FileReader();
     reader.onload = async function(e) {
       const base64Content = e.target.result.split(',')[1];
-      const cleanName = file.name.replace(/[^a-zA-Z0-9.]/g, '_');
-      const fileName = `assets/${characterSelecionadoId}_${cleanName}`;
+      const fileName = `assets/${characterSelecionadoId}_${file.name.replace(/[^a-zA-Z0-9.]/g, '_')}`;
       const url = `https://api.github.com/repos/${repo}/contents/${fileName}`;
 
-      document.getElementById("statusText").innerText = "STATUS: ENVIANDO FOTO PARA ASSETS/...";
       try {
         const res = await fetch(url, {
           method: "PUT",
           headers: { "Authorization": `token ${token}`, "Content-Type": "application/json" },
-          body: JSON.stringify({ message: `Foto personagem ${characterSelecionadoId} - ${obterDataHoraFormatada()}`, content: base64Content })
+          body: JSON.stringify({ message: `Upload foto ${characterSelecionadoId}`, content: base64Content })
         });
-
         if (res.ok) {
           const rawUrl = `https://raw.githubusercontent.com/${repo}/main/${fileName}`;
           const p = projetoLivro.personagens.find(item => item.id === characterSelecionadoId);
           p.imagemUrl = rawUrl;
           selecionarPersonagem(characterSelecionadoId);
-          document.getElementById("statusText").innerText = "STATUS: FOTO SALVA! CLIQUE EM SALVAR (PUSH) PARA GRAVAR NO JSON.";
-        } else {
-          const err = await res.json();
-          alert("Erro ao enviar imagem: " + err.message);
+          alert("Foto salva com sucesso! Clique em Salvar Tudo para gravar no repositório.");
         }
-      } catch (err) {
-        alert("Erro de conexão ao enviar imagem.");
-      }
+      } catch(err) { alert("Erro ao enviar foto."); }
     };
     reader.readAsDataURL(file);
   }
@@ -520,48 +633,36 @@
 
   async function salvarNoGitHub() {
     salvarCapituloAtualNaMemoria();
-    atualizarPersonagemAtual();
+    if (characterSelecionadoId) atualizarPersonagemAtual();
+    if (termoSelecionadoId) atualizarTermoAtual();
 
     const repo = localStorage.getItem("gh_repo") || "andreyoldekamp-del/EditorUltimaMemoria";
     const token = localStorage.getItem("gh_token");
-    if (!token) { alert("Configure o Token do GitHub primeiro!"); configurarGitHub(); return; }
+    if (!token) { alert("Configure o Token primeiro!"); configurarGitHub(); return; }
 
-    const carimboTempo = obterDataHoraFormatada();
-    document.getElementById("statusText").innerText = "STATUS: SALVANDO NA NUVEM...";
+    const carimbo = obterDataHoraFormatada();
     const url = `https://api.github.com/repos/${repo}/contents/historia.json`;
 
     try {
       let sha = "";
       const getRes = await fetch(url, { headers: { "Authorization": `token ${token}` } });
-      if (getRes.ok) {
-        const fileData = await getRes.json();
-        sha = fileData.sha;
-      }
+      if (getRes.ok) sha = (await getRes.json()).sha;
 
-      const jsonString = JSON.stringify(projetoLivro, null, 2);
-      const contentBase64 = btoa(unescape(encodeURIComponent(jsonString)));
-
+      const contentBase64 = btoa(unescape(encodeURIComponent(JSON.stringify(projetoLivro, null, 2))));
       const putRes = await fetch(url, {
         method: "PUT",
         headers: { "Authorization": `token ${token}`, "Content-Type": "application/json" },
-        body: JSON.stringify({
-          message: `Salvo em ${carimboTempo} (${projetoLivro.personagens.length} personagens)`,
-          content: contentBase64,
-          sha: sha ? sha : undefined
-        })
+        body: JSON.stringify({ message: `Atualização com Dicionário em ${carimbo}`, content: contentBase64, sha: sha || undefined })
       });
 
-      const responseData = await putRes.json();
       if (putRes.ok) {
-        document.getElementById("lastSavedBadge").innerText = `🕒 Último salvamento: ${carimboTempo}`;
-        document.getElementById("statusText").innerText = `STATUS: SALVO COM SUCESSO EM ${carimboTempo}`;
+        document.getElementById("lastSavedBadge").innerText = `🕒 Último salvamento: ${carimbo}`;
+        alert("Projeto completo (Capítulos, Personagens e Dicionário) salvo com sucesso!");
         await listarCommitsGitHub(true);
       } else {
-        alert("ERRO DA API DO GITHUB:\nStatus: " + putRes.status + "\nMensagem: " + responseData.message);
+        alert("Erro ao salvar no GitHub.");
       }
-    } catch (e) {
-      alert("Erro de conexão: " + e.message);
-    }
+    } catch (e) { alert("Erro de conexão."); }
   }
 
   async function puxarDoGitHub(silencioso = false) {
@@ -574,123 +675,75 @@
       const res = await fetch(url, { headers: { "Authorization": `token ${token}` } });
       const data = await res.json();
       if (res.ok) {
-        const jsonString = decodeURIComponent(escape(atob(data.content)));
-        projetoLivro = JSON.parse(jsonString);
+        projetoLivro = JSON.parse(decodeURIComponent(escape(atob(data.content))));
         if(!projetoLivro.personagens) projetoLivro.personagens = [];
+        if(!projetoLivro.dicionario) projetoLivro.dicionario = [];
         
         renderizarListaCapitulos();
-        const primeiroCap = Object.keys(projetoLivro.capitulos)[0];
-        if (primeiroCap) carregarCapituloNaTela(primeiroCap);
-
-        renderizarListaPersonagens();
-        if (projetoLivro.personagens.length > 0) {
-          selecionarPersonagem(projetoLivro.personagens[0].id);
-        }
-
+        carregarCapituloNaTela(Object.keys(projetoLivro.capitulos)[0]);
         if(!silencioso) alert("Dados carregados com sucesso!");
       }
-    } catch(e) {
-      if(!silencioso) console.log("Aguardando primeiro salvamento.");
-    }
+    } catch(e) {}
   }
 
-  // LISTA VERSÕES FILTRANDO AS DESCARTADAS PELO USUÁRIO
   async function listarCommitsGitHub(silencioso = false) {
     const repo = localStorage.getItem("gh_repo") || "andreyoldekamp-del/EditorUltimaMemoria";
     const token = localStorage.getItem("gh_token");
-    if (!token) { if(!silencioso) alert("Configure o Token primeiro!"); return; }
+    if (!token) return;
 
     const descarteLista = JSON.parse(localStorage.getItem("commits_descartados") || "[]");
     const url = `https://api.github.com/repos/${repo}/commits?path=historia.json`;
-    
     try {
       const res = await fetch(url, { headers: { "Authorization": `token ${token}` } });
       const commits = await res.json();
       if (res.ok && Array.isArray(commits)) {
         const sel = document.getElementById("selectCommits");
-        sel.innerHTML = '<option value="">-- Selecione uma versão para carregar --</option>';
-        
-        let validos = 0;
+        sel.innerHTML = '<option value="">-- Versões Git --</option>';
         commits.forEach(c => {
           if (!descarteLista.includes(c.sha)) {
             const opt = document.createElement("option");
             opt.value = c.sha;
             const dt = new Date(c.commit.author.date);
-            const horaStr = dt.toLocaleDateString('pt-BR') + ' ' + dt.toLocaleTimeString('pt-BR', {hour: '2-digit', minute:'2-digit'});
-            opt.textContent = `[${horaStr}] ${c.commit.message.substring(0, 30)}`;
+            opt.textContent = `[${dt.toLocaleDateString()} ${dt.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}] ${c.commit.message.substring(0, 20)}`;
             sel.appendChild(opt);
-            validos++;
           }
         });
-        if(!silencioso) document.getElementById("statusText").innerText = `STATUS: ${validos} VERSÕES DISPONÍVEIS`;
       }
-    } catch(e) {
-      if(!silencioso) alert("Erro ao listar histórico.");
-    }
+    } catch(e) {}
   }
 
-  // AO SELECIONAR NO MENU, BAIXA E ATUALIZA TUDO AUTOMATICAMENTE
   async function carregarVersaoSelecionada() {
     const repo = localStorage.getItem("gh_repo") || "andreyoldekamp-del/EditorUltimaMemoria";
     const token = localStorage.getItem("gh_token");
     const sha = document.getElementById("selectCommits").value;
     if (!token || !sha) return;
 
-    document.getElementById("statusText").innerText = "STATUS: CARREGANDO VERSÃO SELECIONADA...";
     const url = `https://api.github.com/repos/${repo}/contents/historia.json?ref=${sha}`;
-    
     try {
       const res = await fetch(url, { headers: { "Authorization": `token ${token}` } });
       const data = await res.json();
       if (res.ok) {
-        const jsonString = decodeURIComponent(escape(atob(data.content)));
-        projetoLivro = JSON.parse(jsonString);
+        projetoLivro = JSON.parse(decodeURIComponent(escape(atob(data.content))));
         if(!projetoLivro.personagens) projetoLivro.personagens = [];
+        if(!projetoLivro.dicionario) projetoLivro.dicionario = [];
         
-        // Atualiza Capítulos
         renderizarListaCapitulos();
-        const primeiroCap = Object.keys(projetoLivro.capitulos)[0];
-        if (primeiroCap) carregarCapituloNaTela(primeiroCap);
-
-        // Atualiza Personagens
-        characterSelecionadoId = null;
+        carregarCapituloNaTela(Object.keys(projetoLivro.capitulos)[0]);
         renderizarListaPersonagens();
-        if (projetoLivro.personagens.length > 0) {
-          selecionarPersonagem(projetoLivro.personagens[0].id);
-        } else {
-          document.getElementById('charNome').value = '';
-          document.getElementById('charPapel').value = '';
-          document.getElementById('charTags').value = '';
-          document.getElementById('charBiografia').innerHTML = '';
-          document.getElementById('charAvatarPreview').style.display = 'none';
-        }
-
-        document.getElementById("statusText").innerText = "STATUS: VERSÃO RESTAURADA NO EDITOR E PERSONAGENS!";
-      } else {
-        alert("Erro ao carregar versão: " + data.message);
+        renderizarListaTermos();
+        alert("Versão histórica carregada!");
       }
-    } catch(e) {
-      alert("Erro ao processar versão.");
-    }
+    } catch(e) { alert("Erro ao carregar."); }
   }
 
-  // OCULTA A VERSÃO SELECIONADA DA LISTA DE HISTÓRICO
   function descartarVersaoAtual() {
-    const sel = document.getElementById("selectCommits");
-    const sha = sel.value;
-    if (!sha) {
-      alert("Selecione uma versão na lista primeiro para descartá-la.");
-      return;
-    }
-    if (!confirm("Deseja remover esta versão descartável da sua lista?")) return;
-
-    const descarteLista = JSON.parse(localStorage.getItem("commits_descartados") || "[]");
-    if (!descarteLista.includes(sha)) {
-      descarteLista.push(sha);
-      localStorage.setItem("commits_descartados", JSON.stringify(descarteLista));
-    }
+    const sha = document.getElementById("selectCommits").value;
+    if (!sha) return alert("Selecione uma versão.");
+    const descarte = JSON.parse(localStorage.getItem("commits_descartados") || "[]");
+    descarte.push(sha);
+    localStorage.setItem("commits_descartados", JSON.stringify(descarte));
     listarCommitsGitHub(true);
-    document.getElementById("statusText").innerText = "STATUS: VERSÃO DESCARTADA DA LISTA";
+    alert("Versão ocultada da lista.");
   }
 
   function atualizarContador() {
