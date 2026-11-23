@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>GraphZO // ÚLTIMA MEMÓRIA [NEON V10.2 - FIX POPUP]</title>
+  <title>GraphZO // ÚLTIMA MEMÓRIA [NEON V10.2 - ROBUSTO]</title>
   <style>
     :root {
       --bg-base: #030712;
@@ -173,6 +173,7 @@
       color: var(--text-muted);
       display: flex;
       justify-content: space-between;
+      transition: color 0.3s;
     }
 
     /* POPUP FLUTUANTE DE DETECÇÃO */
@@ -246,7 +247,7 @@
 
   <header>
     <div>
-      <h1>SYS_GRAPHZO // <span>NEON V10.1 [POPUP FIX]</span></h1>
+      <h1>SYS_GRAPHZO // <span>NEON V10.2 [ROBUSTO]</span></h1>
       <div id="lastSavedBadge" style="font-size: 10px; color: var(--success); margin-top: 2px;">🕒 Último salvamento: Nenhum nesta sessão</div>
     </div>
     <div style="display: flex; gap: 6px; flex-wrap: wrap;">
@@ -380,7 +381,7 @@
   </div>
 
   <div class="status-bar">
-    <span id="statusText">STATUS: PRONTO | ÍNDICE: ATIVO</span>
+    <span id="statusText">STATUS: PRONTO | SISTEMA INICIALIZADO</span>
     <span id="wordCount">PALAVRAS: 0</span>
   </div>
 
@@ -388,36 +389,63 @@
   let projetoLivro = {
     "metadados": { "titulo": "Última Memória", "autor": "Autor" },
     "capitulos": {
-      "cap_1": { "titulo": "Capítulo 1", "conteudo_xhtml": '<p id="cap_1_p1">Digite Teddy ou outra palavra da base e dê espaço...</p>' }
+      "cap_1": { "titulo": "Capítulo 1", "conteudo_xhtml": '<p id="cap_1_p1">Digite Teddy, Lógica ou Rede e dê espaço para testar a detecção aprimorada...</p>' }
     },
     "personagens": [
       { id: "char_teste", nome: "Teddy", papel: "Protagonista", biografia_xhtml: "<p>Jovem que questiona suas memórias.</p>" }
     ],
     "dicionario": [
-      { id: "term_1", termo: "Rede", categoria: "Tecnologia", definicao: "Sistema global de dados interligados." }
+      { id: "term_1", termo: "Rede", categoria: "Tecnologia", definicao: "Sistema global de dados interligados." },
+      { id: "term_2", termo: "Lógica", categoria: "Filosofia", definicao: "Ciência do raciocínio válido." }
     ]
   };
 
   let indicePersonagens = new Map();
   let indiceDicionario = new Map();
-
   let capituloAtual = "cap_1";
   let characterSelecionadoId = null;
   let termoSelecionadoId = null;
+  let detectionTimeout = null;
+
+  // =====================================================================
+  // UTILITÁRIOS DE ROBUSTEZ
+  // =====================================================================
+  
+  // Normaliza texto: remove acentos e converte para minúsculas (ex: "Lógica" -> "logica")
+  function normalizeText(text) {
+    if (!text) return "";
+    return text.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase().trim();
+  }
+
+  function setGitHubStatus(message, isError = false) {
+    const statusEl = document.getElementById("statusText");
+    statusEl.innerText = `STATUS: ${message}`;
+    statusEl.style.color = isError ? "var(--danger)" : "var(--success)";
+    
+    // Retorna ao estado normal após 4 segundos
+    setTimeout(() => {
+      statusEl.style.color = "var(--text-muted)";
+      document.getElementById("statusText").innerText = `STATUS: PRONTO | INDEXADOS: ${indicePersonagens.size} PERS. / ${indiceDicionario.size} TERMOS`;
+    }, 4000);
+  }
 
   function reconstruirIndices() {
     indicePersonagens.clear();
     indiceDicionario.clear();
 
-    if (projetoLivro.personagens) {
+    if (Array.isArray(projetoLivro.personagens)) {
       projetoLivro.personagens.forEach(p => {
-        if (p.nome) indicePersonagens.set(p.nome.trim().toLowerCase(), p);
+        if (p && p.nome) {
+          indicePersonagens.set(normalizeText(p.nome), p);
+        }
       });
     }
 
-    if (projetoLivro.dicionario) {
+    if (Array.isArray(projetoLivro.dicionario)) {
       projetoLivro.dicionario.forEach(t => {
-        if (t.termo) indiceDicionario.set(t.termo.trim().toLowerCase(), t);
+        if (t && t.termo) {
+          indiceDicionario.set(normalizeText(t.termo), t);
+        }
       });
     }
 
@@ -439,12 +467,25 @@
   };
 
   // =====================================================================
-  // MOTOR DE DETECÇÃO INSTANTÂNEA AO DIGITAR (VERSÃO CORRIGIDA E ROBUSTA)
+  // MOTOR DE DETECÇÃO APRIMORADO (DEBOUNCE + REGEX + NORMALIZAÇÃO)
   // =====================================================================
   function processarTextoDigitado(event) {
     salvarCapituloAtualNaMemoria();
-    if (!document.getElementById("togglePopupAuto").checked) return;
+    
+    if (!document.getElementById("togglePopupAuto").checked) {
+      fecharPopup();
+      return;
+    }
 
+    // Debounce: espera 150ms após o usuário parar de digitar para processar
+    // Isso evita travamentos e leituras de DOM excessivas
+    clearTimeout(detectionTimeout);
+    detectionTimeout = setTimeout(() => {
+      executarDetecção();
+    }, 150);
+  }
+
+  function executarDetecção() {
     const sel = window.getSelection();
     if (!sel.rangeCount) return;
 
@@ -452,49 +493,57 @@
     let node = range.startContainer;
     let offset = range.startOffset;
 
-    // CORREÇÃO: Se o cursor estiver em um nó de elemento (ex: <p> vazio ou início de bloco)
+    // Robustez: Navegar para o nó de texto mais próximo se o cursor estiver em um elemento vazio ou entre tags
     if (node.nodeType === Node.ELEMENT_NODE) {
-      if (node.firstChild && node.firstChild.nodeType === Node.TEXT_NODE) {
+      if (offset > 0 && node.childNodes[offset - 1]?.nodeType === Node.TEXT_NODE) {
+        node = node.childNodes[offset - 1];
+        offset = node.textContent.length;
+      } else if (node.firstChild?.nodeType === Node.TEXT_NODE) {
         node = node.firstChild;
-        offset = 0; // Cursor no início do texto
       } else {
-        return; // Elemento vazio, não há palavra para verificar ainda
+        fecharPopup();
+        return;
       }
     }
 
-    if (node.nodeType !== Node.TEXT_NODE) return;
-
-    const textoAteCursor = node.textContent.substring(0, offset);
-    const palavras = textoAteCursor.trim().split(/\s+/);
-    if (palavras.length === 0) return;
-
-    // Pega a última palavra digitada antes do cursor e limpa pontuação
-    const palavraCrua = palavras[palavras.length - 1];
-    const palavraAtual = palavraCrua.replace(/[.,!?;:()"]/g, "").toLowerCase();
-
-    if (palavraAtual.length < 2) {
-      fecharPopup(); // Fecha o popup se a palavra for muito curta ou apagada
+    if (node.nodeType !== Node.TEXT_NODE) {
+      fecharPopup();
       return;
     }
 
-    // DEBUG: Aperte F12 no navegador para ver esta mensagem e confirmar que a detecção funciona
-    console.log("Verificando palavra:", palavraAtual);
+    const textoAteCursor = node.textContent.substring(0, offset);
+    
+    // Regex aprimorada: captura apenas letras (incluindo acentuadas) no final da string
+    // Ignora pontuações coladas como "Teddy," ou "Rede."
+    const match = textoAteCursor.match(/([a-zA-ZÀ-ÿ]+)$/);
 
-    // 1. Verifica nos Personagens
-    if (indicePersonagens.has(palavraAtual)) {
-      const p = indicePersonagens.get(palavraAtual);
+    if (!match) {
+      fecharPopup();
+      return;
+    }
+
+    const palavraCrua = match[1];
+    const palavraNormalizada = normalizeText(palavraCrua);
+
+    if (palavraNormalizada.length < 2) {
+      fecharPopup();
+      return;
+    }
+
+    // Busca otimizada nos índices (que já estão normalizados)
+    if (indicePersonagens.has(palavraNormalizada)) {
+      const p = indicePersonagens.get(palavraNormalizada);
       mostrarPopup("PERSONAGEM", p.nome, `Papel: ${p.papel || 'Principal'}`, p.biografia_xhtml || "Sem biografia.");
       return;
     }
 
-    // 2. Verifica no Dicionário
-    if (indiceDicionario.has(palavraAtual)) {
-      const t = indiceDicionario.get(palavraAtual);
+    if (indiceDicionario.has(palavraNormalizada)) {
+      const t = indiceDicionario.get(palavraNormalizada);
       mostrarPopup("DICIONÁRIO", t.termo, `Categoria: ${t.categoria || 'Geral'}`, t.definicao || "Sem definição.");
       return;
     }
-    
-    // Se não encontrou nada e o popup estava aberto, fecha ele
+
+    // Se chegou aqui, a palavra não foi encontrada. Fecha o popup se estiver aberto.
     fecharPopup();
   }
 
@@ -517,6 +566,9 @@
     document.getElementById("popupDeteccao").style.display = "none";
   }
 
+  // =====================================================================
+  // FUNÇÕES DE INTERFACE E ESTADO
+  // =====================================================================
   function mudarAba(aba) {
     document.getElementById('containerEditor').style.display = aba === 'editor' ? 'flex' : 'none';
     document.getElementById('toolbarEditor').style.display = aba === 'editor' ? 'flex' : 'none';
@@ -580,7 +632,7 @@
   function renderizarListaPersonagens() {
     const lista = document.getElementById('listaPersonagens');
     lista.innerHTML = '';
-    if (!projetoLivro.personagens) projetoLivro.personagens = [];
+    if (!Array.isArray(projetoLivro.personagens)) projetoLivro.personagens = [];
     document.getElementById('charCount').innerText = projetoLivro.personagens.length;
 
     projetoLivro.personagens.forEach(p => {
@@ -594,7 +646,7 @@
 
   function criarNovoPersonagem() {
     const novo = { id: 'char_' + Date.now(), nome: 'Novo Personagem', papel: 'Secundário', caracteristicas: [], imagemUrl: '', biografia_xhtml: '<p>Bio...</p>' };
-    if (!projetoLivro.personagens) projetoLivro.personagens = [];
+    if (!Array.isArray(projetoLivro.personagens)) projetoLivro.personagens = [];
     projetoLivro.personagens.push(novo);
     reconstruirIndices();
     renderizarListaPersonagens();
@@ -648,7 +700,7 @@
   function renderizarListaTermos() {
     const lista = document.getElementById('listaTermos');
     lista.innerHTML = '';
-    if (!projetoLivro.dicionario) projetoLivro.dicionario = [];
+    if (!Array.isArray(projetoLivro.dicionario)) projetoLivro.dicionario = [];
     document.getElementById('termCount').innerText = projetoLivro.dicionario.length;
 
     const limiteVisual = projetoLivro.dicionario.slice(0, 200);
@@ -707,45 +759,52 @@
     const file = event.target.files[0];
     if (!file) return;
 
-    document.getElementById("statusText").innerText = "STATUS: PROCESSANDO ARQUIVO TXT...";
+    setGitHubStatus("PROCESSANDO ARQUIVO TXT...");
     const reader = new FileReader();
     reader.onload = function(e) {
-      const conteudo = e.target.result;
-      const linhas = conteudo.split(/\r?\n/);
-      let importados = 0;
+      try {
+        const conteudo = e.target.result;
+        const linhas = conteudo.split(/\r?\n/);
+        let importados = 0;
 
-      for (let i = 0; i < linhas.length; i++) {
-        const linha = linhas[i].trim();
-        if (!linha) continue;
+        for (let i = 0; i < linhas.length; i++) {
+          const linha = linhas[i].trim();
+          if (!linha) continue;
 
-        if (linha.includes('|')) {
-          const partes = linha.split('|');
-          projetoLivro.dicionario.push({
-            id: 't_' + i + '_' + Date.now(),
-            termo: partes[0].trim(),
-            categoria: partes[1] ? partes[1].trim() : 'Geral',
-            definicao: partes[2] ? partes[2].trim() : 'Termo registrado.'
-          });
-          importados++;
-        } else {
-          projetoLivro.dicionario.push({
-            id: 't_' + i + '_' + Date.now(),
-            termo: linha,
-            categoria: 'Vocabulário',
-            definicao: 'Palavra validada.'
-          });
+          if (linha.includes('|')) {
+            const partes = linha.split('|');
+            projetoLivro.dicionario.push({
+              id: 't_' + i + '_' + Date.now(),
+              termo: partes[0].trim(),
+              categoria: partes[1] ? partes[1].trim() : 'Geral',
+              definicao: partes[2] ? partes[2].trim() : 'Termo registrado.'
+            });
+          } else {
+            projetoLivro.dicionario.push({
+              id: 't_' + i + '_' + Date.now(),
+              termo: linha,
+              categoria: 'Vocabulário',
+              definicao: 'Palavra validada.'
+            });
+          }
           importados++;
         }
-      }
 
-      reconstruirIndices();
-      renderizarListaTermos();
-      alert(`${importados} termos importados e indexados com sucesso!`);
+        reconstruirIndices();
+        renderizarListaTermos();
+        setGitHubStatus(`${importados} TERMOS IMPORTADOS COM SUCESSO!`);
+      } catch (err) {
+        setGitHubStatus("ERRO AO PROCESSAR TXT", true);
+        console.error(err);
+      }
     };
     reader.readAsText(file);
   }
 
-  function formatar(cmd) { document.execCommand(cmd, false, null); salvarCapituloAtualNaMemoria(); }
+  function formatar(cmd) { 
+    document.execCommand(cmd, false, null); 
+    salvarCapituloAtualNaMemoria(); 
+  }
   
   function mudarFonte(fonte) {
     const sel = window.getSelection();
@@ -766,13 +825,35 @@
     salvarCapituloAtualNaMemoria();
   }
 
+  function carregarImagemPersonagem(event) {
+    const file = event.target.files[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = function(e) {
+      if (characterSelecionadoId) {
+        const p = projetoLivro.personagens.find(item => item.id === characterSelecionadoId);
+        if (p) {
+          p.imagemUrl = e.target.result;
+          document.getElementById('charAvatarPreview').src = e.target.result;
+          document.getElementById('charAvatarPreview').style.display = 'block';
+          document.getElementById('charNoPhotoText').style.display = 'none';
+          renderizarListaPersonagens();
+        }
+      }
+    };
+    reader.readAsDataURL(file);
+  }
+
+  // =====================================================================
+  // INTEGRAÇÃO GITHUB ROBUSTA (TRATAMENTO DE ERROS E VALIDAÇÃO)
+  // =====================================================================
   function configurarGitHub() {
-    const repo = prompt("Repositório:", localStorage.getItem("gh_repo") || "andreyoldekamp-del/EditorUltimaMemoria");
-    const token = prompt("Personal Access Token:", localStorage.getItem("gh_token") || "");
+    const repo = prompt("Repositório (ex: usuario/repo):", localStorage.getItem("gh_repo") || "andreyoldekamp-del/EditorUltimaMemoria");
+    const token = prompt("Personal Access Token (com permissão 'repo'):", localStorage.getItem("gh_token") || "");
     if (repo && token) {
       localStorage.setItem("gh_repo", repo);
       localStorage.setItem("gh_token", token);
-      alert("Configurações salvas!");
+      alert("Configurações salvas com segurança!");
     }
   }
 
@@ -780,80 +861,155 @@
     salvarCapituloAtualNaMemoria();
     if (characterSelecionadoId) atualizarPersonagemAtual();
 
-    const repo = localStorage.getItem("gh_repo") || "andreyoldekamp-del/EditorUltimaMemoria";
+    const repo = localStorage.getItem("gh_repo");
     const token = localStorage.getItem("gh_token");
-    if (!token) { alert("Configure o Token primeiro!"); configurarGitHub(); return; }
+    
+    if (!token) { 
+      alert("Configure o Token do GitHub primeiro!"); 
+      configurarGitHub(); 
+      return; 
+    }
 
+    setGitHubStatus("ENVIANDO DADOS PARA O GITHUB...");
     const url = `https://api.github.com/repos/${repo}/contents/historia.json`;
+    
     try {
       let sha = "";
       const getRes = await fetch(url, { headers: { "Authorization": `token ${token}` } });
-      if (getRes.ok) sha = (await getRes.json()).sha;
+      if (getRes.ok) {
+        sha = (await getRes.json()).sha;
+      } else if (getRes.status !== 404) {
+        throw new Error(`Falha ao verificar arquivo existente (HTTP ${getRes.status})`);
+      }
 
       const payloadSalvar = {
         metadados: projetoLivro.metadados,
         capitulos: projetoLivro.capitulos,
         personagens: projetoLivro.personagens,
-        dicionario: projetoLivro.dicionario.length > 5000 ? projetoLivro.dicionario.slice(0, 100) : projetoLivro.dicionario
+        dicionario: projetoLivro.dicionario.length > 5000 ? projetoLivro.dicionario.slice(0, 500) : projetoLivro.dicionario // Limite de segurança para payload
       };
 
       const contentBase64 = btoa(unescape(encodeURIComponent(JSON.stringify(payloadSalvar, null, 2))));
+      
       const putRes = await fetch(url, {
         method: "PUT",
-        headers: { "Authorization": `token ${token}`, "Content-Type": "application/json" },
-        body: JSON.stringify({ message: "Atualização GraphZO", content: contentBase64, sha: sha || undefined })
+        headers: { 
+          "Authorization": `token ${token}`, 
+          "Content-Type": "application/json",
+          "Accept": "application/vnd.github.v3+json"
+        },
+        body: JSON.stringify({ 
+          message: `Atualização GraphZO: ${new Date().toISOString()}`, 
+          content: contentBase64, 
+          sha: sha || undefined 
+        })
       });
 
-      if (putRes.ok) alert("Salvo no GitHub com sucesso!");
-    } catch (e) { alert("Erro de conexão."); }
+      if (putRes.ok) {
+        setGitHubStatus("SALVO NO GITHUB COM SUCESSO!");
+        alert("Salvo no GitHub com sucesso!");
+        listarCommitsGitHub(true); // Atualiza a lista de versões
+      } else {
+        const errData = await putRes.json();
+        throw new Error(errData.message || `HTTP ${putRes.status}`);
+      }
+    } catch (e) { 
+      console.error("GitHub Save Error:", e);
+      setGitHubStatus(`ERRO AO SALVAR: ${e.message}`, true);
+      alert(`Erro de conexão ou permissão ao salvar no GitHub:\n${e.message}`); 
+    }
   }
 
-  // =====================================================================
-  // CARREGAMENTO DO GITHUB (COM PROTEÇÃO CONTRA DADOS VAZIOS)
-  // =====================================================================
   async function puxarDoGitHub(silencioso = false) {
-    const repo = localStorage.getItem("gh_repo") || "andreyoldekamp-del/EditorUltimaMemoria";
+    const repo = localStorage.getItem("gh_repo");
     const token = localStorage.getItem("gh_token");
-    if (!token) return;
+    
+    if (!token) {
+      if (!silencioso) alert("Token do GitHub não configurado.");
+      return;
+    }
+
+    if (!silencioso) setGitHubStatus("BAIXANDO DADOS DO GITHUB...");
 
     const url = `https://api.github.com/repos/${repo}/contents/historia.json`;
     try {
-      const res = await fetch(url, { headers: { "Authorization": `token ${token}` } });
+      const res = await fetch(url, { 
+        headers: { 
+          "Authorization": `token ${token}`,
+          "Accept": "application/vnd.github.v3+json"
+        } 
+      });
+
+      // Tratamento específico de códigos HTTP
+      if (res.status === 401) throw new Error("Token inválido ou expirado (401). Verifique as configurações.");
+      if (res.status === 403) throw new Error("Limite de requisições da API atingido ou sem permissão de leitura (403).");
+      if (res.status === 404) throw new Error("Arquivo 'historia.json' não encontrado neste repositório (404).");
+      if (!res.ok) throw new Error(`Erro HTTP inesperado: ${res.status}`);
+
       const data = await res.json();
-      if (res.ok) {
-        const carregado = JSON.parse(decodeURIComponent(escape(atob(data.content))));
-        projetoLivro.metadados = carregado.metadados || projetoLivro.metadados;
-        projetoLivro.capitulos = carregado.capitulos || projetoLivro.capitulos;
-        
-        // CORREÇÃO: Só sobrescreve se os dados do GitHub forem válidos e não estiverem vazios
-        if (carregado.personagens && carregado.personagens.length > 0) {
-          projetoLivro.personagens = carregado.personagens;
-        }
-        if (carregado.dicionario && carregado.dicionario.length > 0) {
-          projetoLivro.dicionario = carregado.dicionario;
-        }
-        
-        reconstruirIndices();
-        renderizarListaCapitulos();
-        carregarCapituloNaTela(Object.keys(projetoLivro.capitulos)[0]);
-        if(!silencioso) alert("Dados carregados com segurança!");
+      
+      if (!data.content) throw new Error("Resposta do GitHub sem conteúdo válido.");
+      
+      let carregado;
+      try {
+        // Decodificação segura de Base64
+        const decoded = decodeURIComponent(escape(atob(data.content)));
+        carregado = JSON.parse(decoded);
+      } catch (parseErr) {
+        throw new Error("Falha ao decodificar ou analisar o JSON do GitHub. O arquivo pode estar corrompido.");
       }
-    } catch(e) {
-      console.error("Erro ao puxar do GitHub:", e);
+
+      // Validação de Schema (Garante que a estrutura é válida antes de sobrescrever)
+      if (typeof carregado !== 'object' || carregado === null) {
+        throw new Error("Estrutura de dados inválida no arquivo do GitHub.");
+      }
+
+      // Merge Seguro: Preserva dados locais se os do GitHub estiverem incompletos
+      if (carregado.metadados) projetoLivro.metadados = { ...projetoLivro.metadados, ...carregado.metadados };
+      if (carregado.capitulos && typeof carregado.capitulos === 'object') projetoLivro.capitulos = carregado.capitulos;
+      
+      if (Array.isArray(carregado.personagens) && carregado.personagens.length > 0) {
+        projetoLivro.personagens = carregado.personagens;
+      }
+      
+      if (Array.isArray(carregado.dicionario) && carregado.dicionario.length > 0) {
+        projetoLivro.dicionario = carregado.dicionario;
+      }
+
+      reconstruirIndices();
+      renderizarListaCapitulos();
+      
+      const firstCap = Object.keys(projetoLivro.capitulos)[0];
+      if (firstCap) carregarCapituloNaTela(firstCap);
+
+      if (!silencioso) {
+        setGitHubStatus("DADOS CARREGADOS COM SUCESSO!");
+        alert("Dados carregados do GitHub com sucesso!");
+      }
+
+    } catch (error) {
+      console.error("GitHub Fetch Error:", error);
+      if (!silencioso) {
+        setGitHubStatus(`ERRO: ${error.message}`, true);
+        alert(`Falha ao carregar do GitHub:\n${error.message}\n\nO sistema continuará usando os dados locais atuais.`);
+      }
     }
   }
 
   async function listarCommitsGitHub(silencioso = false) {
-    const repo = localStorage.getItem("gh_repo") || "andreyoldekamp-del/EditorUltimaMemoria";
+    const repo = localStorage.getItem("gh_repo");
     const token = localStorage.getItem("gh_token");
     if (!token) return;
 
     const descarteLista = JSON.parse(localStorage.getItem("commits_descartados") || "[]");
     const url = `https://api.github.com/repos/${repo}/commits?path=historia.json`;
+    
     try {
       const res = await fetch(url, { headers: { "Authorization": `token ${token}` } });
+      if (!res.ok) return; // Falha silenciosa para listagem
+      
       const commits = await res.json();
-      if (res.ok && Array.isArray(commits)) {
+      if (Array.isArray(commits)) {
         const sel = document.getElementById("selectCommits");
         sel.innerHTML = '<option value="">-- Versões Git --</option>';
         commits.forEach(c => {
@@ -861,47 +1017,64 @@
             const opt = document.createElement("option");
             opt.value = c.sha;
             const dt = new Date(c.commit.author.date);
-            opt.textContent = `[${dt.toLocaleDateString()} ${dt.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}] ${c.commit.message.substring(0, 20)}`;
+            const msg = c.commit.message ? c.commit.message.substring(0, 25) : "Atualização";
+            opt.textContent = `[${dt.toLocaleDateString()} ${dt.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}] ${msg}`;
             sel.appendChild(opt);
           }
         });
       }
-    } catch(e) {}
+    } catch(e) {
+      console.error("Erro ao listar commits:", e);
+    }
   }
 
   async function carregarVersaoSelecionada() {
-    const repo = localStorage.getItem("gh_repo") || "andreyoldekamp-del/EditorUltimaMemoria";
+    const repo = localStorage.getItem("gh_repo");
     const token = localStorage.getItem("gh_token");
     const sha = document.getElementById("selectCommits").value;
+    
     if (!token || !sha) return;
 
+    setGitHubStatus("CARREGANDO VERSÃO ESPECÍFICA...");
     const url = `https://api.github.com/repos/${repo}/contents/historia.json?ref=${sha}`;
+    
     try {
       const res = await fetch(url, { headers: { "Authorization": `token ${token}` } });
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+      
       const data = await res.json();
-      if (res.ok) {
-        const carregado = JSON.parse(decodeURIComponent(escape(atob(data.content))));
-        projetoLivro.capitulos = carregado.capitulos || projetoLivro.capitulos;
-        projetoLivro.personagens = carregado.personagens || [];
-        if (carregado.dicionario) projetoLivro.dicionario = carregado.dicionario;
-        
-        reconstruirIndices();
-        renderizarListaCapitulos();
-        carregarCapituloNaTela(Object.keys(projetoLivro.capitulos)[0]);
-        renderizarListaPersonagens();
-        alert("Versão carregada!");
-      }
-    } catch(e) {}
+      const carregado = JSON.parse(decodeURIComponent(escape(atob(data.content))));
+      
+      projetoLivro.capitulos = carregado.capitulos || projetoLivro.capitulos;
+      projetoLivro.personagens = Array.isArray(carregado.personagens) ? carregado.personagens : [];
+      projetoLivro.dicionario = Array.isArray(carregado.dicionario) ? carregado.dicionario : [];
+      
+      reconstruirIndices();
+      renderizarListaCapitulos();
+      
+      const firstCap = Object.keys(projetoLivro.capitulos)[0];
+      if (firstCap) carregarCapituloNaTela(firstCap);
+      
+      renderizarListaPersonagens();
+      setGitHubStatus("VERSÃO HISTÓRICA CARREGADA!");
+      alert("Versão histórica carregada com sucesso!");
+    } catch(e) {
+      setGitHubStatus("ERRO AO CARREGAR VERSÃO", true);
+      console.error(e);
+    }
   }
 
   function descartarVersaoAtual() {
     const sha = document.getElementById("selectCommits").value;
-    if (!sha) return alert("Selecione uma versão.");
+    if (!sha) return alert("Selecione uma versão na lista primeiro.");
+    
     const descarte = JSON.parse(localStorage.getItem("commits_descartados") || "[]");
-    descarte.push(sha);
-    localStorage.setItem("commits_descartados", JSON.stringify(descarte));
-    listarCommitsGitHub(true);
-    alert("Versão ocultada.");
+    if (!descarte.includes(sha)) {
+      descarte.push(sha);
+      localStorage.setItem("commits_descartados", JSON.stringify(descarte));
+      listarCommitsGitHub(true);
+      alert("Versão ocultada da lista com sucesso.");
+    }
   }
 
   function atualizarContador() {
