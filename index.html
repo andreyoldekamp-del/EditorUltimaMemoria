@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>GraphZO // ÚLTIMA MEMÓRIA [NEON V10 - POPUP & INDEX]</title>
+  <title>GraphZO // ÚLTIMA MEMÓRIA [NEON V10.1 - FIX POPUP]</title>
   <style>
     :root {
       --bg-base: #030712;
@@ -180,7 +180,7 @@
       position: fixed;
       bottom: 45px;
       right: 25px;
-      width: 340px;
+      width: 360px;
       max-width: 90vw;
       background: var(--bg-panel);
       border: 2px solid var(--accent-cyan);
@@ -246,7 +246,7 @@
 
   <header>
     <div>
-      <h1>SYS_GRAPHZO // <span>NEON V10 [DETECÇÃO ATIVA]</span></h1>
+      <h1>SYS_GRAPHZO // <span>NEON V10.1 [POPUP FIX]</span></h1>
       <div id="lastSavedBadge" style="font-size: 10px; color: var(--success); margin-top: 2px;">🕒 Último salvamento: Nenhum nesta sessão</div>
     </div>
     <div style="display: flex; gap: 6px; flex-wrap: wrap;">
@@ -283,7 +283,7 @@
     <button onclick="inserirParagrafoID()">➕ Novo Parágrafo</button>
     <button onclick="criarNovoCapitulo()">📑 Novo Capítulo</button>
     <label style="font-size: 11px; margin-left: auto; display: flex; align-items: center; gap: 5px; cursor: pointer;">
-      <input type="checkbox" id="togglePopupAuto" checked> 🔍 Popup Automático ao Digitar
+      <input type="checkbox" id="togglePopupAuto" checked> 🔍 Popup Automático
     </label>
   </div>
 
@@ -294,6 +294,7 @@
       <div class="list-container" id="chaptersList"></div>
     </sidebar>
     <div class="editor-area">
+      <!-- EVENTO INPUT LIGADO DIRETAMENTE À DETECÇÃO -->
       <div id="editorContent" contenteditable="true" spellcheck="false" oninput="processarTextoDigitado(event)"></div>
     </div>
   </div>
@@ -388,26 +389,22 @@
   let projetoLivro = {
     "metadados": { "titulo": "Última Memória", "autor": "Autor" },
     "capitulos": {
-      "cap_1": { "titulo": "Capítulo 1", "conteudo_xhtml": '<p id="cap_1_p1">Digite o nome de um personagem ou termo e pressione espaço...</p>' }
+      "cap_1": { "titulo": "Capítulo 1", "conteudo_xhtml": '<p id="cap_1_p1">Digite Teddy ou outra palavra da base e dê espaço...</p>' }
     },
-    "personagens": [],
+    "personagens": [
+      { id: "char_teste", nome: "Teddy", papel: "Protagonista", biografia_xhtml: "<p>Jovem que questiona suas memórias.</p>" }
+    ],
     "dicionario": [
-      {
-        "id": "term_1",
-        "termo": "Rede Neural",
-        "categoria": "Tecnologia",
-        "definicao": "Sistema global de dados que interliga conexões humanas e artificiais."
-      }
+      { id: "term_1", termo: "Rede", categoria: "Tecnologia", definicao: "Sistema global de dados interligados." }
     ]
   };
 
-  // ÍNDICES DE BUSCA ULTRARRÁPIDA (Suporta 345k+ palavras sem travar)
   let indicePersonagens = new Map();
   let indiceDicionario = new Map();
 
   let capituloAtual = "cap_1";
   let characterSelecionadoId = null;
-  let termoSelecionadoId = "term_1";
+  let termoSelecionadoId = null;
   let ultimaPalavraVerificada = "";
 
   function reconstruirIndices() {
@@ -416,35 +413,26 @@
 
     if (projetoLivro.personagens) {
       projetoLivro.personagens.forEach(p => {
-        if (p.nome) {
-          indicePersonagens.set(p.nome.trim().toLowerCase(), p);
-        }
+        if (p.nome) indicePersonagens.set(p.nome.trim().toLowerCase(), p);
       });
     }
 
     if (projetoLivro.dicionario) {
       projetoLivro.dicionario.forEach(t => {
-        if (t.termo) {
-          indiceDicionario.set(t.termo.trim().toLowerCase(), t);
-        }
+        if (t.termo) indiceDicionario.set(t.termo.trim().toLowerCase(), t);
       });
     }
 
     document.getElementById("statusText").innerText = `STATUS: PRONTO | INDEXADOS: ${indicePersonagens.size} PERS. / ${indiceDicionario.size} TERMOS`;
   }
 
-  function obterDataHoraFormatada() {
-    const agora = new Date();
-    return agora.toLocaleDateString('pt-BR') + ' às ' + agora.toLocaleTimeString('pt-BR');
-  }
-
   window.onload = async function() {
     if (!localStorage.getItem("gh_repo")) {
       localStorage.setItem("gh_repo", "andreyoldekamp-del/EditorUltimaMemoria");
     }
+    reconstruirIndices();
     renderizarListaCapitulos();
     carregarCapituloNaTela("cap_1");
-    reconstruirIndices();
 
     if (localStorage.getItem("gh_token")) {
       await puxarDoGitHub(true);
@@ -452,8 +440,8 @@
     }
   };
 
-  // DETECÇÃO DE PALAVRA AO DIGITAR NO EDITOR
-function processarTextoDigitado(event) {
+  // MOTOR DE DETECÇÃO INSTANTÂNEA AO DIGITAR
+  function processarTextoDigitado(event) {
     salvarCapituloAtualNaMemoria();
     if (!document.getElementById("togglePopupAuto").checked) return;
 
@@ -465,14 +453,14 @@ function processarTextoDigitado(event) {
     if (node.nodeType !== Node.TEXT_NODE) return;
 
     const textoAteCursor = node.textContent.substring(0, range.startOffset);
-    // Pega a última palavra digitada antes do cursor
     const palavras = textoAteCursor.trim().split(/\s+/);
     if (palavras.length === 0) return;
 
-    const palavraAtual = palavras[palavras.length - 1].replace(/[.,!?;:()"]/g, "").toLowerCase();
+    // Pega a última palavra digitada antes do cursor
+    const palavraCrua = palavras[palavras.length - 1];
+    const palavraAtual = palavraCrua.replace(/[.,!?;:()"]/g, "").toLowerCase();
 
-    if (palavraAtual.length < 2 || palavraAtual === ultimaPalavraVerificada) return;
-    ultimaPalavraVerificada = palavraAtual;
+    if (palavraAtual.length < 2) return;
 
     // 1. Verifica nos Personagens
     if (indicePersonagens.has(palavraAtual)) {
@@ -487,10 +475,6 @@ function processarTextoDigitado(event) {
       mostrarPopup("DICIONÁRIO", t.termo, `Categoria: ${t.categoria || 'Geral'}`, t.definicao || "Sem definição.");
       return;
     }
-  }
-
-  function verificarPalavraDigitada(event) {
-    // Mantido para compatibilidade com teclas especiais
   }
 
   function mostrarPopup(tipo, palavra, subtitulo, significadoHtml) {
@@ -527,7 +511,6 @@ function processarTextoDigitado(event) {
     }
   }
 
-  // CAPÍTULOS
   function renderizarListaCapitulos() {
     const lista = document.getElementById('chaptersList');
     lista.innerHTML = '';
@@ -573,7 +556,6 @@ function processarTextoDigitado(event) {
     }
   }
 
-  // PERSONAGENS
   function renderizarListaPersonagens() {
     const lista = document.getElementById('listaPersonagens');
     lista.innerHTML = '';
@@ -642,7 +624,6 @@ function processarTextoDigitado(event) {
     if (characterSelecionadoId) selecionarPersonagem(characterSelecionadoId);
   }
 
-  // DICIONÁRIO (Renderização limitada aos primeiros 200 na barra lateral para não travar com 345k itens)
   function renderizarListaTermos() {
     const lista = document.getElementById('listaTermos');
     lista.innerHTML = '';
@@ -657,24 +638,6 @@ function processarTextoDigitado(event) {
       item.onclick = () => selecionarTermo(t.id);
       lista.appendChild(item);
     });
-
-    if (projetoLivro.dicionario.length > 200) {
-      const aviso = document.createElement('div');
-      aviso.style.fontSize = '10px';
-      aviso.style.color = 'var(--text-muted)';
-      aviso.style.padding = '8px';
-      aviso.innerText = `Exibindo 200 de ${projetoLivro.dicionario.length} termos na lista lateral. Todos estão ativos na busca!`;
-      lista.appendChild(aviso);
-    }
-  }
-
-  function criarNovoTermo() {
-    const novo = { id: 'term_' + Date.now(), termo: 'Novo Termo', categoria: 'Geral', definicao: '<p>Definição...</p>' };
-    if (!projetoLivro.dicionario) projetoLivro.dicionario = [];
-    projetoLivro.dicionario.unshift(novo);
-    reconstruirIndices();
-    renderizarListaTermos();
-    selecionarTermo(novo.id);
   }
 
   function selecionarTermo(id) {
@@ -700,7 +663,7 @@ function processarTextoDigitado(event) {
 
   function deletarTermoAtual() {
     if (!termoSelecionadoId) return;
-    if (!confirm("Excluir termo do dicionário?")) return;
+    if (!confirm("Excluir termo?")) return;
     projetoLivro.dicionario = projetoLivro.dicionario.filter(t => t.id !== termoSelecionadoId);
     termoSelecionadoId = projetoLivro.dicionario.length > 0 ? projetoLivro.dicionario[0].id : null;
     reconstruirIndices();
@@ -716,16 +679,14 @@ function processarTextoDigitado(event) {
     document.body.appendChild(downloadAnchor);
     downloadAnchor.click();
     downloadAnchor.remove();
-    alert("Arquivo dicionario.json gerado com sucesso!");
+    alert("dicionario.json gerado!");
   }
 
-  // IMPORTAR BASE.TXT (Otimizado para bases grandes como 345k linhas)
   function importarBaseTxt(event) {
     const file = event.target.files[0];
     if (!file) return;
 
     document.getElementById("statusText").innerText = "STATUS: PROCESSANDO ARQUIVO TXT...";
-
     const reader = new FileReader();
     reader.onload = function(e) {
       const conteudo = e.target.result;
@@ -736,7 +697,6 @@ function processarTextoDigitado(event) {
         const linha = linhas[i].trim();
         if (!linha) continue;
 
-        // Suporta formato "Termo | Categoria | Definição" OU "Termo: Definição" OU apenas "Palavra"
         if (linha.includes('|')) {
           const partes = linha.split('|');
           projetoLivro.dicionario.push({
@@ -746,21 +706,12 @@ function processarTextoDigitado(event) {
             definicao: partes[2] ? partes[2].trim() : 'Termo registrado.'
           });
           importados++;
-        } else if (linha.includes(':')) {
-          const idx = linha.indexOf(':');
-          projetoLivro.dicionario.push({
-            id: 't_' + i + '_' + Date.now(),
-            termo: linha.substring(0, idx).trim(),
-            categoria: 'Dicionário',
-            definicao: linha.substring(idx + 1).trim()
-          });
-          importados++;
         } else {
           projetoLivro.dicionario.push({
             id: 't_' + i + '_' + Date.now(),
             termo: linha,
             categoria: 'Vocabulário',
-            definicao: 'Palavra validada no dicionário base.'
+            definicao: 'Palavra validada.'
           });
           importados++;
         }
@@ -768,46 +719,9 @@ function processarTextoDigitado(event) {
 
       reconstruirIndices();
       renderizarListaTermos();
-      if (importados > 0) {
-        selecionarTermo(projetoLivro.dicionario[0].id);
-        alert(`${importados} termos importados e indexados com sucesso!`);
-      } else {
-        alert("Nenhum termo encontrado no arquivo.");
-      }
+      alert(`${importados} termos importados e indexados com sucesso!`);
     };
     reader.readAsText(file);
-  }
-
-  async function carregarImagemPersonagem(event) {
-    const file = event.target.files[0];
-    if (!file || !characterSelecionadoId) return;
-    const repo = localStorage.getItem("gh_repo") || "andreyoldekamp-del/EditorUltimaMemoria";
-    const token = localStorage.getItem("gh_token");
-    if (!token) { alert("Configure o Token do GitHub!"); return; }
-
-    const reader = new FileReader();
-    reader.onload = async function(e) {
-      const base64Content = e.target.result.split(',')[1];
-      const fileName = `assets/${characterSelecionadoId}_${file.name.replace(/[^a-zA-Z0-9.]/g, '_')}`;
-      const url = `https://api.github.com/repos/${repo}/contents/${fileName}`;
-
-      try {
-        const res = await fetch(url, {
-          method: "PUT",
-          headers: { "Authorization": `token ${token}`, "Content-Type": "application/json" },
-          body: JSON.stringify({ message: `Upload foto ${characterSelecionadoId}`, content: base64Content })
-        });
-        if (res.ok) {
-          const rawUrl = `https://raw.githubusercontent.com/${repo}/main/${fileName}`;
-          const p = projetoLivro.personagens.find(item => item.id === characterSelecionadoId);
-          p.imagemUrl = rawUrl;
-          reconstruirIndices();
-          selecionarPersonagem(characterSelecionadoId);
-          alert("Foto salva com sucesso!");
-        }
-      } catch(err) { alert("Erro ao enviar foto."); }
-    };
-    reader.readAsDataURL(file);
   }
 
   function formatar(cmd) { document.execCommand(cmd, false, null); salvarCapituloAtualNaMemoria(); }
@@ -842,22 +756,17 @@ function processarTextoDigitado(event) {
   async function salvarNoGitHub() {
     salvarCapituloAtualNaMemoria();
     if (characterSelecionadoId) atualizarPersonagemAtual();
-    if (termoSelecionadoId) atualizarTermoAtual();
 
     const repo = localStorage.getItem("gh_repo") || "andreyoldekamp-del/EditorUltimaMemoria";
     const token = localStorage.getItem("gh_token");
     if (!token) { alert("Configure o Token primeiro!"); configurarGitHub(); return; }
 
-    const carimbo = obterDataHoraFormatada();
     const url = `https://api.github.com/repos/${repo}/contents/historia.json`;
-
     try {
       let sha = "";
       const getRes = await fetch(url, { headers: { "Authorization": `token ${token}` } });
       if (getRes.ok) sha = (await getRes.json()).sha;
 
-      //Nota: Se o dicionário for gigante (345k itens), salva apenas capítulos e personagens no historia.json
-      // para não estourar o limite de 1MB/100MB da API do GitHub
       const payloadSalvar = {
         metadados: projetoLivro.metadados,
         capitulos: projetoLivro.capitulos,
@@ -869,16 +778,10 @@ function processarTextoDigitado(event) {
       const putRes = await fetch(url, {
         method: "PUT",
         headers: { "Authorization": `token ${token}`, "Content-Type": "application/json" },
-        body: JSON.stringify({ message: `Salvo em ${carimbo}`, content: contentBase64, sha: sha || undefined })
+        body: JSON.stringify({ message: "Atualização GraphZO", content: contentBase64, sha: sha || undefined })
       });
 
-      if (putRes.ok) {
-        document.getElementById("lastSavedBadge").innerText = `🕒 Último salvamento: ${carimbo}`;
-        alert("Projeto salvo com sucesso no GitHub!");
-        await listarCommitsGitHub(true);
-      } else {
-        alert("Erro ao salvar no GitHub.");
-      }
+      if (putRes.ok) alert("Salvo no GitHub com sucesso!");
     } catch (e) { alert("Erro de conexão."); }
   }
 
@@ -896,14 +799,12 @@ function processarTextoDigitado(event) {
         projetoLivro.metadados = carregado.metadados || projetoLivro.metadados;
         projetoLivro.capitulos = carregado.capitulos || projetoLivro.capitulos;
         projetoLivro.personagens = carregado.personagens || [];
-        if (carregado.dicionario && carregado.dicionario.length > 0 && projetoLivro.dicionario.length <= 1) {
-          projetoLivro.dicionario = carregado.dicionario;
-        }
+        if (carregado.dicionario) projetoLivro.dicionario = carregado.dicionario;
         
         reconstruirIndices();
         renderizarListaCapitulos();
         carregarCapituloNaTela(Object.keys(projetoLivro.capitulos)[0]);
-        if(!silencioso) alert("Dados carregados com sucesso!");
+        if(!silencioso) alert("Dados carregados!");
       }
     } catch(e) {}
   }
@@ -948,14 +849,15 @@ function processarTextoDigitado(event) {
         const carregado = JSON.parse(decodeURIComponent(escape(atob(data.content))));
         projetoLivro.capitulos = carregado.capitulos || projetoLivro.capitulos;
         projetoLivro.personagens = carregado.personagens || [];
+        if (carregado.dicionario) projetoLivro.dicionario = carregado.dicionario;
         
         reconstruirIndices();
         renderizarListaCapitulos();
         carregarCapituloNaTela(Object.keys(projetoLivro.capitulos)[0]);
         renderizarListaPersonagens();
-        alert("Versão histórica carregada!");
+        alert("Versão carregada!");
       }
-    } catch(e) { alert("Erro ao carregar."); }
+    } catch(e) {}
   }
 
   function descartarVersaoAtual() {
@@ -965,7 +867,7 @@ function processarTextoDigitado(event) {
     descarte.push(sha);
     localStorage.setItem("commits_descartados", JSON.stringify(descarte));
     listarCommitsGitHub(true);
-    alert("Versão ocultada da lista.");
+    alert("Versão ocultada.");
   }
 
   function atualizarContador() {
