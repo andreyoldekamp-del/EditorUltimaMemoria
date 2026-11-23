@@ -1,0 +1,332 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Editor Última Memória - GraphZO</title>
+  <style>
+    :root {
+      --bg-primary: #12121a;
+      --bg-secondary: #1a1a2e;
+      --bg-tertiary: #16213e;
+      --accent: #e94560;
+      --accent-hover: #ff6b81;
+      --text-primary: #eaeaea;
+      --text-secondary: #a0a0a0;
+      --border: #2a2a4e;
+      --success: #2ecc71;
+    }
+
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      font-family: 'Segoe UI', Tahoma, sans-serif;
+      background: var(--bg-primary);
+      color: var(--text-primary);
+      height: 100vh;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+    }
+
+    header {
+      background: var(--bg-tertiary);
+      border-bottom: 1px solid var(--border);
+      padding: 10px 20px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    h1 { font-size: 18px; color: var(--accent); }
+    h1 span { color: var(--text-secondary); font-size: 12px; }
+
+    .toolbar {
+      display: flex;
+      gap: 8px;
+      background: var(--bg-secondary);
+      padding: 8px 20px;
+      border-bottom: 1px solid var(--border);
+      align-items: center;
+      flex-wrap: wrap;
+    }
+
+    button, select {
+      background: var(--bg-tertiary);
+      color: var(--text-primary);
+      border: 1px solid var(--border);
+      padding: 6px 12px;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 13px;
+      transition: 0.2s;
+    }
+
+    button:hover, select:hover {
+      background: var(--border);
+      border-color: var(--accent);
+    }
+
+    .btn-save { background: var(--success); border: none; color: white; font-weight: bold; }
+    .btn-save:hover { background: #27ae60; }
+
+    .main-container {
+      display: flex;
+      flex: 1;
+      overflow: hidden;
+    }
+
+    sidebar {
+      width: 280px;
+      background: var(--bg-secondary);
+      border-right: 1px solid var(--border);
+      display: flex;
+      flex-direction: column;
+    }
+
+    .sidebar-header {
+      padding: 12px;
+      font-weight: bold;
+      border-bottom: 1px solid var(--border);
+      font-size: 14px;
+      background: var(--bg-tertiary);
+    }
+
+    .chapters-list {
+      flex: 1;
+      overflow-y: auto;
+      padding: 8px;
+    }
+
+    .chapter-item {
+      padding: 10px;
+      border-radius: 4px;
+      cursor: pointer;
+      margin-bottom: 4px;
+      font-size: 13px;
+      transition: 0.15s;
+    }
+
+    .chapter-item:hover { background: var(--border); }
+    .chapter-item.active { background: var(--bg-tertiary); border-left: 3px solid var(--accent); }
+
+    .editor-area {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      background: var(--bg-primary);
+      overflow-y: auto;
+      padding: 40px;
+    }
+
+    #editorContent {
+      max-width: 800px;
+      margin: 0 auto;
+      width: 100%;
+      min-height: 100%;
+      background: var(--bg-secondary);
+      padding: 40px;
+      border-radius: 6px;
+      border: 1px solid var(--border);
+      outline: none;
+      font-family: 'Times New Roman', serif;
+      font-size: 16px;
+      line-height: 1.6;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+    }
+
+    #editorContent p {
+      margin-bottom: 1em;
+    }
+
+    .status-bar {
+      background: var(--bg-tertiary);
+      border-top: 1px solid var(--border);
+      padding: 6px 20px;
+      font-size: 12px;
+      color: var(--text-secondary);
+      display: flex;
+      justify-content: space-between;
+    }
+  </style>
+</head>
+<body>
+
+  <header>
+    <h1>ÚLTIMA MEMÓRIA <span>GraphZO Engine v4.0</span></h1>
+    <div>
+      <button onclick="configurarGitHub()">⚙️ Configurar GitHub</button>
+      <button class="btn-save" onclick="salvarNoGitHub()">☁️ Salvar no GitHub (Push)</button>
+    </div>
+  </header>
+
+  <div class="toolbar">
+    <button onclick="formatar('bold')"><b>B</b></button>
+    <button onclick="formatar('italic')"><i>I</i></button>
+    <button onclick="formatar('underline')"><u>U</u></button>
+    <select onchange="mudarFonte(this.value)">
+      <option value="Times New Roman">Times New Roman</option>
+      <option value="Arial">Arial</option>
+      <option value="Georgia">Georgia</option>
+      <option value="Courier New">Courier New</option>
+    </select>
+    <button onclick="inserirParagrafoID()">➕ Novo Parágrafo Rastreável</button>
+  </div>
+
+  <div class="main-container">
+    <sidebar>
+      <div class="sidebar-header">📑 Estrutura da História</div>
+      <div class="chapters-list" id="chaptersList">
+        <div class="chapter-item active" onclick="carregarCapitulo('cap_1')">Capítulo 1: O Despertar</div>
+        <div class="chapter-item" onclick="carregarCapitulo('cap_2')">Capítulo 2: Ruínas de Neon</div>
+      </div>
+    </sidebar>
+
+    <div class="editor-area">
+      <div id="editorContent" contenteditable="true" spellcheck="false">
+        <p id="cap_1_p1">Era uma vez <span style="font-family: Arial; font-size: 18px; color: #ffd700;">um reino esquecido</span> nas bordas da rede neural.</p>
+        <p id="cap_1_p2">Os dados fluíam como rios de luz fria e implacável.</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="status-bar">
+    <span id="statusText">Status: Pronto</span>
+    <span id="wordCount">Palavras: 0 | Parágrafos rastreáveis ativos</span>
+  </div>
+
+<script>
+  // Estado local da história estruturada em XHTML modular
+  let projetoLivro = {
+    "metadados": { "titulo": "Última Memória", "autor": "Autor" },
+    "capitulos": {
+      "cap_1": {
+        "titulo": "Capítulo 1: O Despertar",
+        "conteudo_xhtml": '<p id="cap_1_p1">Era uma vez <span style="font-family: Arial; font-size: 18px; color: #ffd700;">um reino esquecido</span> nas bordas da rede neural.</p><p id="cap_1_p2">Os dados fluíam como rios de luz fria e implacável.</p>'
+      },
+      "cap_2": {
+        "titulo": "Capítulo 2: Ruínas de Neon",
+        "conteudo_xhtml": '<p id="cap_2_p1">As torres oscilavam sob o vento digital.</p>'
+      }
+    }
+  };
+
+  let capituloAtual = "cap_1";
+
+  function formatar(cmd) {
+    document.execCommand(cmd, false, null);
+  }
+
+  function mudarFonte(fonte) {
+    const selecao = window.getSelection();
+    if (!selecao.rangeCount) return;
+    const span = document.createElement("span");
+    span.style.fontFamily = fonte;
+    span.appendChild(selecao.getRangeAt(0).extractContents());
+    selecao.getRangeAt(0).insertNode(span);
+  }
+
+  function inserirParagrafoID() {
+    const editor = document.getElementById("editorContent");
+    const pId = `${capituloAtual}_p_${Date.now()}`;
+    const p = document.createElement("p");
+    p.id = pId;
+    p.innerHTML = "Novo parágrafo rastreável...";
+    editor.appendChild(p);
+  }
+
+  function carregarCapitulo(capId) {
+    // Salva o atual antes de trocar
+    projetoLivro.capitulos[capituloAtual].conteudo_xhtml = document.getElementById("editorContent").innerHTML;
+    
+    capituloAtual = capId;
+    document.getElementById("editorContent").innerHTML = projetoLivro.capitulos[capId].conteudo_xhtml;
+    
+    // Atualiza UI da lista
+    document.querySelectorAll('.chapter-item').forEach(el => el.classList.remove('active'));
+    event.currentTarget.classList.add('active');
+    document.getElementById("statusText").innerText = `Carregado: ${capId}`;
+  }
+
+  function configurarGitHub() {
+    const repo = prompt("Informe seu repositório (ex: andreyoldekamp-del/EditorUltimaMemoria):", localStorage.getItem("gh_repo") || "");
+    const token = prompt("Informe seu Personal Access Token do GitHub:", localStorage.getItem("gh_token") || "");
+    if (repo && token) {
+      localStorage.setItem("gh_repo", repo);
+      localStorage.setItem("gh_token", token);
+      alert("Configurações salvas com sucesso!");
+    }
+  }
+
+  async function salvarNoGitHub() {
+    // Atualiza o XHTML do capítulo atual antes do commit
+    projetoLivro.capitulos[capituloAtual].conteudo_xhtml = document.getElementById("editorContent").innerHTML;
+
+    const repo = localStorage.getItem("gh_repo");
+    const token = localStorage.getItem("gh_token");
+
+    if (!repo || !token) {
+      alert("Configure o repositório e o token do GitHub primeiro!");
+      configurarGitHub();
+      return;
+    }
+
+    document.getElementById("statusText").innerText = "Enviando para o GitHub...";
+
+    const caminhoArquivo = "historia.json";
+    const url = `https://api.github.com/repos/${repo}/contents/${caminhoArquivo}`;
+
+    try {
+      // 1. Pega o SHA atual do arquivo (necessário para update na API do GitHub)
+      let sha = "";
+      const getRes = await fetch(url, {
+        headers: { "Authorization": `token ${token}` }
+      });
+      if (getRes.ok) {
+        const fileData = await getRes.json();
+        sha = fileData.sha;
+      }
+
+      // 2. Prepara o conteúdo em Base64 UTF-8 seguro
+      const jsonString = JSON.stringify(projetoLivro, null, 2);
+      const contentBase64 = btoa(unescape(encodeURIComponent(jsonString)));
+
+      // 3. Faz o PUT (Commit)
+      const putRes = await fetch(url, {
+        method: "PUT",
+        headers: {
+          "Authorization": `token ${token}`,
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+          message: "Atualização automática da narrativa - Editor Última Memória",
+          content: contentBase64,
+          sha: sha ? sha : undefined
+        })
+      });
+
+      if (putRes.ok) {
+        document.getElementById("statusText").innerText = "Status: Salvo com sucesso no GitHub!";
+        alert("Commit realizado com sucesso no seu repositório!");
+      } else {
+        const err = await putRes.json();
+        alert("Erro ao salvar: " + err.message);
+        document.getElementById("statusText").innerText = "Status: Erro no salvamento";
+      }
+    } catch (e) {
+      console.error(e);
+      alert("Erro de conexão ao tentar salvar no GitHub.");
+      document.getElementById("statusText").innerText = "Status: Falha de conexão";
+    }
+  }
+
+  // Atualiza contador simples
+  document.getElementById("editorContent").addEventListener("input", () => {
+    const texto = document.getElementById("editorContent").innerText;
+    const palavras = texto.trim() ? texto.trim().split(/\s+/).length : 0;
+    document.getElementById("wordCount").innerText = `Palavras: ${palavras} | Parágrafos rastreáveis ativos`;
+  });
+</script>
+
+</body>
+</html>
