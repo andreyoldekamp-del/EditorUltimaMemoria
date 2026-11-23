@@ -294,7 +294,6 @@
       <div class="list-container" id="chaptersList"></div>
     </sidebar>
     <div class="editor-area">
-      <!-- EVENTO INPUT LIGADO DIRETAMENTE À DETECÇÃO -->
       <div id="editorContent" contenteditable="true" spellcheck="false" oninput="processarTextoDigitado(event)"></div>
     </div>
   </div>
@@ -405,7 +404,6 @@
   let capituloAtual = "cap_1";
   let characterSelecionadoId = null;
   let termoSelecionadoId = null;
-  let ultimaPalavraVerificada = "";
 
   function reconstruirIndices() {
     indicePersonagens.clear();
@@ -440,7 +438,9 @@
     }
   };
 
-  // MOTOR DE DETECÇÃO INSTANTÂNEA AO DIGITAR
+  // =====================================================================
+  // MOTOR DE DETECÇÃO INSTANTÂNEA AO DIGITAR (VERSÃO CORRIGIDA E ROBUSTA)
+  // =====================================================================
   function processarTextoDigitado(event) {
     salvarCapituloAtualNaMemoria();
     if (!document.getElementById("togglePopupAuto").checked) return;
@@ -449,18 +449,36 @@
     if (!sel.rangeCount) return;
 
     const range = sel.getRangeAt(0);
-    const node = range.startContainer;
+    let node = range.startContainer;
+    let offset = range.startOffset;
+
+    // CORREÇÃO: Se o cursor estiver em um nó de elemento (ex: <p> vazio ou início de bloco)
+    if (node.nodeType === Node.ELEMENT_NODE) {
+      if (node.firstChild && node.firstChild.nodeType === Node.TEXT_NODE) {
+        node = node.firstChild;
+        offset = 0; // Cursor no início do texto
+      } else {
+        return; // Elemento vazio, não há palavra para verificar ainda
+      }
+    }
+
     if (node.nodeType !== Node.TEXT_NODE) return;
 
-    const textoAteCursor = node.textContent.substring(0, range.startOffset);
+    const textoAteCursor = node.textContent.substring(0, offset);
     const palavras = textoAteCursor.trim().split(/\s+/);
     if (palavras.length === 0) return;
 
-    // Pega a última palavra digitada antes do cursor
+    // Pega a última palavra digitada antes do cursor e limpa pontuação
     const palavraCrua = palavras[palavras.length - 1];
     const palavraAtual = palavraCrua.replace(/[.,!?;:()"]/g, "").toLowerCase();
 
-    if (palavraAtual.length < 2) return;
+    if (palavraAtual.length < 2) {
+      fecharPopup(); // Fecha o popup se a palavra for muito curta ou apagada
+      return;
+    }
+
+    // DEBUG: Aperte F12 no navegador para ver esta mensagem e confirmar que a detecção funciona
+    console.log("Verificando palavra:", palavraAtual);
 
     // 1. Verifica nos Personagens
     if (indicePersonagens.has(palavraAtual)) {
@@ -475,6 +493,9 @@
       mostrarPopup("DICIONÁRIO", t.termo, `Categoria: ${t.categoria || 'Geral'}`, t.definicao || "Sem definição.");
       return;
     }
+    
+    // Se não encontrou nada e o popup estava aberto, fecha ele
+    fecharPopup();
   }
 
   function mostrarPopup(tipo, palavra, subtitulo, significadoHtml) {
@@ -725,6 +746,7 @@
   }
 
   function formatar(cmd) { document.execCommand(cmd, false, null); salvarCapituloAtualNaMemoria(); }
+  
   function mudarFonte(fonte) {
     const sel = window.getSelection();
     if (!sel.rangeCount) return;
@@ -734,6 +756,7 @@
     sel.getRangeAt(0).insertNode(span);
     salvarCapituloAtualNaMemoria();
   }
+  
   function inserirParagrafoID() {
     const ed = document.getElementById("editorContent");
     const p = document.createElement("p");
@@ -785,6 +808,9 @@
     } catch (e) { alert("Erro de conexão."); }
   }
 
+  // =====================================================================
+  // CARREGAMENTO DO GITHUB (COM PROTEÇÃO CONTRA DADOS VAZIOS)
+  // =====================================================================
   async function puxarDoGitHub(silencioso = false) {
     const repo = localStorage.getItem("gh_repo") || "andreyoldekamp-del/EditorUltimaMemoria";
     const token = localStorage.getItem("gh_token");
@@ -798,15 +824,23 @@
         const carregado = JSON.parse(decodeURIComponent(escape(atob(data.content))));
         projetoLivro.metadados = carregado.metadados || projetoLivro.metadados;
         projetoLivro.capitulos = carregado.capitulos || projetoLivro.capitulos;
-        projetoLivro.personagens = carregado.personagens || [];
-        if (carregado.dicionario) projetoLivro.dicionario = carregado.dicionario;
+        
+        // CORREÇÃO: Só sobrescreve se os dados do GitHub forem válidos e não estiverem vazios
+        if (carregado.personagens && carregado.personagens.length > 0) {
+          projetoLivro.personagens = carregado.personagens;
+        }
+        if (carregado.dicionario && carregado.dicionario.length > 0) {
+          projetoLivro.dicionario = carregado.dicionario;
+        }
         
         reconstruirIndices();
         renderizarListaCapitulos();
         carregarCapituloNaTela(Object.keys(projetoLivro.capitulos)[0]);
-        if(!silencioso) alert("Dados carregados!");
+        if(!silencioso) alert("Dados carregados com segurança!");
       }
-    } catch(e) {}
+    } catch(e) {
+      console.error("Erro ao puxar do GitHub:", e);
+    }
   }
 
   async function listarCommitsGitHub(silencioso = false) {
