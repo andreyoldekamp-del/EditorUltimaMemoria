@@ -3,18 +3,18 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>GraphZO // ÚLTIMA MEMÓRIA [NEON V5]</title>
+  <title>GraphZO // ÚLTIMA MEMÓRIA [NEON V6 - DEBUG]</title>
   <style>
     :root {
       --bg-base: #030712;
       --bg-panel: #0b0f19;
       --bg-card: #111827;
       --accent-cyan: #06b6d4;
-      --accent-hover: #22d3ee;
       --text-main: #f3f4f6;
       --text-muted: #9ca3af;
       --border-neon: #1e3a8a;
       --success: #10b981;
+      --danger: #ef4444;
       --warning: #f59e0b;
     }
 
@@ -37,10 +37,9 @@
       display: flex;
       justify-content: space-between;
       align-items: center;
-      box-shadow: 0 0 15px rgba(6, 182, 212, 0.2);
     }
 
-    h1 { font-size: 18px; color: var(--accent-cyan); letter-spacing: 2px; }
+    h1 { font-size: 16px; color: var(--accent-cyan); letter-spacing: 1px; }
     h1 span { color: var(--text-muted); font-size: 11px; }
 
     .nav-bar {
@@ -48,7 +47,7 @@
       padding: 8px 24px;
       border-bottom: 1px solid var(--border-neon);
       display: flex;
-      gap: 12px;
+      gap: 10px;
       align-items: center;
       flex-wrap: wrap;
     }
@@ -67,10 +66,10 @@
       background: var(--bg-base);
       color: var(--accent-cyan);
       border: 1px solid var(--accent-cyan);
-      padding: 6px 14px;
+      padding: 6px 12px;
       border-radius: 2px;
       cursor: pointer;
-      font-size: 12px;
+      font-size: 11px;
       font-weight: bold;
       transition: 0.2s;
     }
@@ -78,14 +77,13 @@
     button:hover, select:hover {
       background: var(--accent-cyan);
       color: var(--bg-base);
-      box-shadow: 0 0 10px var(--accent-cyan);
     }
 
     .btn-save { background: var(--success); border-color: var(--success); color: white; }
-    .btn-save:hover { background: #059669; color: white; box-shadow: 0 0 10px var(--success); }
-    
-    .btn-history { background: var(--warning); border-color: var(--warning); color: #030712; }
-    .btn-history:hover { background: #d97706; color: white; box-shadow: 0 0 10px var(--warning); }
+    .btn-save:hover { background: #059669; }
+
+    .btn-danger { background: var(--danger); border-color: var(--danger); color: white; }
+    .btn-danger:hover { background: #dc2626; }
 
     .main-container {
       display: flex;
@@ -94,7 +92,7 @@
     }
 
     sidebar {
-      width: 300px;
+      width: 280px;
       background: var(--bg-panel);
       border-right: 1px solid var(--border-neon);
       display: flex;
@@ -102,10 +100,10 @@
     }
 
     .sidebar-header {
-      padding: 12px;
+      padding: 10px;
       font-weight: bold;
       border-bottom: 1px solid var(--border-neon);
-      font-size: 13px;
+      font-size: 12px;
       color: var(--accent-cyan);
       background: var(--bg-card);
       display: flex;
@@ -120,13 +118,12 @@
     }
 
     .item-card {
-      padding: 10px;
+      padding: 8px;
       border-radius: 3px;
       cursor: pointer;
-      margin-bottom: 6px;
-      font-size: 12px;
+      margin-bottom: 4px;
+      font-size: 11px;
       border: 1px solid transparent;
-      transition: 0.15s;
       background: var(--bg-card);
     }
 
@@ -139,23 +136,22 @@
       flex-direction: column;
       background: var(--bg-base);
       overflow-y: auto;
-      padding: 40px;
+      padding: 30px;
     }
 
     #editorContent {
-      max-width: 850px;
+      max-width: 800px;
       margin: 0 auto;
       width: 100%;
       min-height: 100%;
       background: var(--bg-card);
-      padding: 40px;
+      padding: 30px;
       border-radius: 4px;
       border: 1px solid var(--border-neon);
       outline: none;
       font-family: 'Times New Roman', serif;
-      font-size: 16px;
+      font-size: 15px;
       line-height: 1.6;
-      box-shadow: 0 0 25px rgba(0,0,0,0.8);
     }
 
     #editorContent p { margin-bottom: 1em; }
@@ -174,23 +170,22 @@
 <body>
 
   <header>
-    <h1>SYS_GRAPHZO // <span>NEON V5 [ULTIMA MEMORIA]</span></h1>
+    <h1>SYS_GRAPHZO // <span>NEON V6 [DEBUG API]</span></h1>
     <div>
       <button onclick="configurarGitHub()">⚙️ Configurar</button>
-      <button onclick="puxarDoGitHub()">📥 Carregar Atual</button>
-      <button class="btn-save" onclick="salvarNoGitHub()">☁️ Salvar (Push)</button>
+      <button onclick="puxarDoGitHub()">📥 Carregar Dados</button>
+      <button class="btn-save" onclick="salvarNoGitHub()">☁️ Salvar (Push com Debug)</button>
     </div>
   </header>
 
   <div class="nav-bar">
     <button onclick="mudarAba('editor')">📂 01. Editor</button>
     <button onclick="mudarAba('personagens')">👤 02. Personagens</button>
-    <div style="margin-left: auto; display: flex; gap: 8px; align-items: center;">
-      <select id="selectCommits" style="max-width: 250px;">
-        <option value="">-- Clique em Listar Histórico --</option>
-      </select>
-      <button class="btn-history" onclick="listarCommitsGitHub()">📜 Listar Versões Git</button>
-      <button onclick="carregarVersaoSelecionada()">📥 Baixar Versão Escolhida</button>
+    <button class="btn-danger" onclick="criarArquivoInicialManual()">🛠️ Forçar Criação do historia.json</button>
+    <div style="margin-left: auto; display: flex; gap: 6px; align-items: center;">
+      <select id="selectCommits" style="max-width: 200px;"><option value="">-- Versões Git --</option></select>
+      <button onclick="listarCommitsGitHub()">📜 Listar Versões</button>
+      <button onclick="carregarVersaoSelecionada()">📥 Baixar Versão</button>
     </div>
   </div>
 
@@ -204,16 +199,15 @@
       <option value="Georgia">Georgia</option>
       <option value="Courier New">Courier New</option>
     </select>
-    <button onclick="inserirParagrafoID()">➕ Novo Parágrafo Rastreável</button>
+    <button onclick="inserirParagrafoID()">➕ Novo Parágrafo</button>
   </div>
 
-  <!-- ABA 1: EDITOR DE CAPÍTULOS -->
+  <!-- ABA 1: EDITOR -->
   <div class="main-container" id="containerEditor">
     <sidebar>
-      <div class="sidebar-header">📑 CAPÍTULOS ATIVOS</div>
+      <div class="sidebar-header">📑 CAPÍTULOS</div>
       <div class="list-container" id="chaptersList"></div>
     </sidebar>
-
     <div class="editor-area">
       <div id="editorContent" contenteditable="true" spellcheck="false"></div>
     </div>
@@ -223,34 +217,22 @@
   <div class="main-container" id="painelPersonagens" style="display: none;">
     <sidebar>
       <div class="sidebar-header">
-        <span>👤 ELENCO CADASTRADO</span>
-        <button onclick="criarNovoPersonagem()" style="padding: 2px 8px;">+ NOVO</button>
+        <span>👤 ELENCO</span>
+        <button onclick="criarNovoPersonagem()">+ NOVO</button>
       </div>
       <div class="list-container" id="listaPersonagens"></div>
     </sidebar>
-
-    <div style="flex: 1; padding: 40px; overflow-y: auto; background: var(--bg-base);">
-      <div style="max-width: 750px; margin: 0 auto; background: var(--bg-card); padding: 30px; border-radius: 4px; border: 1px solid var(--border-neon);">
-        <div style="display: flex; gap: 20px; margin-bottom: 20px;">
-          <div style="width: 140px; height: 140px; background: var(--bg-base); border: 1px solid var(--accent-cyan); border-radius: 4px; overflow: hidden; display: flex; align-items: center; justify-content: center; flex-direction: column;">
-            <img id="charAvatarPreview" src="" style="width: 100%; height: 100%; object-fit: cover; display: none;">
-            <input type="file" id="charImageInput" accept="image/*" style="display: none;" onchange="carregarImagemPersonagem(event)">
-            <button onclick="document.getElementById('charImageInput').click()" style="font-size: 10px; margin-top: 5px;">📷 FOTO</button>
-          </div>
-          <div style="flex: 1; display: flex; flex-direction: column; gap: 10px;">
-            <input type="text" id="charNome" placeholder="Nome do Personagem" onchange="atualizarPersonagemAtual()" style="padding: 8px; background: var(--bg-base); color: white; border: 1px solid var(--accent-cyan); border-radius: 2px;">
-            <input type="text" id="charPapel" placeholder="Papel na História" onchange="atualizarPersonagemAtual()" style="padding: 8px; background: var(--bg-base); color: white; border: 1px solid var(--accent-cyan); border-radius: 2px;">
-            <input type="text" id="charTags" placeholder="Tags (separadas por vírgula)" onchange="atualizarPersonagemAtual()" style="padding: 8px; background: var(--bg-base); color: white; border: 1px solid var(--accent-cyan); border-radius: 2px;">
-          </div>
-        </div>
-        <label style="font-size: 12px; color: var(--accent-cyan);">BIOGRAFIA / XHTML DO PERSONAGEM:</label>
-        <div id="charBiografia" contenteditable="true" onblur="atualizarPersonagemAtual()" style="min-height: 200px; background: var(--bg-base); border: 1px solid var(--border-neon); padding: 15px; margin-top: 8px; border-radius: 2px; outline: none;"></div>
+    <div style="flex: 1; padding: 30px; overflow-y: auto; background: var(--bg-base);">
+      <div style="max-width: 700px; margin: 0 auto; background: var(--bg-card); padding: 25px; border-radius: 4px; border: 1px solid var(--border-neon);">
+        <input type="text" id="charNome" placeholder="Nome" onchange="atualizarPersonagemAtual()" style="width:100%; padding:8px; margin-bottom:10px; background:var(--bg-base); color:white; border:1px solid var(--accent-cyan);">
+        <input type="text" id="charPapel" placeholder="Papel" onchange="atualizarPersonagemAtual()" style="width:100%; padding:8px; margin-bottom:10px; background:var(--bg-base); color:white; border:1px solid var(--accent-cyan);">
+        <div id="charBiografia" contenteditable="true" onblur="atualizarPersonagemAtual()" style="min-height: 150px; background: var(--bg-base); border: 1px solid var(--border-neon); padding: 10px; outline: none;"></div>
       </div>
     </div>
   </div>
 
   <div class="status-bar">
-    <span id="statusText">STATUS: SISTEMA PRONTO</span>
+    <span id="statusText">STATUS: PRONTO</span>
     <span id="wordCount">PALAVRAS: 0</span>
   </div>
 
@@ -258,10 +240,7 @@
   let projetoLivro = {
     "metadados": { "titulo": "Última Memória", "autor": "Autor" },
     "capitulos": {
-      "cap_1": {
-        "titulo": "Capítulo 1: O Despertar",
-        "conteudo_xhtml": '<p id="cap_1_p1">Carregue seus dados da nuvem...</p>'
-      }
+      "cap_1": { "titulo": "Capítulo 1", "conteudo_xhtml": '<p id="cap_1_p1">Iniciando editor Neon V6...</p>' }
     },
     "personagens": []
   };
@@ -324,24 +303,14 @@
     projetoLivro.personagens.forEach(p => {
       const item = document.createElement('div');
       item.className = 'item-card' + (p.id === characterSelecionadoId ? ' active' : '');
-      item.innerHTML = `<strong>${p.nome || 'Sem nome'}</strong><br><small style="color:var(--text-muted)">${p.papel || 'Sem papel'}</small>`;
+      item.innerHTML = `<strong>${p.nome || 'Sem nome'}</strong>`;
       item.onclick = () => selecionarPersonagem(p.id);
       lista.appendChild(item);
     });
-    if (projetoLivro.personagens.length > 0 && !characterSelecionadoId) {
-      selecionarPersonagem(projetoLivro.personagens[0].id);
-    }
   }
 
   function criarNovoPersonagem() {
-    const novo = {
-      id: 'char_' + Date.now(),
-      nome: 'Novo Personagem',
-      papel: 'Secundário',
-      caracteristicas: [],
-      imagemUrl: '',
-      biografia_xhtml: '<p>Biografia...</p>'
-    };
+    const novo = { id: 'char_' + Date.now(), nome: 'Novo Personagem', biografia_xhtml: '<p>bio...</p>' };
     if (!projetoLivro.personagens) projetoLivro.personagens = [];
     projetoLivro.personagens.push(novo);
     renderizarListaPersonagens();
@@ -352,19 +321,9 @@
     characterSelecionadoId = id;
     const p = projetoLivro.personagens.find(item => item.id === id);
     if (!p) return;
-
     document.getElementById('charNome').value = p.nome || '';
     document.getElementById('charPapel').value = p.papel || '';
-    document.getElementById('charTags').value = (p.caracteristicas || []).join(', ');
     document.getElementById('charBiografia').innerHTML = p.biografia_xhtml || '';
-
-    const imgPreview = document.getElementById('charAvatarPreview');
-    if (p.imagemUrl) {
-      imgPreview.src = p.imagemUrl;
-      imgPreview.style.display = 'block';
-    } else {
-      imgPreview.style.display = 'none';
-    }
     renderizarListaPersonagens();
   }
 
@@ -373,63 +332,25 @@
     if (!p) return;
     p.nome = document.getElementById('charNome').value;
     p.papel = document.getElementById('charPapel').value;
-    p.caracteristicas = document.getElementById('charTags').value.split(',').map(s => s.trim()).filter(Boolean);
     p.biografia_xhtml = document.getElementById('charBiografia').innerHTML;
     renderizarListaPersonagens();
   }
 
-  async function carregarImagemPersonagem(event) {
-    const file = event.target.files[0];
-    if (!file || !characterSelecionadoId) return;
-
-    const repo = localStorage.getItem("gh_repo");
-    const token = localStorage.getItem("gh_token");
-    if (!repo || !token) { alert("Configure o GitHub primeiro!"); return; }
-
-    const reader = new FileReader();
-    reader.onload = async function(e) {
-      const base64Content = e.target.result.split(',')[1];
-      const fileName = `assets/${characterSelecionadoId}_${file.name.replace(/\s+/g, '_')}`;
-      const url = `https://api.github.com/repos/${repo}/contents/${fileName}`;
-
-      document.getElementById("statusText").innerText = "STATUS: ENVIANDO IMAGEM...";
-      const res = await fetch(url, {
-        method: "PUT",
-        headers: { "Authorization": `token ${token}`, "Content-Type": "application/json" },
-        body: JSON.stringify({ message: `Upload avatar ${characterSelecionadoId}`, content: base64Content })
-      });
-
-      if (res.ok) {
-        const rawUrl = `https://raw.githubusercontent.com/${repo}/main/${fileName}`;
-        const p = projetoLivro.personagens.find(item => item.id === characterSelecionadoId);
-        p.imagemUrl = rawUrl;
-        selecionarPersonagem(characterSelecionadoId);
-        document.getElementById("statusText").innerText = "STATUS: IMAGEM SALVA!";
-      } else {
-        alert("Erro ao enviar imagem.");
-      }
-    };
-    reader.readAsDataURL(file);
-  }
-
   function formatar(cmd) { document.execCommand(cmd, false, null); }
-
   function mudarFonte(fonte) {
-    const selecao = window.getSelection();
-    if (!selecao.rangeCount) return;
+    const sel = window.getSelection();
+    if (!sel.rangeCount) return;
     const span = document.createElement("span");
     span.style.fontFamily = fonte;
-    span.appendChild(selecao.getRangeAt(0).extractContents());
-    selecao.getRangeAt(0).insertNode(span);
+    span.appendChild(sel.getRangeAt(0).extractContents());
+    sel.getRangeAt(0).insertNode(span);
   }
-
   function inserirParagrafoID() {
-    const editor = document.getElementById("editorContent");
-    const pId = `${capituloAtual}_p_${Date.now()}`;
+    const ed = document.getElementById("editorContent");
     const p = document.createElement("p");
-    p.id = pId;
-    p.innerHTML = "Novo parágrafo rastreável...";
-    editor.appendChild(p);
+    p.id = `${capituloAtual}_p_${Date.now()}`;
+    p.innerHTML = "Novo parágrafo...";
+    ed.appendChild(p);
   }
 
   function configurarGitHub() {
@@ -439,107 +360,41 @@
       localStorage.setItem("gh_repo", repo);
       localStorage.setItem("gh_token", token);
       alert("Configurações salvas!");
-      puxarDoGitHub();
     }
   }
 
-  // LISTA OS COMMITS DO HISTÓRICO DO GITHUB
-  async function listarCommitsGitHub() {
+  // BOTÃO ESPECIAL PARA FORÇAR A CRIAÇÃO DO HISTORIA.JSON NA MARRA
+  async function criarArquivoInicialManual() {
     const repo = localStorage.getItem("gh_repo");
     const token = localStorage.getItem("gh_token");
-    if (!repo || !token) { alert("Configure o GitHub primeiro!"); return; }
+    if (!repo || !token) { alert("Configure o GitHub primeiro!"); configurarGitHub(); return; }
 
-    document.getElementById("statusText").innerText = "STATUS: BUSCANDO HISTÓRICO DE VERSÕES...";
-    const url = `https://api.github.com/repos/${repo}/commits?path=historia.json`;
-
-    try {
-      const res = await fetch(url, { headers: { "Authorization": `token ${token}` } });
-      if (res.ok) {
-        const commits = await res.json();
-        const select = document.getElementById("selectCommits");
-        select.innerHTML = '';
-        
-        commits.forEach(c => {
-          const opt = document.createElement("option");
-          opt.value = c.sha;
-          const dataFormatada = new Date(c.commit.author.date).toLocaleString();
-          opt.textContent = `${c.commit.message.substring(0, 35)} (${dataFormatada})`;
-          select.appendChild(opt);
-        });
-
-        document.getElementById("statusText").innerText = `STATUS: ${commits.length} VERSÕES ENCONTRADAS`;
-        alert("Versões listadas no menu superior com sucesso!");
-      } else {
-        alert("Nenhum histórico encontrado para historia.json.");
-      }
-    } catch(e) {
-      console.error(e);
-      alert("Erro ao buscar histórico.");
-    }
-  }
-
-  // BAIXA A VERSÃO ESCOLHIDA NO SELECT DO COMMIT
-  async function carregarVersaoSelecionada() {
-    const repo = localStorage.getItem("gh_repo");
-    const token = localStorage.getItem("gh_token");
-    const sha = document.getElementById("selectCommits").value;
-
-    if (!repo || !token || !sha) { alert("Selecione uma versão válida no menu ao lado!"); return; }
-
-    document.getElementById("statusText").innerText = "STATUS: BAIXANDO VERSÃO HISTÓRICA...";
-    const url = `https://api.github.com/repos/${repo}/contents/historia.json?ref=${sha}`;
-
-    try {
-      const res = await fetch(url, { headers: { "Authorization": `token ${token}` } });
-      if (res.ok) {
-        const fileData = await res.json();
-        const jsonString = decodeURIComponent(escape(atob(fileData.content)));
-        projetoLivro = JSON.parse(jsonString);
-        if(!projetoLivro.personagens) projetoLivro.personagens = [];
-
-        renderizarListaCapitulos();
-        const primeiroCap = Object.keys(projetoLivro.capitulos)[0];
-        if(primeiroCap) carregarCapituloNaTela(primeiroCap);
-        
-        alert("Versão histórica carregada com sucesso na tela!");
-        document.getElementById("statusText").innerText = "STATUS: VERSÃO HISTÓRICA CARREGADA";
-      } else {
-        alert("Erro ao baixar o arquivo desta versão.");
-      }
-    } catch(e) {
-      console.error(e);
-      alert("Erro ao processar versão.");
-    }
-  }
-
-  async function puxarDoGitHub(silencioso = false) {
-    const repo = localStorage.getItem("gh_repo");
-    const token = localStorage.getItem("gh_token");
-    if (!repo || !token) { if(!silencioso) alert("Configure o GitHub primeiro!"); return; }
-
-    if(!silencioso) document.getElementById("statusText").innerText = "STATUS: CARREGANDO...";
+    document.getElementById("statusText").innerText = "STATUS: CRIANDO ARQUIVO INICIAL...";
     const url = `https://api.github.com/repos/${repo}/contents/historia.json`;
 
-    try {
-      const res = await fetch(url, { headers: { "Authorization": `token ${token}` } });
-      if (res.ok) {
-        const fileData = await res.json();
-        const jsonString = decodeURIComponent(escape(atob(fileData.content)));
-        projetoLivro = JSON.parse(jsonString);
-        if(!projetoLivro.personagens) projetoLivro.personagens = [];
+    const jsonString = JSON.stringify(projetoLivro, null, 2);
+    const contentBase64 = btoa(unescape(encodeURIComponent(jsonString)));
 
-        renderizarListaCapitulos();
-        const primeiroCap = Object.keys(projetoLivro.capitulos)[0];
-        if(primeiroCap) carregarCapituloNaTela(primeiroCap);
-        
-        if(!silencioso) alert("Versão atual carregada com sucesso!");
-        document.getElementById("statusText").innerText = "STATUS: SINCRONIZADO";
+    try {
+      const res = await fetch(url, {
+        method: "PUT",
+        headers: { "Authorization": `token ${token}`, "Content-Type": "application/json" },
+        body: JSON.stringify({
+          message: "Criação inicial manual do historia.json",
+          content: contentBase64
+        })
+      });
+
+      const data = await res.json();
+      if (res.ok) {
+        alert("Sucesso! O arquivo historia.json foi criado na nuvem.");
+        document.getElementById("statusText").innerText = "STATUS: ARQUIVO CRIADO COM SUCESSO";
       } else {
-        if(!silencioso) alert("Arquivo historia.json não encontrado.");
+        alert("ERRO DA API DO GITHUB:\nStatus: " + res.status + "\nMensagem: " + data.message);
+        document.getElementById("statusText").innerText = "STATUS: ERRO AO CRIAR ARQUIVO";
       }
     } catch(e) {
-      console.error(e);
-      if(!silencioso) alert("Erro ao carregar.");
+      alert("Erro de rede: " + e.message);
     }
   }
 
@@ -547,10 +402,9 @@
     salvarCapituloAtualNaMemoria();
     const repo = localStorage.getItem("gh_repo");
     const token = localStorage.getItem("gh_token");
-
     if (!repo || !token) { alert("Configure o GitHub primeiro!"); configurarGitHub(); return; }
 
-    document.getElementById("statusText").innerText = "STATUS: SALVANDO...";
+    document.getElementById("statusText").innerText = "STATUS: VERIFICANDO ARQUIVO...";
     const url = `https://api.github.com/repos/${repo}/contents/historia.json`;
 
     try {
@@ -564,35 +418,112 @@
       const jsonString = JSON.stringify(projetoLivro, null, 2);
       const contentBase64 = btoa(unescape(encodeURIComponent(jsonString)));
 
+      document.getElementById("statusText").innerText = "STATUS: ENVIANDO PARA O GITHUB...";
       const putRes = await fetch(url, {
         method: "PUT",
         headers: { "Authorization": `token ${token}`, "Content-Type": "application/json" },
         body: JSON.stringify({
-          message: "Commit via Editor Neon V5",
+          message: "Atualização via Neon V6",
           content: contentBase64,
           sha: sha ? sha : undefined
         })
       });
 
+      const responseData = await putRes.json();
+
       if (putRes.ok) {
-        document.getElementById("statusText").innerText = "STATUS: SALVO COM SUCESSO!";
         alert("Salvo com sucesso na nuvem!");
+        document.getElementById("statusText").innerText = "STATUS: SALVO COM SUCESSO";
       } else {
-        const err = await putRes.json();
-        alert("Erro ao salvar: " + err.message);
+        // EXIBE O ERRO EXATO DA API NA TELA PARA VOCÊ VER
+        alert("ERRO DA API DO GITHUB:\nStatus: " + putRes.status + "\nMensagem: " + responseData.message);
+        document.getElementById("statusText").innerText = "STATUS: ERRO " + putRes.status;
       }
     } catch (e) {
-      console.error(e);
-      alert("Erro de conexão.");
+      alert("Erro de conexão ao tentar salvar: " + e.message);
+    }
+  }
+
+  async function puxarDoGitHub(silencioso = false) {
+    const repo = localStorage.getItem("gh_repo");
+    const token = localStorage.getItem("gh_token");
+    if (!repo || !token) { if(!silencioso) alert("Configure o GitHub primeiro!"); return; }
+
+    const url = `https://api.github.com/repos/${repo}/contents/historia.json`;
+    try {
+      const res = await fetch(url, { headers: { "Authorization": `token ${token}` } });
+      const data = await res.json();
+      if (res.ok) {
+        const jsonString = decodeURIComponent(escape(atob(data.content)));
+        projetoLivro = JSON.parse(jsonString);
+        if(!projetoLivro.personagens) projetoLivro.personagens = [];
+        renderizarListaCapitulos();
+        carregarCapituloNaTela(Object.keys(projetoLivro.capitulos)[0]);
+        if(!silencioso) alert("Dados carregados com sucesso!");
+      } else {
+        if(!silencioso) alert("Erro ao carregar: " + data.message);
+      }
+    } catch(e) {
+      if(!silencioso) alert("Erro de conexão: " + e.message);
+    }
+  }
+
+  async function listarCommitsGitHub() {
+    const repo = localStorage.getItem("gh_repo");
+    const token = localStorage.getItem("gh_token");
+    if (!repo || !token) { alert("Configure o GitHub primeiro!"); return; }
+
+    const url = `https://api.github.com/repos/${repo}/commits?path=historia.json`;
+    try {
+      const res = await fetch(url, { headers: { "Authorization": `token ${token}` } });
+      const commits = await res.json();
+      if (res.ok && Array.isArray(commits)) {
+        const sel = document.getElementById("selectCommits");
+        sel.innerHTML = '';
+        commits.forEach(c => {
+          const opt = document.createElement("option");
+          opt.value = c.sha;
+          opt.textContent = `${c.commit.message.substring(0, 30)} (${new Date(c.commit.author.date).toLocaleDateString()})`;
+          sel.appendChild(opt);
+        });
+        alert(`${commits.length} versões listadas no menu!`);
+      } else {
+        alert("Nenhum histórico encontrado para historia.json.");
+      }
+    } catch(e) {
+      alert("Erro ao listar histórico.");
+    }
+  }
+
+  async function carregarVersaoSelecionada() {
+    const repo = localStorage.getItem("gh_repo");
+    const token = localStorage.getItem("gh_token");
+    const sha = document.getElementById("selectCommits").value;
+    if (!repo || !token || !sha) { alert("Selecione uma versão no menu!"); return; }
+
+    const url = `https://api.github.com/repos/${repo}/contents/historia.json?ref=${sha}`;
+    try {
+      const res = await fetch(url, { headers: { "Authorization": `token ${token}` } });
+      const data = await res.json();
+      if (res.ok) {
+        const jsonString = decodeURIComponent(escape(atob(data.content)));
+        projetoLivro = JSON.parse(jsonString);
+        if(!projetoLivro.personagens) projetoLivro.personagens = [];
+        renderizarListaCapitulos();
+        carregarCapituloNaTela(Object.keys(projetoLivro.capitulos)[0]);
+        alert("Versão histórica carregada!");
+      } else {
+        alert("Erro ao carregar versão: " + data.message);
+      }
+    } catch(e) {
+      alert("Erro ao processar versão.");
     }
   }
 
   function atualizarContador() {
     const texto = document.getElementById("editorContent").innerText;
-    const palavras = texto.trim() ? texto.trim().split(/\s+/).length : 0;
-    document.getElementById("wordCount").innerText = `PALAVRAS: ${palavras}`;
+    document.getElementById("wordCount").innerText = `PALAVRAS: ${texto.trim() ? texto.trim().split(/\s+/).length : 0}`;
   }
-
   document.getElementById("editorContent").addEventListener("input", atualizarContador);
 </script>
 
