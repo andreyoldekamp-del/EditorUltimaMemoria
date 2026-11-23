@@ -41,6 +41,14 @@
     h1 { font-size: 18px; color: var(--accent); }
     h1 span { color: var(--text-secondary); font-size: 12px; }
 
+    .tabs-nav {
+      background: var(--bg-secondary);
+      padding: 6px 20px;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      gap: 10px;
+    }
+
     .toolbar {
       display: flex;
       gap: 8px;
@@ -90,9 +98,12 @@
       border-bottom: 1px solid var(--border);
       font-size: 14px;
       background: var(--bg-tertiary);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
     }
 
-    .chapters-list {
+    .chapters-list, .characters-list {
       flex: 1;
       overflow-y: auto;
       padding: 8px;
@@ -135,9 +146,7 @@
       box-shadow: 0 4px 20px rgba(0,0,0,0.3);
     }
 
-    #editorContent p {
-      margin-bottom: 1em;
-    }
+    #editorContent p { margin-bottom: 1em; }
 
     .status-bar {
       background: var(--bg-tertiary);
@@ -160,7 +169,12 @@
     </div>
   </header>
 
-  <div class="toolbar">
+  <div class="tabs-nav">
+    <button onclick="mudarAba('editor')">📖 Editor de Capítulos</button>
+    <button onclick="mudarAba('personagens')">👥 Personagens</button>
+  </div>
+
+  <div class="toolbar" id="toolbarEditor">
     <button onclick="formatar('bold')"><b>B</b></button>
     <button onclick="formatar('italic')"><i>I</i></button>
     <button onclick="formatar('underline')"><u>U</u></button>
@@ -173,7 +187,8 @@
     <button onclick="inserirParagrafoID()">➕ Novo Parágrafo Rastreável</button>
   </div>
 
-  <div class="main-container">
+  <!-- ABA EDITOR DE CAPÍTULOS -->
+  <div class="main-container" id="containerEditor">
     <sidebar>
       <div class="sidebar-header">📑 Estrutura da História</div>
       <div class="chapters-list" id="chaptersList">
@@ -190,13 +205,42 @@
     </div>
   </div>
 
+  <!-- ABA PERSONAGENS (Oculta por padrão) -->
+  <div class="main-container" id="painelPersonagens" style="display: none;">
+    <sidebar>
+      <div class="sidebar-header">
+        <span>👥 Elenco</span>
+        <button onclick="criarNovoPersonagem()" style="background: var(--accent); border: none; padding: 4px 8px; color: white;">+ Novo</button>
+      </div>
+      <div class="characters-list" id="listaPersonagens"></div>
+    </sidebar>
+
+    <div style="flex: 1; padding: 40px; overflow-y: auto; background: var(--bg-primary);">
+      <div style="max-width: 700px; margin: 0 auto; background: var(--bg-secondary); padding: 30px; border-radius: 6px; border: 1px solid var(--border);">
+        <div style="display: flex; gap: 20px; margin-bottom: 20px;">
+          <div style="width: 140px; height: 140px; background: var(--bg-primary); border: 1px solid var(--border); border-radius: 6px; overflow: hidden; display: flex; align-items: center; justify-content: center; flex-direction: column;">
+            <img id="charAvatarPreview" src="" style="width: 100%; height: 100%; object-fit: cover; display: none;">
+            <input type="file" id="charImageInput" accept="image/*" style="display: none;" onchange="carregarImagemPersonagem(event)">
+            <button onclick="document.getElementById('charImageInput').click()" style="font-size: 11px; margin-top: 5px;">📷 Foto</button>
+          </div>
+          <div style="flex: 1; display: flex; flex-direction: column; gap: 10px;">
+            <input type="text" id="charNome" placeholder="Nome do Personagem" onchange="atualizarPersonagemAtual()" style="padding: 8px; background: var(--bg-primary); color: white; border: 1px solid var(--border); border-radius: 4px;">
+            <input type="text" id="charPapel" placeholder="Papel (ex: Protagonista)" onchange="atualizarPersonagemAtual()" style="padding: 8px; background: var(--bg-primary); color: white; border: 1px solid var(--border); border-radius: 4px;">
+            <input type="text" id="charTags" placeholder="Características (ex: Frio, Calculista)" onchange="atualizarPersonagemAtual()" style="padding: 8px; background: var(--bg-primary); color: white; border: 1px solid var(--border); border-radius: 4px;">
+          </div>
+        </div>
+        <label style="font-size: 13px; color: var(--text-secondary);">História e Notas do Personagem:</label>
+        <div id="charBiografia" contenteditable="true" onblur="atualizarPersonagemAtual()" style="min-height: 200px; background: var(--bg-primary); border: 1px solid var(--border); padding: 15px; margin-top: 8px; border-radius: 4px; outline: none;"></div>
+      </div>
+    </div>
+  </div>
+
   <div class="status-bar">
     <span id="statusText">Status: Pronto</span>
-    <span id="wordCount">Palavras: 0 | Parágrafos rastreáveis ativos</span>
+    <span id="wordCount">Palavras: 0 | Sistema Ativo</span>
   </div>
 
 <script>
-  // Estado local da história estruturada em XHTML modular
   let projetoLivro = {
     "metadados": { "titulo": "Última Memória", "autor": "Autor" },
     "capitulos": {
@@ -208,10 +252,133 @@
         "titulo": "Capítulo 2: Ruínas de Neon",
         "conteudo_xhtml": '<p id="cap_2_p1">As torres oscilavam sob o vento digital.</p>'
       }
-    }
+    },
+    "personagens": [
+      {
+        "id": "char_1",
+        "nome": "Kaelen Vance",
+        "papel": "Protagonista",
+        "caracteristicas": ["Analítico", "Hacker"],
+        "imagemUrl": "",
+        "biografia_xhtml": "<p>Ex-agente da rede neural...</p>"
+      }
+    ]
   };
 
   let capituloAtual = "cap_1";
+  let personagemSelecionadoId = "char_1";
+
+  function mudarAba(aba) {
+    document.getElementById('containerEditor').style.display = aba === 'editor' ? 'flex' : 'none';
+    document.getElementById('toolbarEditor').style.display = aba === 'editor' ? 'flex' : 'none';
+    document.getElementById('painelPersonagens').style.display = aba === 'personagens' ? 'flex' : 'none';
+    if (aba === 'personagens') renderizarListaPersonagens();
+  }
+
+  function renderizarListaPersonagens() {
+    const lista = document.getElementById('listaPersonagens');
+    lista.innerHTML = '';
+    projetoLivro.personagens.forEach(p => {
+      const item = document.createElement('div');
+      item.className = 'chapter-item' + (p.id === personagemSelecionadoId ? ' active' : '');
+      item.innerHTML = `<strong>${p.nome || 'Sem nome'}</strong><br><small style="color:var(--text-secondary)">${p.papel || 'Sem papel'}</small>`;
+      item.onclick = () => selecionarPersonagem(p.id);
+      lista.appendChild(item);
+    });
+    if (projetoLivro.personagens.length > 0 && !personagemSelecionadoId) {
+      selecionarPersonagem(projetoLivro.personagens[0].id);
+    } else if (personagemSelecionadoId) {
+      selecionarPersonagem(personagemSelecionadoId);
+    }
+  }
+
+  function criarNovoPersonagem() {
+    const novo = {
+      id: 'char_' + Date.now(),
+      nome: 'Novo Personagem',
+      papel: 'Secundário',
+      caracteristicas: [],
+      imagemUrl: '',
+      biografia_xhtml: '<p>Escreva a biografia...</p>'
+    };
+    projetoLivro.personagens.push(novo);
+    renderizarListaPersonagens();
+    selecionarPersonagem(novo.id);
+  }
+
+  function selecionarPersonagem(id) {
+    personagemSelecionadoId = id;
+    const p = projetoLivro.personagens.find(item => item.id === id);
+    if (!p) return;
+
+    document.getElementById('charNome').value = p.nome;
+    document.getElementById('charPapel').value = p.papel;
+    document.getElementById('charTags').value = p.caracteristicas.join(', ');
+    document.getElementById('charBiografia').innerHTML = p.biografia_xhtml;
+
+    const imgPreview = document.getElementById('charAvatarPreview');
+    if (p.imagemUrl) {
+      imgPreview.src = p.imagemUrl;
+      imgPreview.style.display = 'block';
+    } else {
+      imgPreview.style.display = 'none';
+    }
+    renderizarListaPersonagens();
+  }
+
+  function atualizarPersonagemAtual() {
+    const p = projetoLivro.personagens.find(item => item.id === personagemSelecionadoId);
+    if (!p) return;
+    p.nome = document.getElementById('charNome').value;
+    p.papel = document.getElementById('charPapel').value;
+    p.caracteristicas = document.getElementById('charTags').value.split(',').map(s => s.trim()).filter(Boolean);
+    p.biografia_xhtml = document.getElementById('charBiografia').innerHTML;
+    renderizarListaPersonagens();
+  }
+
+  async function carregarImagemPersonagem(event) {
+    const file = event.target.files[0];
+    if (!file || !personagemSelecionadoId) return;
+
+    const repo = localStorage.getItem("gh_repo");
+    const token = localStorage.getItem("gh_token");
+    if (!repo || !token) {
+      alert("Configure o GitHub primeiro clicando em 'Configurar GitHub' no topo.");
+      return;
+    }
+
+    const reader = new FileReader();
+    reader.onload = async function(e) {
+      const base64Content = e.target.result.split(',')[1];
+      const fileName = `assets/${personagemSelecionadoId}_${file.name.replace(/\s+/g, '_')}`;
+      const url = `https://api.github.com/repos/${repo}/contents/${fileName}`;
+
+      document.getElementById("statusText").innerText = "Enviando imagem para o GitHub...";
+
+      const res = await fetch(url, {
+        method: "PUT",
+        headers: {
+          "Authorization": `token ${token}`,
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+          message: `Upload avatar ${personagemSelecionadoId}`,
+          content: base64Content
+        })
+      });
+
+      if (res.ok) {
+        const rawUrl = `https://raw.githubusercontent.com/${repo}/main/${fileName}`;
+        const p = projetoLivro.personagens.find(item => item.id === personagemSelecionadoId);
+        p.imagemUrl = rawUrl;
+        selecionarPersonagem(personagemSelecionadoId);
+        document.getElementById("statusText").innerText = "Imagem salva com sucesso!";
+      } else {
+        alert("Erro ao enviar imagem para o GitHub.");
+      }
+    };
+    reader.readAsDataURL(file);
+  }
 
   function formatar(cmd) {
     document.execCommand(cmd, false, null);
@@ -236,13 +403,9 @@
   }
 
   function carregarCapitulo(capId) {
-    // Salva o atual antes de trocar
     projetoLivro.capitulos[capituloAtual].conteudo_xhtml = document.getElementById("editorContent").innerHTML;
-    
     capituloAtual = capId;
     document.getElementById("editorContent").innerHTML = projetoLivro.capitulos[capId].conteudo_xhtml;
-    
-    // Atualiza UI da lista
     document.querySelectorAll('.chapter-item').forEach(el => el.classList.remove('active'));
     event.currentTarget.classList.add('active');
     document.getElementById("statusText").innerText = `Carregado: ${capId}`;
@@ -254,14 +417,12 @@
     if (repo && token) {
       localStorage.setItem("gh_repo", repo);
       localStorage.setItem("gh_token", token);
-      alert("Configurações salvas com sucesso!");
+      alert("Configurações salvas!");
     }
   }
 
   async function salvarNoGitHub() {
-    // Atualiza o XHTML do capítulo atual antes do commit
     projetoLivro.capitulos[capituloAtual].conteudo_xhtml = document.getElementById("editorContent").innerHTML;
-
     const repo = localStorage.getItem("gh_repo");
     const token = localStorage.getItem("gh_token");
 
@@ -272,26 +433,19 @@
     }
 
     document.getElementById("statusText").innerText = "Enviando para o GitHub...";
-
-    const caminhoArquivo = "historia.json";
-    const url = `https://api.github.com/repos/${repo}/contents/${caminhoArquivo}`;
+    const url = `https://api.github.com/repos/${repo}/contents/historia.json`;
 
     try {
-      // 1. Pega o SHA atual do arquivo (necessário para update na API do GitHub)
       let sha = "";
-      const getRes = await fetch(url, {
-        headers: { "Authorization": `token ${token}` }
-      });
+      const getRes = await fetch(url, { headers: { "Authorization": `token ${token}` } });
       if (getRes.ok) {
         const fileData = await getRes.json();
         sha = fileData.sha;
       }
 
-      // 2. Prepara o conteúdo em Base64 UTF-8 seguro
       const jsonString = JSON.stringify(projetoLivro, null, 2);
       const contentBase64 = btoa(unescape(encodeURIComponent(jsonString)));
 
-      // 3. Faz o PUT (Commit)
       const putRes = await fetch(url, {
         method: "PUT",
         headers: {
@@ -299,32 +453,29 @@
           "Content-Type": "application/json"
         },
         body: JSON.stringify({
-          message: "Atualização automática da narrativa - Editor Última Memória",
+          message: "Atualização via Editor Última Memória",
           content: contentBase64,
           sha: sha ? sha : undefined
         })
       });
 
       if (putRes.ok) {
-        document.getElementById("statusText").innerText = "Status: Salvo com sucesso no GitHub!";
-        alert("Commit realizado com sucesso no seu repositório!");
+        document.getElementById("statusText").innerText = "Salvo com sucesso no GitHub!";
+        alert("Projeto salvo com sucesso na nuvem!");
       } else {
         const err = await putRes.json();
         alert("Erro ao salvar: " + err.message);
-        document.getElementById("statusText").innerText = "Status: Erro no salvamento";
       }
     } catch (e) {
       console.error(e);
-      alert("Erro de conexão ao tentar salvar no GitHub.");
-      document.getElementById("statusText").innerText = "Status: Falha de conexão";
+      alert("Erro de conexão ao tentar salvar.");
     }
   }
 
-  // Atualiza contador simples
   document.getElementById("editorContent").addEventListener("input", () => {
     const texto = document.getElementById("editorContent").innerText;
     const palavras = texto.trim() ? texto.trim().split(/\s+/).length : 0;
-    document.getElementById("wordCount").innerText = `Palavras: ${palavras} | Parágrafos rastreáveis ativos`;
+    document.getElementById("wordCount").innerText = `Palavras: ${palavras} | Sistema Ativo`;
   });
 </script>
 
