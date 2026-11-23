@@ -15,6 +15,7 @@
       --text-muted: #9ca3af;
       --border-neon: #1e3a8a;
       --success: #10b981;
+      --warning: #f59e0b;
     }
 
     * { margin: 0; padding: 0; box-sizing: border-box; }
@@ -48,6 +49,8 @@
       border-bottom: 1px solid var(--border-neon);
       display: flex;
       gap: 12px;
+      align-items: center;
+      flex-wrap: wrap;
     }
 
     .toolbar {
@@ -80,6 +83,9 @@
 
     .btn-save { background: var(--success); border-color: var(--success); color: white; }
     .btn-save:hover { background: #059669; color: white; box-shadow: 0 0 10px var(--success); }
+    
+    .btn-history { background: var(--warning); border-color: var(--warning); color: #030712; }
+    .btn-history:hover { background: #d97706; color: white; box-shadow: 0 0 10px var(--warning); }
 
     .main-container {
       display: flex;
@@ -170,15 +176,22 @@
   <header>
     <h1>SYS_GRAPHZO // <span>NEON V5 [ULTIMA MEMORIA]</span></h1>
     <div>
-      <button onclick="configurarGitHub()">⚙️ Configurar GitHub</button>
-      <button onclick="puxarDoGitHub()">📥 Carregar da Nuvem (Pull)</button>
-      <button class="btn-save" onclick="salvarNoGitHub()">☁️ Salvar na Nuvem (Push)</button>
+      <button onclick="configurarGitHub()">⚙️ Configurar</button>
+      <button onclick="puxarDoGitHub()">📥 Carregar Atual</button>
+      <button class="btn-save" onclick="salvarNoGitHub()">☁️ Salvar (Push)</button>
     </div>
   </header>
 
   <div class="nav-bar">
-    <button onclick="mudarAba('editor')">📂 01. Editor de Capítulos</button>
-    <button onclick="mudarAba('personagens')">👤 02. Banco de Personagens</button>
+    <button onclick="mudarAba('editor')">📂 01. Editor</button>
+    <button onclick="mudarAba('personagens')">👤 02. Personagens</button>
+    <div style="margin-left: auto; display: flex; gap: 8px; align-items: center;">
+      <select id="selectCommits" style="max-width: 250px;">
+        <option value="">-- Clique em Listar Histórico --</option>
+      </select>
+      <button class="btn-history" onclick="listarCommitsGitHub()">📜 Listar Versões Git</button>
+      <button onclick="carregarVersaoSelecionada()">📥 Baixar Versão Escolhida</button>
+    </div>
   </div>
 
   <div class="toolbar" id="toolbarEditor">
@@ -237,41 +250,30 @@
   </div>
 
   <div class="status-bar">
-    <span id="statusText">STATUS: SISTEMA NEON V5 ATIVADO - PRONTO</span>
+    <span id="statusText">STATUS: SISTEMA PRONTO</span>
     <span id="wordCount">PALAVRAS: 0</span>
   </div>
 
 <script>
-  // Estrutura padrão caso venha vazia da nuvem
   let projetoLivro = {
     "metadados": { "titulo": "Última Memória", "autor": "Autor" },
     "capitulos": {
       "cap_1": {
         "titulo": "Capítulo 1: O Despertar",
-        "conteudo_xhtml": '<p id="cap_1_p1">Inicializando sistema GraphZo Neon v5...</p>'
+        "conteudo_xhtml": '<p id="cap_1_p1">Carregue seus dados da nuvem...</p>'
       }
     },
-    "personagens": [
-      {
-        "id": "char_1",
-        "nome": "Personagem Exemplo",
-        "papel": "Protagonista",
-        "caracteristicas": ["Cyber"],
-        "imagemUrl": "",
-        "biografia_xhtml": "<p>Biografia inicial do personagem...</p>"
-      }
-    ]
+    "personagens": []
   };
 
   let capituloAtual = "cap_1";
-  let personagemSelecionadoId = "char_1";
+  let characterSelecionadoId = null;
 
-  // Ao abrir a página, tenta puxar do GitHub automaticamente se configurado
   window.onload = async function() {
     renderizarListaCapitulos();
     carregarCapituloNaTela("cap_1");
     if (localStorage.getItem("gh_repo") && localStorage.getItem("gh_token")) {
-      await puxarDoGitHub(true); // Puxa silenciosamente ao iniciar
+      await puxarDoGitHub(true);
     }
   };
 
@@ -318,17 +320,16 @@
   function renderizarListaPersonagens() {
     const lista = document.getElementById('listaPersonagens');
     lista.innerHTML = '';
+    if (!projetoLivro.personagens) projetoLivro.personagens = [];
     projetoLivro.personagens.forEach(p => {
       const item = document.createElement('div');
-      item.className = 'item-card' + (p.id === personagemSelecionadoId ? ' active' : '');
+      item.className = 'item-card' + (p.id === characterSelecionadoId ? ' active' : '');
       item.innerHTML = `<strong>${p.nome || 'Sem nome'}</strong><br><small style="color:var(--text-muted)">${p.papel || 'Sem papel'}</small>`;
       item.onclick = () => selecionarPersonagem(p.id);
       lista.appendChild(item);
     });
-    if (projetoLivro.personagens.length > 0 && !personagemSelecionadoId) {
+    if (projetoLivro.personagens.length > 0 && !characterSelecionadoId) {
       selecionarPersonagem(projetoLivro.personagens[0].id);
-    } else if (personagemSelecionadoId) {
-      selecionarPersonagem(personagemSelecionadoId);
     }
   }
 
@@ -339,22 +340,23 @@
       papel: 'Secundário',
       caracteristicas: [],
       imagemUrl: '',
-      biografia_xhtml: '<p>Escreva a biografia...</p>'
+      biografia_xhtml: '<p>Biografia...</p>'
     };
+    if (!projetoLivro.personagens) projetoLivro.personagens = [];
     projetoLivro.personagens.push(novo);
     renderizarListaPersonagens();
     selecionarPersonagem(novo.id);
   }
 
   function selecionarPersonagem(id) {
-    personagemSelecionadoId = id;
+    characterSelecionadoId = id;
     const p = projetoLivro.personagens.find(item => item.id === id);
     if (!p) return;
 
-    document.getElementById('charNome').value = p.nome;
-    document.getElementById('charPapel').value = p.papel;
-    document.getElementById('charTags').value = p.caracteristicas.join(', ');
-    document.getElementById('charBiografia').innerHTML = p.biografia_xhtml;
+    document.getElementById('charNome').value = p.nome || '';
+    document.getElementById('charPapel').value = p.papel || '';
+    document.getElementById('charTags').value = (p.caracteristicas || []).join(', ');
+    document.getElementById('charBiografia').innerHTML = p.biografia_xhtml || '';
 
     const imgPreview = document.getElementById('charAvatarPreview');
     if (p.imagemUrl) {
@@ -367,7 +369,7 @@
   }
 
   function atualizarPersonagemAtual() {
-    const p = projetoLivro.personagens.find(item => item.id === personagemSelecionadoId);
+    const p = projetoLivro.personagens.find(item => item.id === characterSelecionadoId);
     if (!p) return;
     p.nome = document.getElementById('charNome').value;
     p.papel = document.getElementById('charPapel').value;
@@ -378,35 +380,31 @@
 
   async function carregarImagemPersonagem(event) {
     const file = event.target.files[0];
-    if (!file || !personagemSelecionadoId) return;
+    if (!file || !characterSelecionadoId) return;
 
     const repo = localStorage.getItem("gh_repo");
     const token = localStorage.getItem("gh_token");
-    if (!repo || !token) {
-      alert("Configure o GitHub primeiro!");
-      return;
-    }
+    if (!repo || !token) { alert("Configure o GitHub primeiro!"); return; }
 
     const reader = new FileReader();
     reader.onload = async function(e) {
       const base64Content = e.target.result.split(',')[1];
-      const fileName = `assets/${personagemSelecionadoId}_${file.name.replace(/\s+/g, '_')}`;
+      const fileName = `assets/${characterSelecionadoId}_${file.name.replace(/\s+/g, '_')}`;
       const url = `https://api.github.com/repos/${repo}/contents/${fileName}`;
 
-      document.getElementById("statusText").innerText = "STATUS: ENVIANDO IMAGEM PARA NUVEM...";
-
+      document.getElementById("statusText").innerText = "STATUS: ENVIANDO IMAGEM...";
       const res = await fetch(url, {
         method: "PUT",
         headers: { "Authorization": `token ${token}`, "Content-Type": "application/json" },
-        body: JSON.stringify({ message: `Upload avatar ${personagemSelecionadoId}`, content: base64Content })
+        body: JSON.stringify({ message: `Upload avatar ${characterSelecionadoId}`, content: base64Content })
       });
 
       if (res.ok) {
         const rawUrl = `https://raw.githubusercontent.com/${repo}/main/${fileName}`;
-        const p = projetoLivro.personagens.find(item => item.id === personagemSelecionadoId);
+        const p = projetoLivro.personagens.find(item => item.id === characterSelecionadoId);
         p.imagemUrl = rawUrl;
-        selecionarPersonagem(personagemSelecionadoId);
-        document.getElementById("statusText").innerText = "STATUS: IMAGEM SALVA COM SUCESSO!";
+        selecionarPersonagem(characterSelecionadoId);
+        document.getElementById("statusText").innerText = "STATUS: IMAGEM SALVA!";
       } else {
         alert("Erro ao enviar imagem.");
       }
@@ -435,8 +433,8 @@
   }
 
   function configurarGitHub() {
-    const repo = prompt("Informe seu repositório (ex: andreyoldekamp-del/EditorUltimaMemoria):", localStorage.getItem("gh_repo") || "");
-    const token = prompt("Informe seu Personal Access Token do GitHub:", localStorage.getItem("gh_token") || "");
+    const repo = prompt("Repositório (ex: andreyoldekamp-del/EditorUltimaMemoria):", localStorage.getItem("gh_repo") || "");
+    const token = prompt("Personal Access Token:", localStorage.getItem("gh_token") || "");
     if (repo && token) {
       localStorage.setItem("gh_repo", repo);
       localStorage.setItem("gh_token", token);
@@ -445,49 +443,114 @@
     }
   }
 
-  // FUNÇÃO PULL: Lê o historia.json do GitHub para a tela
-  async function puxarDoGitHub( silencioso = false ) {
+  // LISTA OS COMMITS DO HISTÓRICO DO GITHUB
+  async function listarCommitsGitHub() {
+    const repo = localStorage.getItem("gh_repo");
+    const token = localStorage.getItem("gh_token");
+    if (!repo || !token) { alert("Configure o GitHub primeiro!"); return; }
+
+    document.getElementById("statusText").innerText = "STATUS: BUSCANDO HISTÓRICO DE VERSÕES...";
+    const url = `https://api.github.com/repos/${repo}/commits?path=historia.json`;
+
+    try {
+      const res = await fetch(url, { headers: { "Authorization": `token ${token}` } });
+      if (res.ok) {
+        const commits = await res.json();
+        const select = document.getElementById("selectCommits");
+        select.innerHTML = '';
+        
+        commits.forEach(c => {
+          const opt = document.createElement("option");
+          opt.value = c.sha;
+          const dataFormatada = new Date(c.commit.author.date).toLocaleString();
+          opt.textContent = `${c.commit.message.substring(0, 35)} (${dataFormatada})`;
+          select.appendChild(opt);
+        });
+
+        document.getElementById("statusText").innerText = `STATUS: ${commits.length} VERSÕES ENCONTRADAS`;
+        alert("Versões listadas no menu superior com sucesso!");
+      } else {
+        alert("Nenhum histórico encontrado para historia.json.");
+      }
+    } catch(e) {
+      console.error(e);
+      alert("Erro ao buscar histórico.");
+    }
+  }
+
+  // BAIXA A VERSÃO ESCOLHIDA NO SELECT DO COMMIT
+  async function carregarVersaoSelecionada() {
+    const repo = localStorage.getItem("gh_repo");
+    const token = localStorage.getItem("gh_token");
+    const sha = document.getElementById("selectCommits").value;
+
+    if (!repo || !token || !sha) { alert("Selecione uma versão válida no menu ao lado!"); return; }
+
+    document.getElementById("statusText").innerText = "STATUS: BAIXANDO VERSÃO HISTÓRICA...";
+    const url = `https://api.github.com/repos/${repo}/contents/historia.json?ref=${sha}`;
+
+    try {
+      const res = await fetch(url, { headers: { "Authorization": `token ${token}` } });
+      if (res.ok) {
+        const fileData = await res.json();
+        const jsonString = decodeURIComponent(escape(atob(fileData.content)));
+        projetoLivro = JSON.parse(jsonString);
+        if(!projetoLivro.personagens) projetoLivro.personagens = [];
+
+        renderizarListaCapitulos();
+        const primeiroCap = Object.keys(projetoLivro.capitulos)[0];
+        if(primeiroCap) carregarCapituloNaTela(primeiroCap);
+        
+        alert("Versão histórica carregada com sucesso na tela!");
+        document.getElementById("statusText").innerText = "STATUS: VERSÃO HISTÓRICA CARREGADA";
+      } else {
+        alert("Erro ao baixar o arquivo desta versão.");
+      }
+    } catch(e) {
+      console.error(e);
+      alert("Erro ao processar versão.");
+    }
+  }
+
+  async function puxarDoGitHub(silencioso = false) {
     const repo = localStorage.getItem("gh_repo");
     const token = localStorage.getItem("gh_token");
     if (!repo || !token) { if(!silencioso) alert("Configure o GitHub primeiro!"); return; }
 
-    if(!silencioso) document.getElementById("statusText").innerText = "STATUS: CARREGANDO DA NUVEM...";
+    if(!silencioso) document.getElementById("statusText").innerText = "STATUS: CARREGANDO...";
     const url = `https://api.github.com/repos/${repo}/contents/historia.json`;
 
     try {
       const res = await fetch(url, { headers: { "Authorization": `token ${token}` } });
       if (res.ok) {
         const fileData = await res.json();
-        // Decodifica o Base64 do GitHub de forma segura para UTF-8 (acentos)
         const jsonString = decodeURIComponent(escape(atob(fileData.content)));
         projetoLivro = JSON.parse(jsonString);
-        
+        if(!projetoLivro.personagens) projetoLivro.personagens = [];
+
         renderizarListaCapitulos();
-        carregarCapituloNaTela(capituloAtual);
-        if(!silencioso) alert("Dados carregados com sucesso da nuvem!");
-        document.getElementById("statusText").innerText = "STATUS: DADOS SINCRONIZADOS COM A NUVEM";
+        const primeiroCap = Object.keys(projetoLivro.capitulos)[0];
+        if(primeiroCap) carregarCapituloNaTela(primeiroCap);
+        
+        if(!silencioso) alert("Versão atual carregada com sucesso!");
+        document.getElementById("statusText").innerText = "STATUS: SINCRONIZADO";
       } else {
-        if(!silencioso) alert("Arquivo historia.json ainda não existe na nuvem. Faça um Salvar (Push) primeiro.");
+        if(!silencioso) alert("Arquivo historia.json não encontrado.");
       }
     } catch(e) {
       console.error(e);
-      if(!silencioso) alert("Erro ao carregar dados da nuvem.");
+      if(!silencioso) alert("Erro ao carregar.");
     }
   }
 
-  // FUNÇÃO PUSH: Envia o estado atual para o historia.json do GitHub
   async function salvarNoGitHub() {
     salvarCapituloAtualNaMemoria();
     const repo = localStorage.getItem("gh_repo");
     const token = localStorage.getItem("gh_token");
 
-    if (!repo || !token) {
-      alert("Configure o repositório e o token do GitHub primeiro!");
-      configurarGitHub();
-      return;
-    }
+    if (!repo || !token) { alert("Configure o GitHub primeiro!"); configurarGitHub(); return; }
 
-    document.getElementById("statusText").innerText = "STATUS: SALVANDO NA NUVEM...";
+    document.getElementById("statusText").innerText = "STATUS: SALVANDO...";
     const url = `https://api.github.com/repos/${repo}/contents/historia.json`;
 
     try {
@@ -505,22 +568,22 @@
         method: "PUT",
         headers: { "Authorization": `token ${token}`, "Content-Type": "application/json" },
         body: JSON.stringify({
-          message: "Commit automático via Editor GraphZo Neon V5",
+          message: "Commit via Editor Neon V5",
           content: contentBase64,
           sha: sha ? sha : undefined
         })
       });
 
       if (putRes.ok) {
-        document.getElementById("statusText").innerText = "STATUS: SALVO COM SUCESSO NO GITHUB!";
-        alert("Projeto salvo com sucesso na nuvem!");
+        document.getElementById("statusText").innerText = "STATUS: SALVO COM SUCESSO!";
+        alert("Salvo com sucesso na nuvem!");
       } else {
         const err = await putRes.json();
         alert("Erro ao salvar: " + err.message);
       }
     } catch (e) {
       console.error(e);
-      alert("Erro de conexão ao tentar salvar.");
+      alert("Erro de conexão.");
     }
   }
 
