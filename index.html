@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>GraphZO // ÚLTIMA MEMÓRIA [NEON V6 - DEBUG]</title>
+  <title>GraphZO // ÚLTIMA MEMÓRIA [NEON V7 - CORRIGIDO]</title>
   <style>
     :root {
       --bg-base: #030712;
@@ -81,9 +81,6 @@
 
     .btn-save { background: var(--success); border-color: var(--success); color: white; }
     .btn-save:hover { background: #059669; }
-
-    .btn-danger { background: var(--danger); border-color: var(--danger); color: white; }
-    .btn-danger:hover { background: #dc2626; }
 
     .main-container {
       display: flex;
@@ -170,18 +167,17 @@
 <body>
 
   <header>
-    <h1>SYS_GRAPHZO // <span>NEON V6 [DEBUG API]</span></h1>
+    <h1>SYS_GRAPHZO // <span>NEON V7 [GRAPHZO BACKUP]</span></h1>
     <div>
       <button onclick="configurarGitHub()">⚙️ Configurar</button>
       <button onclick="puxarDoGitHub()">📥 Carregar Dados</button>
-      <button class="btn-save" onclick="salvarNoGitHub()">☁️ Salvar (Push com Debug)</button>
+      <button class="btn-save" onclick="salvarNoGitHub()">☁️ Salvar (Push)</button>
     </div>
   </header>
 
   <div class="nav-bar">
     <button onclick="mudarAba('editor')">📂 01. Editor</button>
     <button onclick="mudarAba('personagens')">👤 02. Personagens</button>
-    <button class="btn-danger" onclick="criarArquivoInicialManual()">🛠️ Forçar Criação do historia.json</button>
     <div style="margin-left: auto; display: flex; gap: 6px; align-items: center;">
       <select id="selectCommits" style="max-width: 200px;"><option value="">-- Versões Git --</option></select>
       <button onclick="listarCommitsGitHub()">📜 Listar Versões</button>
@@ -240,7 +236,7 @@
   let projetoLivro = {
     "metadados": { "titulo": "Última Memória", "autor": "Autor" },
     "capitulos": {
-      "cap_1": { "titulo": "Capítulo 1", "conteudo_xhtml": '<p id="cap_1_p1">Iniciando editor Neon V6...</p>' }
+      "cap_1": { "titulo": "Capítulo 1", "conteudo_xhtml": '<p id="cap_1_p1">Iniciando editor GraphZo Backup...</p>' }
     },
     "personagens": []
   };
@@ -249,9 +245,15 @@
   let characterSelecionadoId = null;
 
   window.onload = async function() {
+    // Configura automaticamente o repositório correto caso não esteja definido no navegador
+    if (!localStorage.getItem("gh_repo")) {
+      localStorage.setItem("gh_repo", "andreyoldekamp-del/GraphZoBackup");
+    }
+    
     renderizarListaCapitulos();
     carregarCapituloNaTela("cap_1");
-    if (localStorage.getItem("gh_repo") && localStorage.getItem("gh_token")) {
+
+    if (localStorage.getItem("gh_token")) {
       await puxarDoGitHub(true);
     }
   };
@@ -354,7 +356,7 @@
   }
 
   function configurarGitHub() {
-    const repo = prompt("Repositório (ex: andreyoldekamp-del/EditorUltimaMemoria):", localStorage.getItem("gh_repo") || "");
+    const repo = prompt("Repositório:", localStorage.getItem("gh_repo") || "andreyoldekamp-del/GraphZoBackup");
     const token = prompt("Personal Access Token:", localStorage.getItem("gh_token") || "");
     if (repo && token) {
       localStorage.setItem("gh_repo", repo);
@@ -363,48 +365,13 @@
     }
   }
 
-  // BOTÃO ESPECIAL PARA FORÇAR A CRIAÇÃO DO HISTORIA.JSON NA MARRA
-  async function criarArquivoInicialManual() {
-    const repo = localStorage.getItem("gh_repo");
-    const token = localStorage.getItem("gh_token");
-    if (!repo || !token) { alert("Configure o GitHub primeiro!"); configurarGitHub(); return; }
-
-    document.getElementById("statusText").innerText = "STATUS: CRIANDO ARQUIVO INICIAL...";
-    const url = `https://api.github.com/repos/${repo}/contents/historia.json`;
-
-    const jsonString = JSON.stringify(projetoLivro, null, 2);
-    const contentBase64 = btoa(unescape(encodeURIComponent(jsonString)));
-
-    try {
-      const res = await fetch(url, {
-        method: "PUT",
-        headers: { "Authorization": `token ${token}`, "Content-Type": "application/json" },
-        body: JSON.stringify({
-          message: "Criação inicial manual do historia.json",
-          content: contentBase64
-        })
-      });
-
-      const data = await res.json();
-      if (res.ok) {
-        alert("Sucesso! O arquivo historia.json foi criado na nuvem.");
-        document.getElementById("statusText").innerText = "STATUS: ARQUIVO CRIADO COM SUCESSO";
-      } else {
-        alert("ERRO DA API DO GITHUB:\nStatus: " + res.status + "\nMensagem: " + data.message);
-        document.getElementById("statusText").innerText = "STATUS: ERRO AO CRIAR ARQUIVO";
-      }
-    } catch(e) {
-      alert("Erro de rede: " + e.message);
-    }
-  }
-
   async function salvarNoGitHub() {
     salvarCapituloAtualNaMemoria();
-    const repo = localStorage.getItem("gh_repo");
+    const repo = localStorage.getItem("gh_repo") || "andreyoldekamp-del/GraphZoBackup";
     const token = localStorage.getItem("gh_token");
-    if (!repo || !token) { alert("Configure o GitHub primeiro!"); configurarGitHub(); return; }
+    if (!token) { alert("Configure o Token do GitHub primeiro!"); configurarGitHub(); return; }
 
-    document.getElementById("statusText").innerText = "STATUS: VERIFICANDO ARQUIVO...";
+    document.getElementById("statusText").innerText = "STATUS: ENVIANDO PARA GRAPHZO BACKUP...";
     const url = `https://api.github.com/repos/${repo}/contents/historia.json`;
 
     try {
@@ -418,36 +385,32 @@
       const jsonString = JSON.stringify(projetoLivro, null, 2);
       const contentBase64 = btoa(unescape(encodeURIComponent(jsonString)));
 
-      document.getElementById("statusText").innerText = "STATUS: ENVIANDO PARA O GITHUB...";
       const putRes = await fetch(url, {
         method: "PUT",
         headers: { "Authorization": `token ${token}`, "Content-Type": "application/json" },
         body: JSON.stringify({
-          message: "Atualização via Neon V6",
+          message: "Atualização via Neon V7 [GraphZoBackup]",
           content: contentBase64,
           sha: sha ? sha : undefined
         })
       });
 
       const responseData = await putRes.json();
-
       if (putRes.ok) {
-        alert("Salvo com sucesso na nuvem!");
+        alert("Salvo com sucesso no GraphZoBackup!");
         document.getElementById("statusText").innerText = "STATUS: SALVO COM SUCESSO";
       } else {
-        // EXIBE O ERRO EXATO DA API NA TELA PARA VOCÊ VER
         alert("ERRO DA API DO GITHUB:\nStatus: " + putRes.status + "\nMensagem: " + responseData.message);
-        document.getElementById("statusText").innerText = "STATUS: ERRO " + putRes.status;
       }
     } catch (e) {
-      alert("Erro de conexão ao tentar salvar: " + e.message);
+      alert("Erro de conexão: " + e.message);
     }
   }
 
   async function puxarDoGitHub(silencioso = false) {
-    const repo = localStorage.getItem("gh_repo");
+    const repo = localStorage.getItem("gh_repo") || "andreyoldekamp-del/GraphZoBackup";
     const token = localStorage.getItem("gh_token");
-    if (!repo || !token) { if(!silencioso) alert("Configure o GitHub primeiro!"); return; }
+    if (!token) return;
 
     const url = `https://api.github.com/repos/${repo}/contents/historia.json`;
     try {
@@ -459,19 +422,17 @@
         if(!projetoLivro.personagens) projetoLivro.personagens = [];
         renderizarListaCapitulos();
         carregarCapituloNaTela(Object.keys(projetoLivro.capitulos)[0]);
-        if(!silencioso) alert("Dados carregados com sucesso!");
-      } else {
-        if(!silencioso) alert("Erro ao carregar: " + data.message);
+        if(!silencioso) alert("Dados carregados com sucesso do GraphZoBackup!");
       }
     } catch(e) {
-      if(!silencioso) alert("Erro de conexão: " + e.message);
+      if(!silencioso) console.log("Arquivo inicial ainda não carregado.");
     }
   }
 
   async function listarCommitsGitHub() {
-    const repo = localStorage.getItem("gh_repo");
+    const repo = localStorage.getItem("gh_repo") || "andreyoldekamp-del/GraphZoBackup";
     const token = localStorage.getItem("gh_token");
-    if (!repo || !token) { alert("Configure o GitHub primeiro!"); return; }
+    if (!token) { alert("Configure o Token primeiro!"); return; }
 
     const url = `https://api.github.com/repos/${repo}/commits?path=historia.json`;
     try {
@@ -483,12 +444,12 @@
         commits.forEach(c => {
           const opt = document.createElement("option");
           opt.value = c.sha;
-          opt.textContent = `${c.commit.message.substring(0, 30)} (${new Date(c.commit.author.date).toLocaleDateString()})`;
+          opt.textContent = `${c.commit.message.substring(0, 25)} (${new Date(c.commit.author.date).toLocaleDateString()})`;
           sel.appendChild(opt);
         });
-        alert(`${commits.length} versões listadas no menu!`);
+        alert(`${commits.length} versões anteriores encontradas!`);
       } else {
-        alert("Nenhum histórico encontrado para historia.json.");
+        alert("Nenhum histórico encontrado para historia.json neste repositório.");
       }
     } catch(e) {
       alert("Erro ao listar histórico.");
@@ -496,10 +457,10 @@
   }
 
   async function carregarVersaoSelecionada() {
-    const repo = localStorage.getItem("gh_repo");
+    const repo = localStorage.getItem("gh_repo") || "andreyoldekamp-del/GraphZoBackup";
     const token = localStorage.getItem("gh_token");
     const sha = document.getElementById("selectCommits").value;
-    if (!repo || !token || !sha) { alert("Selecione uma versão no menu!"); return; }
+    if (!token || !sha) { alert("Selecione uma versão no menu!"); return; }
 
     const url = `https://api.github.com/repos/${repo}/contents/historia.json?ref=${sha}`;
     try {
@@ -511,7 +472,7 @@
         if(!projetoLivro.personagens) projetoLivro.personagens = [];
         renderizarListaCapitulos();
         carregarCapituloNaTela(Object.keys(projetoLivro.capitulos)[0]);
-        alert("Versão histórica carregada!");
+        alert("Versão histórica carregada com sucesso!");
       } else {
         alert("Erro ao carregar versão: " + data.message);
       }
