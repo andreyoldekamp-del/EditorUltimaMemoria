@@ -2,105 +2,114 @@
 <html lang="pt-BR">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>GraphZO // ÚLTIMA MEMÓRIA [NEON V9 - DICIONÁRIO]</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>GraphZO // ÚLTIMA MEMÓRIA [NEON V11 - MOBILE & POPUP]</title>
   <style>
     :root {
       --bg-base: #030712;
       --bg-panel: #0b0f19;
       --bg-card: #111827;
       --accent-cyan: #06b6d4;
+      --accent-purple: #a855f7;
       --text-main: #f3f4f6;
       --text-muted: #9ca3af;
       --border-neon: #1e3a8a;
       --success: #10b981;
       --danger: #ef4444;
-      --warning: #f59e0b;
     }
 
-    * { margin: 0; padding: 0; box-sizing: border-box; }
+    * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
 
     body {
       font-family: 'Courier New', Courier, monospace;
       background: var(--bg-base);
       color: var(--text-main);
-      height: 100vh;
+      min-height: 100vh;
+      min-height: 100dvh;
       display: flex;
       flex-direction: column;
-      overflow: hidden;
+      overflow-x: hidden;
     }
 
     header {
       background: var(--bg-panel);
       border-bottom: 2px solid var(--accent-cyan);
-      padding: 12px 24px;
+      padding: 10px 16px;
       display: flex;
       justify-content: space-between;
       align-items: center;
       flex-wrap: wrap;
-      gap: 10px;
+      gap: 8px;
+      position: relative;
+      z-index: 20;
     }
 
-    h1 { font-size: 16px; color: var(--accent-cyan); letter-spacing: 1px; }
+    h1 { font-size: 15px; color: var(--accent-cyan); letter-spacing: 1px; }
     h1 span { color: var(--text-muted); font-size: 11px; }
 
     .nav-bar {
       background: var(--bg-card);
-      padding: 8px 24px;
+      padding: 8px 16px;
       border-bottom: 1px solid var(--border-neon);
       display: flex;
-      gap: 10px;
+      gap: 8px;
       align-items: center;
       flex-wrap: wrap;
+      position: relative;
+      z-index: 19;
     }
 
     .toolbar {
       display: flex;
-      gap: 8px;
+      gap: 6px;
       background: var(--bg-panel);
-      padding: 8px 24px;
+      padding: 8px 16px;
       border-bottom: 1px solid var(--border-neon);
       align-items: center;
       flex-wrap: wrap;
+      position: relative;
+      z-index: 18;
     }
 
     button, select, label.file-btn {
       background: var(--bg-base);
       color: var(--accent-cyan);
       border: 1px solid var(--accent-cyan);
-      padding: 6px 12px;
-      border-radius: 2px;
+      padding: 8px 12px;
+      border-radius: 4px;
       cursor: pointer;
-      font-size: 11px;
+      font-size: 12px;
       font-weight: bold;
-      transition: 0.2s;
-      display: inline-block;
-      text-align: center;
+      touch-action: manipulation;
+      user-select: none;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 36px;
     }
 
-    button:hover, select:hover, label.file-btn:hover {
+    button:active, select:active, label.file-btn:active {
       background: var(--accent-cyan);
       color: var(--bg-base);
     }
 
     .btn-save { background: var(--success); border-color: var(--success); color: white; }
-    .btn-save:hover { background: #059669; }
-
     .btn-danger { background: var(--danger); border-color: var(--danger); color: white; }
-    .btn-danger:hover { background: #dc2626; }
 
     .main-container {
       display: flex;
       flex: 1;
       overflow: hidden;
+      position: relative;
     }
 
-    sidebar {
-      width: 280px;
+    aside.sidebar {
+      width: 260px;
       background: var(--bg-panel);
       border-right: 1px solid var(--border-neon);
       display: flex;
       flex-direction: column;
+      flex-shrink: 0;
     }
 
     .sidebar-header {
@@ -122,11 +131,11 @@
     }
 
     .item-card {
-      padding: 8px;
-      border-radius: 3px;
+      padding: 10px;
+      border-radius: 4px;
       cursor: pointer;
-      margin-bottom: 4px;
-      font-size: 11px;
+      margin-bottom: 6px;
+      font-size: 12px;
       border: 1px solid transparent;
       background: var(--bg-card);
       display: flex;
@@ -134,7 +143,6 @@
       align-items: center;
     }
 
-    .item-card:hover { border-color: var(--accent-cyan); }
     .item-card.active { border-color: var(--accent-cyan); background: #082f49; }
 
     .editor-area {
@@ -143,22 +151,23 @@
       flex-direction: column;
       background: var(--bg-base);
       overflow-y: auto;
-      padding: 30px;
+      padding: 16px;
     }
 
     #editorContent {
       max-width: 800px;
       margin: 0 auto;
       width: 100%;
-      min-height: 100%;
+      min-height: 60vh;
       background: var(--bg-card);
-      padding: 30px;
+      padding: 20px;
       border-radius: 4px;
       border: 1px solid var(--border-neon);
       outline: none;
       font-family: 'Times New Roman', serif;
-      font-size: 15px;
+      font-size: 16px;
       line-height: 1.6;
+      color: var(--text-main);
     }
 
     #editorContent p { margin-bottom: 1em; }
@@ -166,11 +175,87 @@
     .status-bar {
       background: var(--bg-panel);
       border-top: 1px solid var(--accent-cyan);
-      padding: 6px 24px;
+      padding: 8px 16px;
       font-size: 11px;
       color: var(--text-muted);
       display: flex;
       justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 6px;
+    }
+
+    /* POPUP FLUTUANTE DE DETECÇÃO */
+    #popupDeteccao {
+      position: fixed;
+      bottom: 45px;
+      right: 16px;
+      left: 16px;
+      max-width: 380px;
+      margin-left: auto;
+      background: var(--bg-panel);
+      border: 2px solid var(--accent-cyan);
+      border-radius: 8px;
+      padding: 14px;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.95);
+      z-index: 9999;
+      display: none;
+    }
+
+    .popup-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 8px;
+      padding-bottom: 6px;
+      border-bottom: 1px solid var(--border-neon);
+    }
+
+    .badge-tipo {
+      font-size: 10px;
+      padding: 3px 8px;
+      border-radius: 3px;
+      font-weight: bold;
+    }
+
+    .badge-personagem { background: var(--accent-purple); color: white; }
+    .badge-dicionario { background: var(--accent-cyan); color: var(--bg-base); }
+
+    .popup-palavra { font-size: 16px; font-weight: bold; color: white; margin-bottom: 4px; }
+    .popup-sub { font-size: 11px; color: var(--text-muted); margin-bottom: 8px; }
+    .popup-significado {
+      font-size: 13px;
+      line-height: 1.4;
+      color: var(--text-main);
+      max-height: 130px;
+      overflow-y: auto;
+      background: var(--bg-card);
+      padding: 8px;
+      border-radius: 4px;
+    }
+
+    /* RESPONSIVIDADE PARA CELULAR */
+    @media (max-width: 768px) {
+      .main-container {
+        flex-direction: column;
+        overflow-y: auto;
+      }
+      aside.sidebar {
+        width: 100%;
+        max-height: 180px;
+        border-right: none;
+        border-bottom: 1px solid var(--border-neon);
+      }
+      .editor-area {
+        padding: 10px;
+      }
+      #editorContent {
+        padding: 14px;
+        min-height: 50vh;
+      }
+      .git-controls {
+        width: 100%;
+        margin-left: 0 !important;
+      }
     }
   </style>
 </head>
@@ -178,128 +263,135 @@
 
   <header>
     <div>
-      <h1>SYS_GRAPHZO // <span>NEON V9 [COM DICIONÁRIO]</span></h1>
-      <div id="lastSavedBadge" style="font-size: 10px; color: var(--success); margin-top: 2px;">🕒 Último salvamento: Nenhum nesta sessão</div>
+      <h1>SYS_GRAPHZO // <span>NEON V11</span></h1>
+      <div id="lastSavedBadge" style="font-size: 10px; color: var(--success);">🕒 Pronto para edição</div>
     </div>
     <div style="display: flex; gap: 6px; flex-wrap: wrap;">
-      <button onclick="configurarGitHub()">⚙️ Configurar</button>
-      <button onclick="puxarDoGitHub()">📥 Recarregar Atual</button>
-      <button class="btn-save" onclick="salvarNoGitHub()">☁️ Salvar Tudo (Push)</button>
+      <button type="button" onclick="configurarGitHub()">⚙️ Config</button>
+      <button type="button" onclick="puxarDoGitHub()">📥 Puxar</button>
+      <button type="button" class="btn-save" onclick="salvarNoGitHub()">☁️ Salvar</button>
     </div>
   </header>
 
   <div class="nav-bar">
-    <button onclick="mudarAba('editor')">📂 01. Editor</button>
-    <button onclick="mudarAba('personagens')">👤 02. Personagens</button>
-    <button onclick="mudarAba('dicionario')">📖 03. Dicionário</button>
+    <button type="button" onclick="mudarAba('editor')">📂 01. Editor</button>
+    <button type="button" onclick="mudarAba('personagens')">👤 02. Personagens</button>
+    <button type="button" onclick="mudarAba('dicionario')">📖 03. Dicionário</button>
     
-    <div style="margin-left: auto; display: flex; gap: 6px; align-items: center; flex-wrap: wrap;">
-      <button onclick="listarCommitsGitHub()">📜 Atualizar Versões</button>
-      <select id="selectCommits" onchange="carregarVersaoSelecionada()" style="max-width: 200px;">
-        <option value="">-- Versões Git --</option>
+    <div class="git-controls" style="margin-left: auto; display: flex; gap: 6px; align-items: center; flex-wrap: wrap;">
+      <button type="button" onclick="listarCommitsGitHub()">📜 Versões</button>
+      <select id="selectCommits" onchange="carregarVersaoSelecionada()" style="max-width: 170px;">
+        <option value="">-- Versões --</option>
       </select>
-      <button class="btn-danger" onclick="descartarVersaoAtual()" title="Oculta esta versão da lista">🗑️ Descartar</button>
+      <button type="button" class="btn-danger" onclick="descartarVersaoAtual()">🗑️</button>
     </div>
   </div>
 
   <div class="toolbar" id="toolbarEditor">
-    <button onclick="formatar('bold')"><b>B</b></button>
-    <button onclick="formatar('italic')"><i>I</i></button>
-    <button onclick="formatar('underline')"><u>U</u></button>
-    <select onchange="mudarFonte(this.value)">
-      <option value="Times New Roman">Times New Roman</option>
-      <option value="Arial">Arial</option>
-      <option value="Georgia">Georgia</option>
-      <option value="Courier New">Courier New</option>
-    </select>
-    <button onclick="inserirParagrafoID()">➕ Novo Parágrafo</button>
-    <button onclick="criarNovoCapitulo()">📑 Novo Capítulo</button>
+    <button type="button" onclick="formatar('bold')"><b>B</b></button>
+    <button type="button" onclick="formatar('italic')"><i>I</i></button>
+    <button type="button" onclick="formatar('underline')"><u>U</u></button>
+    <button type="button" onclick="inserirParagrafoID()">➕ Parágrafo</button>
+    <button type="button" onclick="criarNovoCapitulo()">📑 + Cap.</button>
+    <label style="font-size: 11px; display: flex; align-items: center; gap: 5px; cursor: pointer;">
+      <input type="checkbox" id="togglePopupAuto" checked> 🔍 Popup Auto
+    </label>
   </div>
 
   <!-- ABA 1: EDITOR -->
   <div class="main-container" id="containerEditor">
-    <sidebar>
+    <aside class="sidebar">
       <div class="sidebar-header">📑 CAPÍTULOS</div>
       <div class="list-container" id="chaptersList"></div>
-    </sidebar>
+    </aside>
     <div class="editor-area">
-      <div id="editorContent" contenteditable="true" spellcheck="false" oninput="salvarCapituloAtualNaMemoria()"></div>
+      <div id="editorContent" contenteditable="true" spellcheck="false"></div>
     </div>
   </div>
 
   <!-- ABA 2: PERSONAGENS -->
   <div class="main-container" id="painelPersonagens" style="display: none;">
-    <sidebar>
+    <aside class="sidebar">
       <div class="sidebar-header">
         <span>👤 ELENCO (<span id="charCount">0</span>)</span>
-        <button onclick="criarNovoPersonagem()">+ NOVO</button>
+        <button type="button" onclick="criarNovoPersonagem()">+ NOVO</button>
       </div>
       <div class="list-container" id="listaPersonagens"></div>
-    </sidebar>
-    <div style="flex: 1; padding: 30px; overflow-y: auto; background: var(--bg-base);">
-      <div style="max-width: 750px; margin: 0 auto; background: var(--bg-card); padding: 25px; border-radius: 4px; border: 1px solid var(--border-neon);">
-        <div style="display: flex; gap: 20px; margin-bottom: 20px; flex-wrap: wrap;">
-          <div style="width: 150px; height: 150px; background: var(--bg-base); border: 1px solid var(--accent-cyan); border-radius: 4px; overflow: hidden; display: flex; align-items: center; justify-content: center; flex-direction: column; position: relative;">
+    </aside>
+    <div style="flex: 1; padding: 16px; overflow-y: auto; background: var(--bg-base);">
+      <div style="max-width: 750px; margin: 0 auto; background: var(--bg-card); padding: 16px; border-radius: 4px; border: 1px solid var(--border-neon);">
+        <div style="display: flex; gap: 16px; margin-bottom: 16px; flex-wrap: wrap;">
+          <div style="width: 120px; height: 120px; background: var(--bg-base); border: 1px solid var(--accent-cyan); border-radius: 4px; overflow: hidden; display: flex; align-items: center; justify-content: center; flex-direction: column; position: relative;">
             <img id="charAvatarPreview" src="" style="width: 100%; height: 100%; object-fit: cover; display: none;">
-            <span id="charNoPhotoText" style="font-size: 10px; color: var(--text-muted);">Sem imagem</span>
+            <span id="charNoPhotoText" style="font-size: 10px; color: var(--text-muted);">Sem foto</span>
             <input type="file" id="charImageInput" accept="image/*" style="display: none;" onchange="carregarImagemPersonagem(event)">
-            <button onclick="document.getElementById('charImageInput').click()" style="position: absolute; bottom: 5px; font-size: 10px; padding: 4px 8px; background: rgba(3,7,18,0.85);">📷 Foto</button>
+            <button type="button" onclick="document.getElementById('charImageInput').click()" style="position: absolute; bottom: 4px; font-size: 10px; padding: 4px 6px; min-height: 26px;">📷 Foto</button>
           </div>
-          <div style="flex: 1; min-width: 250px; display: flex; flex-direction: column; gap: 10px;">
-            <input type="text" id="charNome" placeholder="Nome do Personagem" oninput="atualizarPersonagemAtual()" style="padding: 8px; background: var(--bg-base); color: white; border: 1px solid var(--accent-cyan); border-radius: 2px;">
-            <input type="text" id="charPapel" placeholder="Papel" oninput="atualizarPersonagemAtual()" style="padding: 8px; background: var(--bg-base); color: white; border: 1px solid var(--accent-cyan); border-radius: 2px;">
-            <input type="text" id="charTags" placeholder="Características" oninput="atualizarPersonagemAtual()" style="padding: 8px; background: var(--bg-base); color: white; border: 1px solid var(--accent-cyan); border-radius: 2px;">
+          <div style="flex: 1; min-width: 200px; display: flex; flex-direction: column; gap: 8px;">
+            <input type="text" id="charNome" placeholder="Nome do Personagem" oninput="atualizarPersonagemAtual()" style="padding: 8px; background: var(--bg-base); color: white; border: 1px solid var(--accent-cyan);">
+            <input type="text" id="charPapel" placeholder="Papel" oninput="atualizarPersonagemAtual()" style="padding: 8px; background: var(--bg-base); color: white; border: 1px solid var(--accent-cyan);">
+            <input type="text" id="charTags" placeholder="Características" oninput="atualizarPersonagemAtual()" style="padding: 8px; background: var(--bg-base); color: white; border: 1px solid var(--accent-cyan);">
           </div>
         </div>
         <label style="font-size: 11px; color: var(--accent-cyan); display: block; margin-bottom: 6px;">BIOGRAFIA:</label>
-        <div id="charBiografia" contenteditable="true" oninput="atualizarPersonagemAtual()" style="min-height: 180px; background: var(--bg-base); border: 1px solid var(--border-neon); padding: 12px; outline: none; border-radius: 2px;"></div>
-        <div style="margin-top: 15px; text-align: right;"><button class="btn-danger" onclick="deletarPersonagemAtual()">🗑️ Excluir</button></div>
+        <div id="charBiografia" contenteditable="true" oninput="atualizarPersonagemAtual()" style="min-height: 140px; background: var(--bg-base); border: 1px solid var(--border-neon); padding: 10px; outline: none;"></div>
+        <div style="margin-top: 12px; text-align: right;"><button type="button" class="btn-danger" onclick="deletarPersonagemAtual()">🗑️ Excluir</button></div>
       </div>
     </div>
   </div>
 
-  <!-- ABA 3: DICIONÁRIO E GLOSSÁRIO -->
+  <!-- ABA 3: DICIONÁRIO -->
   <div class="main-container" id="painelDicionario" style="display: none;">
-    <sidebar>
+    <aside class="sidebar">
       <div class="sidebar-header">
         <span>📖 TERMOS (<span id="termCount">0</span>)</span>
-        <button onclick="criarNovoTermo()">+ NOVO</button>
+        <button type="button" onclick="criarNovoTermo()">+ NOVO</button>
       </div>
       <div class="list-container" id="listaTermos"></div>
-    </sidebar>
-    <div style="flex: 1; padding: 30px; overflow-y: auto; background: var(--bg-base);">
-      <div style="max-width: 750px; margin: 0 auto; background: var(--bg-card); padding: 25px; border-radius: 4px; border: 1px solid var(--border-neon);">
+    </aside>
+    <div style="flex: 1; padding: 16px; overflow-y: auto; background: var(--bg-base);">
+      <div style="max-width: 750px; margin: 0 auto; background: var(--bg-card); padding: 16px; border-radius: 4px; border: 1px solid var(--border-neon);">
         
-        <!-- Importação da Base .txt -->
-        <div style="margin-bottom: 20px; padding: 12px; background: var(--bg-panel); border: 1px dashed var(--accent-cyan); border-radius: 4px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px;">
+        <div style="margin-bottom: 16px; padding: 12px; background: var(--bg-panel); border: 1px dashed var(--accent-cyan); border-radius: 4px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px;">
           <div>
             <strong>Importar Base (.txt):</strong>
-            <div style="font-size: 10px; color: var(--text-muted);">Formato por linha: Termo | Categoria | Descrição</div>
+            <div style="font-size: 10px; color: var(--text-muted);">Termo | Categoria | Descrição</div>
           </div>
           <label class="file-btn">
-            📂 Carregar base.txt
-            <input type="file" id="txtBaseInput" accept=".txt" style="display: none;" onchange="importarBaseTxt(event)">
+            📂 Carregar .txt
+            <input type="file" id="txtBaseInput" accept=".txt,text/plain" style="display: none;" onchange="importarBaseTxt(event)">
           </label>
         </div>
 
-        <div style="display: flex; flex-direction: column; gap: 10px;">
-          <input type="text" id="termoTitulo" placeholder="Termo ou Palavra" oninput="atualizarTermoAtual()" style="padding: 8px; background: var(--bg-base); color: white; border: 1px solid var(--accent-cyan); border-radius: 2px;">
-          <input type="text" id="termoCategoria" placeholder="Categoria (ex: Tecnologia, Local, Facção)" oninput="atualizarTermoAtual()" style="padding: 8px; background: var(--bg-base); color: white; border: 1px solid var(--accent-cyan); border-radius: 2px;">
+        <div style="display: flex; flex-direction: column; gap: 8px;">
+          <input type="text" id="termoTitulo" placeholder="Termo ou Palavra" oninput="atualizarTermoAtual()" style="padding: 8px; background: var(--bg-base); color: white; border: 1px solid var(--accent-cyan);">
+          <input type="text" id="termoCategoria" placeholder="Categoria" oninput="atualizarTermoAtual()" style="padding: 8px; background: var(--bg-base); color: white; border: 1px solid var(--accent-cyan);">
         </div>
 
-        <label style="font-size: 11px; color: var(--accent-cyan); display: block; margin: 12px 0 6px 0;">DEFINIÇÃO DO TERMO:</label>
-        <div id="termoDefinicao" contenteditable="true" oninput="atualizarTermoAtual()" style="min-height: 160px; background: var(--bg-base); border: 1px solid var(--border-neon); padding: 12px; outline: none; border-radius: 2px;"></div>
+        <label style="font-size: 11px; color: var(--accent-cyan); display: block; margin: 12px 0 6px 0;">DEFINIÇÃO:</label>
+        <div id="termoDefinicao" contenteditable="true" oninput="atualizarTermoAtual()" style="min-height: 120px; background: var(--bg-base); border: 1px solid var(--border-neon); padding: 10px; outline: none;"></div>
         
-        <div style="margin-top: 15px; display: flex; justify-content: space-between; align-items: center;">
-          <button onclick="exportarDicionarioJson()">💾 Exportar dicionario.json</button>
-          <button class="btn-danger" onclick="deletarTermoAtual()">🗑️ Excluir Termo</button>
+        <div style="margin-top: 12px; display: flex; justify-content: space-between; gap: 8px; flex-wrap: wrap;">
+          <button type="button" onclick="exportarDicionarioJson()">💾 Exportar JSON</button>
+          <button type="button" class="btn-danger" onclick="deletarTermoAtual()">🗑️ Excluir</button>
         </div>
       </div>
     </div>
   </div>
 
+  <!-- POPUP DE RESULTADO -->
+  <div id="popupDeteccao">
+    <div class="popup-header">
+      <span id="popupBadge" class="badge-tipo">TIPO</span>
+      <button type="button" onclick="fecharPopup()" style="padding: 2px 8px; min-height: 26px; font-size: 11px;">✖</button>
+    </div>
+    <div id="popupPalavra" class="popup-palavra">Palavra</div>
+    <div id="popupSub" class="popup-sub">Categoria / Papel</div>
+    <div id="popupSignificado" class="popup-significado">Significado...</div>
+  </div>
+
   <div class="status-bar">
-    <span id="statusText">STATUS: PRONTO</span>
+    <span id="statusText">ÍNDICE: ATIVO</span>
     <span id="wordCount">PALAVRAS: 0</span>
   </div>
 
@@ -307,32 +399,61 @@
   let projetoLivro = {
     "metadados": { "titulo": "Última Memória", "autor": "Autor" },
     "capitulos": {
-      "cap_1": { "titulo": "Capítulo 1", "conteudo_xhtml": '<p id="cap_1_p1">Iniciando editor com dicionário...</p>' }
+      "cap_1": { "titulo": "Capítulo 1", "conteudo_xhtml": '<p id="cap_1_p1">Digite Teddy ou Rede e dê espaço...</p>' }
     },
-    "personagens": [],
+    "personagens": [
+      { id: "char_teste", nome: "Teddy", papel: "Protagonista", biografia_xhtml: "<p>Jovem do Kentucky que questiona suas memórias.</p>" }
+    ],
     "dicionario": [
-      {
-        "id": "term_1",
-        "termo": "Rede Neural",
-        "categoria": "Tecnologia",
-        "definicao": "Sistema global de dados que interliga conexões humanas e artificiais."
-      }
+      { id: "term_1", termo: "Rede", categoria: "Tecnologia", definicao: "Sistema global de dados interligados." }
     ]
   };
 
+  let indicePersonagens = new Map();
+  let indiceDicionario = new Map();
+
   let capituloAtual = "cap_1";
   let characterSelecionadoId = null;
-  let termoSelecionadoId = "term_1";
+  let termoSelecionadoId = null;
+  let ultimaPalavraPopup = "";
 
-  function obterDataHoraFormatada() {
-    const agora = new Date();
-    return agora.toLocaleDateString('pt-BR') + ' às ' + agora.toLocaleTimeString('pt-BR');
+  function normalizarChave(texto) {
+    return texto
+      .replace(/[\u00A0\u200B]/g, " ")
+      .replace(/[.,!?;:()"'«»—–-]/g, "")
+      .trim()
+      .toLowerCase();
   }
 
-  window.onload = async function() {
+  function reconstruirIndices() {
+    indicePersonagens.clear();
+    indiceDicionario.clear();
+
+    if (projetoLivro.personagens) {
+      projetoLivro.personagens.forEach(p => {
+        if (p.nome) indicePersonagens.set(normalizarChave(p.nome), p);
+      });
+    }
+
+    if (projetoLivro.dicionario) {
+      projetoLivro.dicionario.forEach(t => {
+        if (t.termo) indiceDicionario.set(normalizarChave(t.termo), t);
+      });
+    }
+
+    document.getElementById("statusText").innerText = `INDEXADOS: ${indicePersonagens.size} PERS. / ${indiceDicionario.size} TERMOS`;
+  }
+
+  window.addEventListener("DOMContentLoaded", async function() {
     if (!localStorage.getItem("gh_repo")) {
       localStorage.setItem("gh_repo", "andreyoldekamp-del/EditorUltimaMemoria");
     }
+
+    const editor = document.getElementById("editorContent");
+    editor.addEventListener("input", processarEntradaTexto);
+    editor.addEventListener("keyup", processarEntradaTexto);
+
+    reconstruirIndices();
     renderizarListaCapitulos();
     carregarCapituloNaTela("cap_1");
 
@@ -340,7 +461,70 @@
       await puxarDoGitHub(true);
       await listarCommitsGitHub(true);
     }
-  };
+  });
+
+  // DETECÇÃO COMPATÍVEL COM DESKTOP E TECLADOS DE CELULAR (ANDROID / IOS)
+  function processarEntradaTexto() {
+    salvarCapituloAtualNaMemoria();
+    if (!document.getElementById("togglePopupAuto").checked) return;
+
+    const sel = window.getSelection();
+    if (!sel.rangeCount) return;
+
+    const range = sel.getRangeAt(0);
+    let node = range.startContainer;
+
+    let textoAntes = "";
+    if (node.nodeType === Node.TEXT_NODE) {
+      textoAntes = node.textContent.substring(0, range.startOffset);
+    } else if (node.innerText) {
+      textoAntes = node.innerText;
+    }
+
+    // Substitui espaços não-quebráveis do celular (\u00A0) por espaço normal
+    textoAntes = textoAntes.replace(/\u00A0/g, " ");
+
+    // Só testa quando há um espaço ou pontuação após a palavra (ou seja, palavra concluída)
+    const match = textoAntes.match(/([a-zA-ZÀ-ÿ0-9_-]+)[\s.,!?;:]+$/);
+    if (!match) return;
+
+    const chave = normalizarChave(match[1]);
+    if (chave.length < 2 || chave === ultimaPalavraPopup) return;
+
+    if (indicePersonagens.has(chave)) {
+      ultimaPalavraPopup = chave;
+      const p = indicePersonagens.get(chave);
+      mostrarPopup("PERSONAGEM", p.nome, `Papel: ${p.papel || 'Principal'}`, p.biografia_xhtml || "Sem biografia.");
+      return;
+    }
+
+    if (indiceDicionario.has(chave)) {
+      ultimaPalavraPopup = chave;
+      const t = indiceDicionario.get(chave);
+      mostrarPopup("DICIONÁRIO", t.termo, `Categoria: ${t.categoria || 'Geral'}`, t.definicao || "Sem definição.");
+      return;
+    }
+  }
+
+  function mostrarPopup(tipo, palavra, subtitulo, significadoHtml) {
+    const popup = document.getElementById("popupDeteccao");
+    const badge = document.getElementById("popupBadge");
+    
+    badge.innerText = tipo === "PERSONAGEM" ? "👤 PERSONAGEM" : "📖 DICIONÁRIO";
+    badge.className = "badge-tipo " + (tipo === "PERSONAGEM" ? "badge-personagem" : "badge-dicionario");
+    
+    document.getElementById("popupPalavra").innerText = palavra;
+    document.getElementById("popupSub").innerText = subtitulo;
+    document.getElementById("popupSignificado").innerHTML = significadoHtml;
+    
+    popup.style.borderColor = tipo === "PERSONAGEM" ? "var(--accent-purple)" : "var(--accent-cyan)";
+    popup.style.display = "block";
+  }
+
+  function fecharPopup() {
+    document.getElementById("popupDeteccao").style.display = "none";
+    ultimaPalavraPopup = "";
+  }
 
   function mudarAba(aba) {
     document.getElementById('containerEditor').style.display = aba === 'editor' ? 'flex' : 'none';
@@ -357,7 +541,6 @@
     }
   }
 
-  // CAPÍTULOS
   function renderizarListaCapitulos() {
     const lista = document.getElementById('chaptersList');
     lista.innerHTML = '';
@@ -371,7 +554,7 @@
   }
 
   function criarNovoCapitulo() {
-    const nome = prompt("Nome do novo capítulo:", `Capítulo ${Object.keys(projetoLivro.capitulos).length + 1}`);
+    const nome = prompt("Nome do capítulo:", `Capítulo ${Object.keys(projetoLivro.capitulos).length + 1}`);
     if (!nome) return;
     salvarCapituloAtualNaMemoria();
     const id = 'cap_' + Date.now();
@@ -403,7 +586,6 @@
     }
   }
 
-  // PERSONAGENS
   function renderizarListaPersonagens() {
     const lista = document.getElementById('listaPersonagens');
     lista.innerHTML = '';
@@ -423,6 +605,7 @@
     const novo = { id: 'char_' + Date.now(), nome: 'Novo Personagem', papel: 'Secundário', caracteristicas: [], imagemUrl: '', biografia_xhtml: '<p>Bio...</p>' };
     if (!projetoLivro.personagens) projetoLivro.personagens = [];
     projetoLivro.personagens.push(novo);
+    reconstruirIndices();
     renderizarListaPersonagens();
     selecionarPersonagem(novo.id);
   }
@@ -457,6 +640,7 @@
     p.papel = document.getElementById('charPapel').value;
     p.caracteristicas = document.getElementById('charTags').value.split(',').map(s => s.trim()).filter(Boolean);
     p.biografia_xhtml = document.getElementById('charBiografia').innerHTML;
+    reconstruirIndices();
     renderizarListaPersonagens();
   }
 
@@ -465,18 +649,19 @@
     if (!confirm("Excluir personagem?")) return;
     projetoLivro.personagens = projetoLivro.personagens.filter(p => p.id !== characterSelecionadoId);
     characterSelecionadoId = projetoLivro.personagens.length > 0 ? projetoLivro.personagens[0].id : null;
+    reconstruirIndices();
     renderizarListaPersonagens();
     if (characterSelecionadoId) selecionarPersonagem(characterSelecionadoId);
   }
 
-  // DICIONÁRIO E GLOSSÁRIO
   function renderizarListaTermos() {
     const lista = document.getElementById('listaTermos');
     lista.innerHTML = '';
     if (!projetoLivro.dicionario) projetoLivro.dicionario = [];
     document.getElementById('termCount').innerText = projetoLivro.dicionario.length;
 
-    projetoLivro.dicionario.forEach(t => {
+    const limiteVisual = projetoLivro.dicionario.slice(0, 150);
+    limiteVisual.forEach(t => {
       const item = document.createElement('div');
       item.className = 'item-card' + (t.id === termoSelecionadoId ? ' active' : '');
       item.innerHTML = `<div><strong>${t.termo || 'Novo Termo'}</strong><br><small style="color:var(--text-muted)">${t.categoria || 'Geral'}</small></div>`;
@@ -488,7 +673,8 @@
   function criarNovoTermo() {
     const novo = { id: 'term_' + Date.now(), termo: 'Novo Termo', categoria: 'Geral', definicao: '<p>Definição...</p>' };
     if (!projetoLivro.dicionario) projetoLivro.dicionario = [];
-    projetoLivro.dicionario.push(novo);
+    projetoLivro.dicionario.unshift(novo);
+    reconstruirIndices();
     renderizarListaTermos();
     selecionarTermo(novo.id);
   }
@@ -510,73 +696,77 @@
     t.termo = document.getElementById('termoTitulo').value;
     t.categoria = document.getElementById('termoCategoria').value;
     t.definicao = document.getElementById('termoDefinicao').innerHTML;
+    reconstruirIndices();
     renderizarListaTermos();
   }
 
   function deletarTermoAtual() {
     if (!termoSelecionadoId) return;
-    if (!confirm("Excluir termo do dicionário?")) return;
+    if (!confirm("Excluir termo?")) return;
     projetoLivro.dicionario = projetoLivro.dicionario.filter(t => t.id !== termoSelecionadoId);
     termoSelecionadoId = projetoLivro.dicionario.length > 0 ? projetoLivro.dicionario[0].id : null;
+    reconstruirIndices();
     renderizarListaTermos();
     if (termoSelecionadoId) selecionarTermo(termoSelecionadoId);
   }
 
-  // EXPORTAR DICIONARIO.JSON
   function exportarDicionarioJson() {
-    const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(projetoLivro.dicionario, null, 2));
+    const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(projetoLivro.dicionario));
     const downloadAnchor = document.createElement('a');
     downloadAnchor.setAttribute("href", dataStr);
     downloadAnchor.setAttribute("download", "dicionario.json");
     document.body.appendChild(downloadAnchor);
     downloadAnchor.click();
     downloadAnchor.remove();
-    alert("Arquivo dicionario.json gerado e baixado com sucesso!");
   }
 
-  // IMPORTAR BASE.TXT E CRIAR JSON
   function importarBaseTxt(event) {
     const file = event.target.files[0];
     if (!file) return;
 
+    document.getElementById("statusText").innerText = "PROCESSANDO TXT...";
     const reader = new FileReader();
     reader.onload = function(e) {
-      const conteudo = e.target.result;
-      const linhas = conteudo.split('\n');
+      const linhas = e.target.result.split(/\r?\n/);
       let importados = 0;
 
-      linhas.forEach(linha => {
-        const partes = linha.split('|').map(s => s.trim());
-        if (partes.length >= 3) {
-          const novoTermo = {
-            id: 'term_' + Date.now() + Math.floor(Math.random()*1000),
-            termo: partes[0],
-            categoria: partes[1],
-            definicao: `<p>${partes[2]}</p>`
-          };
-          projetoLivro.dicionario.push(novoTermo);
+      for (let i = 0; i < linhas.length; i++) {
+        const linha = linhas[i].trim();
+        if (!linha) continue;
+
+        if (linha.includes('|')) {
+          const partes = linha.split('|');
+          projetoLivro.dicionario.push({
+            id: 't_' + i + '_' + Date.now(),
+            termo: partes[0].trim(),
+            categoria: partes[1] ? partes[1].trim() : 'Geral',
+            definicao: partes[2] ? partes[2].trim() : 'Termo registrado.'
+          });
+          importados++;
+        } else {
+          projetoLivro.dicionario.push({
+            id: 't_' + i + '_' + Date.now(),
+            termo: linha,
+            categoria: 'Vocabulário',
+            definicao: 'Palavra validada.'
+          });
           importados++;
         }
-      });
-
-      renderizarListaTermos();
-      if (importados > 0) {
-        selecionarTermo(projetoLivro.dicionario[projetoLivro.dicionario.length - 1].id);
-        alert(`${importados} termos importados da base.txt com sucesso!`);
-      } else {
-        alert("Nenhum termo válido encontrado. Use o formato: Termo | Categoria | Descrição");
       }
+
+      reconstruirIndices();
+      renderizarListaTermos();
+      alert(`${importados} termos importados!`);
     };
     reader.readAsText(file);
   }
 
-  // GITHUB ASSETS E SALVAMENTO
   async function carregarImagemPersonagem(event) {
     const file = event.target.files[0];
     if (!file || !characterSelecionadoId) return;
     const repo = localStorage.getItem("gh_repo") || "andreyoldekamp-del/EditorUltimaMemoria";
     const token = localStorage.getItem("gh_token");
-    if (!token) { alert("Configure o Token do GitHub!"); return; }
+    if (!token) return alert("Configure o Token do GitHub!");
 
     const reader = new FileReader();
     reader.onload = async function(e) {
@@ -588,14 +778,15 @@
         const res = await fetch(url, {
           method: "PUT",
           headers: { "Authorization": `token ${token}`, "Content-Type": "application/json" },
-          body: JSON.stringify({ message: `Upload foto ${characterSelecionadoId}`, content: base64Content })
+          body: JSON.stringify({ message: `Foto ${characterSelecionadoId}`, content: base64Content })
         });
         if (res.ok) {
           const rawUrl = `https://raw.githubusercontent.com/${repo}/main/${fileName}`;
           const p = projetoLivro.personagens.find(item => item.id === characterSelecionadoId);
           p.imagemUrl = rawUrl;
+          reconstruirIndices();
           selecionarPersonagem(characterSelecionadoId);
-          alert("Foto salva com sucesso! Clique em Salvar Tudo para gravar no repositório.");
+          alert("Foto salva!");
         }
       } catch(err) { alert("Erro ao enviar foto."); }
     };
@@ -603,15 +794,6 @@
   }
 
   function formatar(cmd) { document.execCommand(cmd, false, null); salvarCapituloAtualNaMemoria(); }
-  function mudarFonte(fonte) {
-    const sel = window.getSelection();
-    if (!sel.rangeCount) return;
-    const span = document.createElement("span");
-    span.style.fontFamily = fonte;
-    span.appendChild(sel.getRangeAt(0).extractContents());
-    sel.getRangeAt(0).insertNode(span);
-    salvarCapituloAtualNaMemoria();
-  }
   function inserirParagrafoID() {
     const ed = document.getElementById("editorContent");
     const p = document.createElement("p");
@@ -634,34 +816,32 @@
   async function salvarNoGitHub() {
     salvarCapituloAtualNaMemoria();
     if (characterSelecionadoId) atualizarPersonagemAtual();
-    if (termoSelecionadoId) atualizarTermoAtual();
 
     const repo = localStorage.getItem("gh_repo") || "andreyoldekamp-del/EditorUltimaMemoria";
     const token = localStorage.getItem("gh_token");
-    if (!token) { alert("Configure o Token primeiro!"); configurarGitHub(); return; }
+    if (!token) { alert("Configure o Token!"); configurarGitHub(); return; }
 
-    const carimbo = obterDataHoraFormatada();
     const url = `https://api.github.com/repos/${repo}/contents/historia.json`;
-
     try {
       let sha = "";
       const getRes = await fetch(url, { headers: { "Authorization": `token ${token}` } });
       if (getRes.ok) sha = (await getRes.json()).sha;
 
-      const contentBase64 = btoa(unescape(encodeURIComponent(JSON.stringify(projetoLivro, null, 2))));
+      const payloadSalvar = {
+        metadados: projetoLivro.metadados,
+        capitulos: projetoLivro.capitulos,
+        personagens: projetoLivro.personagens,
+        dicionario: projetoLivro.dicionario.length > 5000 ? projetoLivro.dicionario.slice(0, 100) : projetoLivro.dicionario
+      };
+
+      const contentBase64 = btoa(unescape(encodeURIComponent(JSON.stringify(payloadSalvar, null, 2))));
       const putRes = await fetch(url, {
         method: "PUT",
         headers: { "Authorization": `token ${token}`, "Content-Type": "application/json" },
-        body: JSON.stringify({ message: `Atualização com Dicionário em ${carimbo}`, content: contentBase64, sha: sha || undefined })
+        body: JSON.stringify({ message: "Atualização GraphZO Mobile", content: contentBase64, sha: sha || undefined })
       });
 
-      if (putRes.ok) {
-        document.getElementById("lastSavedBadge").innerText = `🕒 Último salvamento: ${carimbo}`;
-        alert("Projeto completo (Capítulos, Personagens e Dicionário) salvo com sucesso!");
-        await listarCommitsGitHub(true);
-      } else {
-        alert("Erro ao salvar no GitHub.");
-      }
+      if (putRes.ok) alert("Salvo no GitHub!");
     } catch (e) { alert("Erro de conexão."); }
   }
 
@@ -675,13 +855,16 @@
       const res = await fetch(url, { headers: { "Authorization": `token ${token}` } });
       const data = await res.json();
       if (res.ok) {
-        projetoLivro = JSON.parse(decodeURIComponent(escape(atob(data.content))));
-        if(!projetoLivro.personagens) projetoLivro.personagens = [];
-        if(!projetoLivro.dicionario) projetoLivro.dicionario = [];
+        const carregado = JSON.parse(decodeURIComponent(escape(atob(data.content))));
+        projetoLivro.metadados = carregado.metadados || projetoLivro.metadados;
+        projetoLivro.capitulos = carregado.capitulos || projetoLivro.capitulos;
+        projetoLivro.personagens = carregado.personagens || [];
+        if (carregado.dicionario) projetoLivro.dicionario = carregado.dicionario;
         
+        reconstruirIndices();
         renderizarListaCapitulos();
         carregarCapituloNaTela(Object.keys(projetoLivro.capitulos)[0]);
-        if(!silencioso) alert("Dados carregados com sucesso!");
+        if(!silencioso) alert("Dados carregados!");
       }
     } catch(e) {}
   }
@@ -698,13 +881,13 @@
       const commits = await res.json();
       if (res.ok && Array.isArray(commits)) {
         const sel = document.getElementById("selectCommits");
-        sel.innerHTML = '<option value="">-- Versões Git --</option>';
+        sel.innerHTML = '<option value="">-- Versões --</option>';
         commits.forEach(c => {
           if (!descarteLista.includes(c.sha)) {
             const opt = document.createElement("option");
             opt.value = c.sha;
             const dt = new Date(c.commit.author.date);
-            opt.textContent = `[${dt.toLocaleDateString()} ${dt.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}] ${c.commit.message.substring(0, 20)}`;
+            opt.textContent = `[${dt.toLocaleDateString()} ${dt.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}] ${c.commit.message.substring(0, 15)}`;
             sel.appendChild(opt);
           }
         });
@@ -723,17 +906,18 @@
       const res = await fetch(url, { headers: { "Authorization": `token ${token}` } });
       const data = await res.json();
       if (res.ok) {
-        projetoLivro = JSON.parse(decodeURIComponent(escape(atob(data.content))));
-        if(!projetoLivro.personagens) projetoLivro.personagens = [];
-        if(!projetoLivro.dicionario) projetoLivro.dicionario = [];
+        const carregado = JSON.parse(decodeURIComponent(escape(atob(data.content))));
+        projetoLivro.capitulos = carregado.capitulos || projetoLivro.capitulos;
+        projetoLivro.personagens = carregado.personagens || [];
+        if (carregado.dicionario) projetoLivro.dicionario = carregado.dicionario;
         
+        reconstruirIndices();
         renderizarListaCapitulos();
         carregarCapituloNaTela(Object.keys(projetoLivro.capitulos)[0]);
         renderizarListaPersonagens();
-        renderizarListaTermos();
-        alert("Versão histórica carregada!");
+        alert("Versão carregada!");
       }
-    } catch(e) { alert("Erro ao carregar."); }
+    } catch(e) {}
   }
 
   function descartarVersaoAtual() {
@@ -743,7 +927,7 @@
     descarte.push(sha);
     localStorage.setItem("commits_descartados", JSON.stringify(descarte));
     listarCommitsGitHub(true);
-    alert("Versão ocultada da lista.");
+    alert("Versão ocultada.");
   }
 
   function atualizarContador() {
