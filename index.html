@@ -1,939 +1,771 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>GraphZO // ÚLTIMA MEMÓRIA [NEON V11 - MOBILE & POPUP]</title>
-  <style>
-    :root {
-      --bg-base: #030712;
-      --bg-panel: #0b0f19;
-      --bg-card: #111827;
-      --accent-cyan: #06b6d4;
-      --accent-purple: #a855f7;
-      --text-main: #f3f4f6;
-      --text-muted: #9ca3af;
-      --border-neon: #1e3a8a;
-      --success: #10b981;
-      --danger: #ef4444;
-    }
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>GraphZO //TESTE 380K</title>
+<style>
+  :root {
+    --bg-base: #030712;
+    --bg-panel: #0b0f19;
+    --bg-card: #111827;
+    --accent-cyan: #06b6d4;
+    --accent-purple: #a855f7;
+    --text-main: #f3f4f6;
+    --text-muted: #9ca3af;
+    --border-neon: #1e3a8a;
+    --success: #10b981;
+    --danger: #ef4444;
+    --warn: #f59e0b;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+  body {
+    font-family: 'Courier New', Courier, monospace;
+    background: var(--bg-base);
+    color: var(--text-main);
+    height: 100vh;
+    height: 100dvh;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+  }
+  header {
+    background: var(--bg-panel);
+    border-bottom: 2px solid var(--accent-cyan);
+    padding: 10px 16px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 8px;
+    z-index: 20;
+  }
+  h1 { font-size: 14px; color: var(--accent-cyan); letter-spacing: 1px; }
+  h1 span { color: var(--text-muted); font-size: 11px; }
+  button, label.file-btn {
+    background: var(--bg-base);
+    color: var(--accent-cyan);
+    border: 1px solid var(--accent-cyan);
+    padding: 8px 12px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 12px;
+    font-weight: bold;
+    font-family: inherit;
+    min-height: 36px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+  }
+  button:active, label.file-btn:active { background: var(--accent-cyan); color: var(--bg-base); }
+  button:disabled { opacity: 0.5; cursor: wait; }
+  .btn-ok { background: var(--success); border-color: var(--success); color: white; }
+  .btn-warn { background: var(--warn); border-color: var(--warn); color: black; }
+  .btn-danger { background: var(--danger); border-color: var(--danger); color: white; }
 
-    * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+  #statusBar {
+    background: var(--bg-card);
+    padding: 8px 16px;
+    font-size: 11px;
+    color: var(--text-muted);
+    border-bottom: 1px solid var(--border-neon);
+    display: flex;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+  #statusBar b { color: var(--accent-cyan); }
 
-    body {
-      font-family: 'Courier New', Courier, monospace;
-      background: var(--bg-base);
-      color: var(--text-main);
-      min-height: 100vh;
-      min-height: 100dvh;
-      display: flex;
-      flex-direction: column;
-      overflow-x: hidden;
-    }
+  .toolbar {
+    background: var(--bg-panel);
+    padding: 8px 16px;
+    border-bottom: 1px solid var(--border-neon);
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+    align-items: center;
+  }
 
-    header {
-      background: var(--bg-panel);
-      border-bottom: 2px solid var(--accent-cyan);
-      padding: 10px 16px;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      flex-wrap: wrap;
-      gap: 8px;
-      position: relative;
-      z-index: 20;
-    }
+  #preview {
+    flex: 1;
+    overflow-y: auto;
+    padding: 16px;
+    font-size: 12px;
+    line-height: 1.6;
+    background: var(--bg-card);
+    margin: 16px;
+    border: 1px solid var(--border-neon);
+    border-radius: 4px;
+    font-family: 'Courier New', monospace;
+    white-space: pre-wrap;
+    word-break: break-word;
+    color: var(--text-muted);
+  }
+  #preview .ok { color: var(--success); }
+  #preview .err { color: var(--danger); }
+  #preview .warn { color: var(--warn); }
+  #preview .title { color: var(--accent-cyan); font-weight: bold; display: block; margin: 12px 0 4px; }
 
-    h1 { font-size: 15px; color: var(--accent-cyan); letter-spacing: 1px; }
-    h1 span { color: var(--text-muted); font-size: 11px; }
+  #editorContent {
+    flex: 1;
+    padding: 24px;
+    background: var(--bg-card);
+    color: var(--text-main);
+    font-family: 'Times New Roman', serif;
+    font-size: 17px;
+    line-height: 1.7;
+    outline: none;
+    overflow-y: auto;
+    max-width: 900px;
+    margin: 0 auto;
+    width: 100%;
+  }
+  #editorContent:empty::before {
+    content: "Digite aqui... as palavras do dicionário serão detectadas enquanto você escreve.";
+    color: #4b5563;
+    font-style: italic;
+  }
 
-    .nav-bar {
-      background: var(--bg-card);
-      padding: 8px 16px;
-      border-bottom: 1px solid var(--border-neon);
-      display: flex;
-      gap: 8px;
-      align-items: center;
-      flex-wrap: wrap;
-      position: relative;
-      z-index: 19;
-    }
+  #popupDeteccao {
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    left: 20px;
+    max-width: 400px;
+    margin-left: auto;
+    background: var(--bg-panel);
+    border: 2px solid var(--accent-cyan);
+    border-radius: 8px;
+    padding: 14px;
+    box-shadow: 0 10px 40px rgba(0,0,0,0.95);
+    z-index: 9999;
+    display: none;
+  }
+  .popup-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 8px;
+    padding-bottom: 6px;
+    border-bottom: 1px solid var(--border-neon);
+  }
+  .badge {
+    font-size: 10px;
+    padding: 3px 8px;
+    border-radius: 3px;
+    font-weight: bold;
+    background: var(--accent-cyan);
+    color: var(--bg-base);
+  }
+  .popup-palavra { font-size: 18px; font-weight: bold; color: white; margin-bottom: 4px; }
+  .popup-sub { font-size: 11px; color: var(--text-muted); margin-bottom: 8px; }
+  .popup-significado {
+    font-size: 13px;
+    line-height: 1.5;
+    color: var(--text-main);
+    max-height: 160px;
+    overflow-y: auto;
+    background: var(--bg-card);
+    padding: 10px;
+    border-radius: 4px;
+  }
+  #popupFechar { padding: 2px 8px; min-height: 26px; font-size: 11px; }
 
-    .toolbar {
-      display: flex;
-      gap: 6px;
-      background: var(--bg-panel);
-      padding: 8px 16px;
-      border-bottom: 1px solid var(--border-neon);
-      align-items: center;
-      flex-wrap: wrap;
-      position: relative;
-      z-index: 18;
-    }
+  .hidden { display: none !important; }
 
-    button, select, label.file-btn {
-      background: var(--bg-base);
-      color: var(--accent-cyan);
-      border: 1px solid var(--accent-cyan);
-      padding: 8px 12px;
-      border-radius: 4px;
-      cursor: pointer;
-      font-size: 12px;
-      font-weight: bold;
-      touch-action: manipulation;
-      user-select: none;
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      min-height: 36px;
-    }
-
-    button:active, select:active, label.file-btn:active {
-      background: var(--accent-cyan);
-      color: var(--bg-base);
-    }
-
-    .btn-save { background: var(--success); border-color: var(--success); color: white; }
-    .btn-danger { background: var(--danger); border-color: var(--danger); color: white; }
-
-    .main-container {
-      display: flex;
-      flex: 1;
-      overflow: hidden;
-      position: relative;
-    }
-
-    aside.sidebar {
-      width: 260px;
-      background: var(--bg-panel);
-      border-right: 1px solid var(--border-neon);
-      display: flex;
-      flex-direction: column;
-      flex-shrink: 0;
-    }
-
-    .sidebar-header {
-      padding: 10px;
-      font-weight: bold;
-      border-bottom: 1px solid var(--border-neon);
-      font-size: 12px;
-      color: var(--accent-cyan);
-      background: var(--bg-card);
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-    }
-
-    .list-container {
-      flex: 1;
-      overflow-y: auto;
-      padding: 8px;
-    }
-
-    .item-card {
-      padding: 10px;
-      border-radius: 4px;
-      cursor: pointer;
-      margin-bottom: 6px;
-      font-size: 12px;
-      border: 1px solid transparent;
-      background: var(--bg-card);
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-    }
-
-    .item-card.active { border-color: var(--accent-cyan); background: #082f49; }
-
-    .editor-area {
-      flex: 1;
-      display: flex;
-      flex-direction: column;
-      background: var(--bg-base);
-      overflow-y: auto;
-      padding: 16px;
-    }
-
-    #editorContent {
-      max-width: 800px;
-      margin: 0 auto;
-      width: 100%;
-      min-height: 60vh;
-      background: var(--bg-card);
-      padding: 20px;
-      border-radius: 4px;
-      border: 1px solid var(--border-neon);
-      outline: none;
-      font-family: 'Times New Roman', serif;
-      font-size: 16px;
-      line-height: 1.6;
-      color: var(--text-main);
-    }
-
-    #editorContent p { margin-bottom: 1em; }
-
-    .status-bar {
-      background: var(--bg-panel);
-      border-top: 1px solid var(--accent-cyan);
-      padding: 8px 16px;
-      font-size: 11px;
-      color: var(--text-muted);
-      display: flex;
-      justify-content: space-between;
-      flex-wrap: wrap;
-      gap: 6px;
-    }
-
-    /* POPUP FLUTUANTE DE DETECÇÃO */
-    #popupDeteccao {
-      position: fixed;
-      bottom: 45px;
-      right: 16px;
-      left: 16px;
-      max-width: 380px;
-      margin-left: auto;
-      background: var(--bg-panel);
-      border: 2px solid var(--accent-cyan);
-      border-radius: 8px;
-      padding: 14px;
-      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.95);
-      z-index: 9999;
-      display: none;
-    }
-
-    .popup-header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      margin-bottom: 8px;
-      padding-bottom: 6px;
-      border-bottom: 1px solid var(--border-neon);
-    }
-
-    .badge-tipo {
-      font-size: 10px;
-      padding: 3px 8px;
-      border-radius: 3px;
-      font-weight: bold;
-    }
-
-    .badge-personagem { background: var(--accent-purple); color: white; }
-    .badge-dicionario { background: var(--accent-cyan); color: var(--bg-base); }
-
-    .popup-palavra { font-size: 16px; font-weight: bold; color: white; margin-bottom: 4px; }
-    .popup-sub { font-size: 11px; color: var(--text-muted); margin-bottom: 8px; }
-    .popup-significado {
-      font-size: 13px;
-      line-height: 1.4;
-      color: var(--text-main);
-      max-height: 130px;
-      overflow-y: auto;
-      background: var(--bg-card);
-      padding: 8px;
-      border-radius: 4px;
-    }
-
-    /* RESPONSIVIDADE PARA CELULAR */
-    @media (max-width: 768px) {
-      .main-container {
-        flex-direction: column;
-        overflow-y: auto;
-      }
-      aside.sidebar {
-        width: 100%;
-        max-height: 180px;
-        border-right: none;
-        border-bottom: 1px solid var(--border-neon);
-      }
-      .editor-area {
-        padding: 10px;
-      }
-      #editorContent {
-        padding: 14px;
-        min-height: 50vh;
-      }
-      .git-controls {
-        width: 100%;
-        margin-left: 0 !important;
-      }
-    }
-  </style>
+  @media (max-width: 600px) {
+    #editorContent { padding: 16px; font-size: 16px; }
+    h1 { font-size: 12px; }
+    #preview { margin: 8px; padding: 10px; }
+  }
+</style>
 </head>
 <body>
 
-  <header>
-    <div>
-      <h1>SYS_GRAPHZO // <span>NEON V11</span></h1>
-      <div id="lastSavedBadge" style="font-size: 10px; color: var(--success);">🕒 Pronto para edição</div>
-    </div>
-    <div style="display: flex; gap: 6px; flex-wrap: wrap;">
-      <button type="button" onclick="configurarGitHub()">⚙️ Config</button>
-      <button type="button" onclick="puxarDoGitHub()">📥 Puxar</button>
-      <button type="button" class="btn-save" onclick="salvarNoGitHub()">☁️ Salvar</button>
-    </div>
-  </header>
-
-  <div class="nav-bar">
-    <button type="button" onclick="mudarAba('editor')">📂 01. Editor</button>
-    <button type="button" onclick="mudarAba('personagens')">👤 02. Personagens</button>
-    <button type="button" onclick="mudarAba('dicionario')">📖 03. Dicionário</button>
-    
-    <div class="git-controls" style="margin-left: auto; display: flex; gap: 6px; align-items: center; flex-wrap: wrap;">
-      <button type="button" onclick="listarCommitsGitHub()">📜 Versões</button>
-      <select id="selectCommits" onchange="carregarVersaoSelecionada()" style="max-width: 170px;">
-        <option value="">-- Versões --</option>
-      </select>
-      <button type="button" class="btn-danger" onclick="descartarVersaoAtual()">🗑️</button>
-    </div>
+<header>
+  <div>
+    <h1>GraphZO // IMPORTADOR <span>380K</span></h1>
+    <div id="cfgInfo" style="font-size: 10px; color: var(--text-muted);">Repo: —</div>
   </div>
+  <div style="display: flex; gap: 6px; flex-wrap: wrap;">
+    <button onclick="configurar()">⚙️ Config</button>
+    <button id="btnCarregar" onclick="carregarDoGitHub()" disabled>📥 Carregar do GitHub</button>
+  </div>
+</header>
 
-  <div class="toolbar" id="toolbarEditor">
-    <button type="button" onclick="formatar('bold')"><b>B</b></button>
-    <button type="button" onclick="formatar('italic')"><i>I</i></button>
-    <button type="button" onclick="formatar('underline')"><u>U</u></button>
-    <button type="button" onclick="inserirParagrafoID()">➕ Parágrafo</button>
-    <button type="button" onclick="criarNovoCapitulo()">📑 + Cap.</button>
-    <label style="font-size: 11px; display: flex; align-items: center; gap: 5px; cursor: pointer;">
-      <input type="checkbox" id="togglePopupAuto" checked> 🔍 Popup Auto
+<div id="statusBar">
+  <span id="statusText">Pronto. Selecione o .txt ou carregue o JSON do GitHub.</span>
+  <span id="perfText"></span>
+</div>
+
+<!-- ================= FASE 1: IMPORTAÇÃO ================= -->
+<div id="faseImport">
+  <div class="toolbar">
+    <label class="file-btn">
+      📂 Selecionar .txt
+      <input type="file" id="txtInput" accept=".txt,text/plain" style="display: none;">
     </label>
+    <button id="btnSubir" class="btn-ok" onclick="subirParaGitHub()" disabled>☁️ Subir para o GitHub</button>
+    <button class="btn-danger" onclick="limparPreview()">🗑️ Limpar prévia</button>
   </div>
-
-  <!-- ABA 1: EDITOR -->
-  <div class="main-container" id="containerEditor">
-    <aside class="sidebar">
-      <div class="sidebar-header">📑 CAPÍTULOS</div>
-      <div class="list-container" id="chaptersList"></div>
-    </aside>
-    <div class="editor-area">
-      <div id="editorContent" contenteditable="true" spellcheck="false"></div>
-    </div>
+  <div id="preview">
+    Nenhum arquivo selecionado.<br><br>
+    Formatos aceitos no TXT:<br>
+    · <span class="ok">[P] Nome</span> → vira personagem<br>
+    · <span class="ok">[D] termo = categoria ‖ definição</span> → vira verbete<br>
+    · <span class="ok">termo | categoria | definição</span> → vira verbete<br>
+    · <span class="ok">termo</span> → vira verbete simples
   </div>
+</div>
 
-  <!-- ABA 2: PERSONAGENS -->
-  <div class="main-container" id="painelPersonagens" style="display: none;">
-    <aside class="sidebar">
-      <div class="sidebar-header">
-        <span>👤 ELENCO (<span id="charCount">0</span>)</span>
-        <button type="button" onclick="criarNovoPersonagem()">+ NOVO</button>
-      </div>
-      <div class="list-container" id="listaPersonagens"></div>
-    </aside>
-    <div style="flex: 1; padding: 16px; overflow-y: auto; background: var(--bg-base);">
-      <div style="max-width: 750px; margin: 0 auto; background: var(--bg-card); padding: 16px; border-radius: 4px; border: 1px solid var(--border-neon);">
-        <div style="display: flex; gap: 16px; margin-bottom: 16px; flex-wrap: wrap;">
-          <div style="width: 120px; height: 120px; background: var(--bg-base); border: 1px solid var(--accent-cyan); border-radius: 4px; overflow: hidden; display: flex; align-items: center; justify-content: center; flex-direction: column; position: relative;">
-            <img id="charAvatarPreview" src="" style="width: 100%; height: 100%; object-fit: cover; display: none;">
-            <span id="charNoPhotoText" style="font-size: 10px; color: var(--text-muted);">Sem foto</span>
-            <input type="file" id="charImageInput" accept="image/*" style="display: none;" onchange="carregarImagemPersonagem(event)">
-            <button type="button" onclick="document.getElementById('charImageInput').click()" style="position: absolute; bottom: 4px; font-size: 10px; padding: 4px 6px; min-height: 26px;">📷 Foto</button>
-          </div>
-          <div style="flex: 1; min-width: 200px; display: flex; flex-direction: column; gap: 8px;">
-            <input type="text" id="charNome" placeholder="Nome do Personagem" oninput="atualizarPersonagemAtual()" style="padding: 8px; background: var(--bg-base); color: white; border: 1px solid var(--accent-cyan);">
-            <input type="text" id="charPapel" placeholder="Papel" oninput="atualizarPersonagemAtual()" style="padding: 8px; background: var(--bg-base); color: white; border: 1px solid var(--accent-cyan);">
-            <input type="text" id="charTags" placeholder="Características" oninput="atualizarPersonagemAtual()" style="padding: 8px; background: var(--bg-base); color: white; border: 1px solid var(--accent-cyan);">
-          </div>
-        </div>
-        <label style="font-size: 11px; color: var(--accent-cyan); display: block; margin-bottom: 6px;">BIOGRAFIA:</label>
-        <div id="charBiografia" contenteditable="true" oninput="atualizarPersonagemAtual()" style="min-height: 140px; background: var(--bg-base); border: 1px solid var(--border-neon); padding: 10px; outline: none;"></div>
-        <div style="margin-top: 12px; text-align: right;"><button type="button" class="btn-danger" onclick="deletarPersonagemAtual()">🗑️ Excluir</button></div>
-      </div>
-    </div>
+<!-- ================= FASE 2: EDITOR ================= -->
+<div id="faseEditor" class="hidden" style="flex:1; display:flex; flex-direction:column;">
+  <div id="editorContent" contenteditable="true" spellcheck="false"></div>
+</div>
+
+<div id="popupDeteccao">
+  <div class="popup-header">
+    <span class="badge" id="popupBadge">TERMO</span>
+    <button id="popupFechar" onclick="fecharPopup()">✖</button>
   </div>
-
-  <!-- ABA 3: DICIONÁRIO -->
-  <div class="main-container" id="painelDicionario" style="display: none;">
-    <aside class="sidebar">
-      <div class="sidebar-header">
-        <span>📖 TERMOS (<span id="termCount">0</span>)</span>
-        <button type="button" onclick="criarNovoTermo()">+ NOVO</button>
-      </div>
-      <div class="list-container" id="listaTermos"></div>
-    </aside>
-    <div style="flex: 1; padding: 16px; overflow-y: auto; background: var(--bg-base);">
-      <div style="max-width: 750px; margin: 0 auto; background: var(--bg-card); padding: 16px; border-radius: 4px; border: 1px solid var(--border-neon);">
-        
-        <div style="margin-bottom: 16px; padding: 12px; background: var(--bg-panel); border: 1px dashed var(--accent-cyan); border-radius: 4px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px;">
-          <div>
-            <strong>Importar Base (.txt):</strong>
-            <div style="font-size: 10px; color: var(--text-muted);">Termo | Categoria | Descrição</div>
-          </div>
-          <label class="file-btn">
-            📂 Carregar .txt
-            <input type="file" id="txtBaseInput" accept=".txt,text/plain" style="display: none;" onchange="importarBaseTxt(event)">
-          </label>
-        </div>
-
-        <div style="display: flex; flex-direction: column; gap: 8px;">
-          <input type="text" id="termoTitulo" placeholder="Termo ou Palavra" oninput="atualizarTermoAtual()" style="padding: 8px; background: var(--bg-base); color: white; border: 1px solid var(--accent-cyan);">
-          <input type="text" id="termoCategoria" placeholder="Categoria" oninput="atualizarTermoAtual()" style="padding: 8px; background: var(--bg-base); color: white; border: 1px solid var(--accent-cyan);">
-        </div>
-
-        <label style="font-size: 11px; color: var(--accent-cyan); display: block; margin: 12px 0 6px 0;">DEFINIÇÃO:</label>
-        <div id="termoDefinicao" contenteditable="true" oninput="atualizarTermoAtual()" style="min-height: 120px; background: var(--bg-base); border: 1px solid var(--border-neon); padding: 10px; outline: none;"></div>
-        
-        <div style="margin-top: 12px; display: flex; justify-content: space-between; gap: 8px; flex-wrap: wrap;">
-          <button type="button" onclick="exportarDicionarioJson()">💾 Exportar JSON</button>
-          <button type="button" class="btn-danger" onclick="deletarTermoAtual()">🗑️ Excluir</button>
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <!-- POPUP DE RESULTADO -->
-  <div id="popupDeteccao">
-    <div class="popup-header">
-      <span id="popupBadge" class="badge-tipo">TIPO</span>
-      <button type="button" onclick="fecharPopup()" style="padding: 2px 8px; min-height: 26px; font-size: 11px;">✖</button>
-    </div>
-    <div id="popupPalavra" class="popup-palavra">Palavra</div>
-    <div id="popupSub" class="popup-sub">Categoria / Papel</div>
-    <div id="popupSignificado" class="popup-significado">Significado...</div>
-  </div>
-
-  <div class="status-bar">
-    <span id="statusText">ÍNDICE: ATIVO</span>
-    <span id="wordCount">PALAVRAS: 0</span>
-  </div>
+  <div class="popup-palavra" id="popupPalavra">Palavra</div>
+  <div class="popup-sub" id="popupSub">Categoria</div>
+  <div class="popup-significado" id="popupSignificado">Significado...</div>
+</div>
 
 <script>
-  let projetoLivro = {
-    "metadados": { "titulo": "Última Memória", "autor": "Autor" },
-    "capitulos": {
-      "cap_1": { "titulo": "Capítulo 1", "conteudo_xhtml": '<p id="cap_1_p1">Digite Teddy ou Rede e dê espaço...</p>' }
-    },
-    "personagens": [
-      { id: "char_teste", nome: "Teddy", papel: "Protagonista", biografia_xhtml: "<p>Jovem do Kentucky que questiona suas memórias.</p>" }
-    ],
-    "dicionario": [
-      { id: "term_1", termo: "Rede", categoria: "Tecnologia", definicao: "Sistema global de dados interligados." }
-    ]
-  };
+/* =========================================================================
+   CONFIGURAÇÃO
+   ========================================================================= */
+const cfg = {
+  repo: localStorage.getItem("gh_repo") || "andreyoldekamp-del/EditorUltimaMemoria",
+  token: localStorage.getItem("gh_token") || "",
+  branch: localStorage.getItem("gh_branch") || "main",
+  arquivo: "dicionario.json"
+};
 
-  let indicePersonagens = new Map();
-  let indiceDicionario = new Map();
+/* =========================================================================
+   ESTADO
+   ========================================================================= */
+let indice = new Map();
+let termosParsed = [];      // {termo, categoria, definicao}
+let personagensParsed = []; // {nome, bio}
+let stats = { validos: 0, ignorados: 0, duplicados: 0, personagens: 0 };
+let ultimaChaveMostrada = "";
+let debounceTimer = null;
 
-  let capituloAtual = "cap_1";
-  let characterSelecionadoId = null;
-  let termoSelecionadoId = null;
-  let ultimaPalavraPopup = "";
+/* =========================================================================
+   UTIL
+   ========================================================================= */
+function normalizarChave(texto) {
+  if (!texto) return "";
+  return String(texto)
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .replace(/[\uFEFF\u00A0\u200B\u200C\u200D]/g, "")
+    .replace(/[.,!?;:()"'«»—–-]/g, "")
+    .replace(/\s+/g, " ")
+    .trim()
+    .toLowerCase();
+}
 
-  function normalizarChave(texto) {
-    return texto
-      .replace(/[\u00A0\u200B]/g, " ")
-      .replace(/[.,!?;:()"'«»—–-]/g, "")
-      .trim()
-      .toLowerCase();
+function atualizarStatus(msg, perf) {
+  document.getElementById("statusText").innerHTML = msg;
+  if (perf !== undefined) document.getElementById("perfText").textContent = perf;
+}
+
+function atualizarCfgInfo() {
+  const el = document.getElementById("cfgInfo");
+  const temToken = cfg.token ? "✓ token" : "✗ sem token";
+  el.textContent = `Repo: ${cfg.repo} · branch ${cfg.branch} · ${temToken}`;
+  document.getElementById("btnCarregar").disabled = !cfg.token && !cfg.repo;
+}
+
+/* =========================================================================
+   CONFIGURAÇÃO
+   ========================================================================= */
+function configurar() {
+  const repo = prompt("Repositório (usuario/repo):", cfg.repo);
+  if (repo === null) return;
+  const branch = prompt("Branch:", cfg.branch) || "main";
+  const token = prompt("Personal Access Token (ghp_...):", cfg.token);
+  if (token === null) return;
+
+  cfg.repo = repo.trim() || cfg.repo;
+  cfg.branch = branch.trim() || "main";
+  cfg.token = token.trim();
+
+  localStorage.setItem("gh_repo", cfg.repo);
+  localStorage.setItem("gh_branch", cfg.branch);
+  localStorage.setItem("gh_token", cfg.token);
+
+  atualizarCfgInfo();
+  alert("Configurações salvas.");
+}
+
+/* =========================================================================
+   PARSER DO TXT
+   ========================================================================= */
+function parseLinha(linhaOriginal, i) {
+  let linha = String(linhaOriginal || "")
+    .replace(/^[\uFEFF\u00A0\u200B\u200C\u200D]+/, "")
+    .trim();
+  if (!linha) return null;
+  if (linha.startsWith("#") || linha.startsWith("//")) return null;
+
+  // [P] / [D]
+  const mPrefixo = linha.match(/^\[([PD])\]\s*(.+)$/i);
+  if (mPrefixo) {
+    const tag = mPrefixo[1].toUpperCase();
+    const resto = mPrefixo[2].trim();
+    if (!resto) return null;
+
+    if (tag === "P") {
+      const mBio = resto.match(/^([^=]+?)\s*=\s*(.+)$/);
+      const nome = (mBio ? mBio[1] : resto).trim();
+      if (!nome) return null;
+      return { tipo: "P", nome, bio: mBio ? mBio[2].trim() : "Personagem importado." };
+    }
+
+    // [D]
+    const idxIgual = resto.indexOf("=");
+    if (idxIgual === -1) {
+      return { tipo: "D", termo: resto, categoria: "Geral", definicao: "Termo registrado." };
+    }
+    const termo = resto.slice(0, idxIgual).trim();
+    if (!termo) return null;
+    let cauda = resto.slice(idxIgual + 1).trim();
+    // remove sufixo "· ex"
+    cauda = cauda.replace(/\s*(·|Â·).*$/, "").trim();
+    const partes = cauda.split("‖").map(s => s.trim()).filter(Boolean);
+    let categoria = "Geral";
+    let definicao = "Termo registrado.";
+    if (partes.length === 1) {
+      const p = partes[0];
+      if (p.length <= 40 && !p.includes(" ") && !/[.!?]/.test(p)) {
+        categoria = p;
+      } else {
+        definicao = p;
+      }
+    } else if (partes.length >= 2) {
+      categoria = partes[0];
+      definicao = partes.slice(1).join(" ‖ ");
+    }
+    return { tipo: "D", termo, categoria, definicao };
   }
 
-  function reconstruirIndices() {
-    indicePersonagens.clear();
-    indiceDicionario.clear();
-
-    if (projetoLivro.personagens) {
-      projetoLivro.personagens.forEach(p => {
-        if (p.nome) indicePersonagens.set(normalizarChave(p.nome), p);
-      });
-    }
-
-    if (projetoLivro.dicionario) {
-      projetoLivro.dicionario.forEach(t => {
-        if (t.termo) indiceDicionario.set(normalizarChave(t.termo), t);
-      });
-    }
-
-    document.getElementById("statusText").innerText = `INDEXADOS: ${indicePersonagens.size} PERS. / ${indiceDicionario.size} TERMOS`;
+  // |
+  if (linha.includes("|")) {
+    const p = linha.split("|").map(s => s.trim());
+    if (!p[0]) return null;
+    return {
+      tipo: "D",
+      termo: p[0],
+      categoria: p[1] || "Geral",
+      definicao: p[2] || "Termo registrado."
+    };
   }
 
-  window.addEventListener("DOMContentLoaded", async function() {
-    if (!localStorage.getItem("gh_repo")) {
-      localStorage.setItem("gh_repo", "andreyoldekamp-del/EditorUltimaMemoria");
+  // só termo
+  return { tipo: "D", termo: linha, categoria: "Geral", definicao: "Termo registrado." };
+}
+
+/* =========================================================================
+   FASE 1 — Seleção do TXT e parse
+   ========================================================================= */
+document.getElementById("txtInput").addEventListener("change", async (event) => {
+  const file = event.target.files && event.target.files[0];
+  if (!file) return;
+
+  const t0 = performance.now();
+  atualizarStatus("Lendo arquivo...", "");
+
+  try {
+    const texto = await lerArquivo(file);
+    atualizarStatus("Fazendo parse...", "");
+
+    const linhas = texto.split(/\r?\n/);
+    const vistos = new Set();
+    termosParsed = [];
+    personagensParsed = [];
+    stats = { validos: 0, ignorados: 0, duplicados: 0, personagens: 0 };
+
+    // Processa em blocos para não travar a UI em arquivos grandes
+    const CHUNK = 5000;
+    for (let start = 0; start < linhas.length; start += CHUNK) {
+      const fim = Math.min(start + CHUNK, linhas.length);
+      for (let i = start; i < fim; i++) {
+        const linha = linhas[i];
+        if (!linha.trim()) continue;
+        const item = parseLinha(linha, i);
+        if (!item) { stats.ignorados++; continue; }
+        if (item.tipo === "P") {
+          const k = normalizarChave(item.nome);
+          if (!k) { stats.ignorados++; continue; }
+          if (vistos.has("P:" + k)) { stats.duplicados++; continue; }
+          vistos.add("P:" + k);
+          personagensParsed.push({ nome: item.nome, bio: item.bio });
+          stats.personagens++;
+        } else {
+          const k = normalizarChave(item.termo);
+          if (!k) { stats.ignorados++; continue; }
+          if (vistos.has("D:" + k)) { stats.duplicados++; continue; }
+          vistos.add("D:" + k);
+          termosParsed.push({ termo: item.termo, categoria: item.categoria, definicao: item.definicao });
+          stats.validos++;
+        }
+      }
+      // deixa a UI respirar
+      if (fim < linhas.length) await new Promise(r => setTimeout(r, 0));
     }
 
-    const editor = document.getElementById("editorContent");
-    editor.addEventListener("input", processarEntradaTexto);
-    editor.addEventListener("keyup", processarEntradaTexto);
+    const dt = Math.round(performance.now() - t0);
+    renderPreview(file.name, texto, linhas, dt);
+    document.getElementById("btnSubir").disabled = false;
 
-    reconstruirIndices();
-    renderizarListaCapitulos();
-    carregarCapituloNaTela("cap_1");
+    atualizarStatus(
+      `<span class="ok"><b>${stats.validos.toLocaleString("pt-BR")}</b> verbetes + <b>${stats.personagens}</b> personagens prontos</span>`,
+      `Parse: ${dt} ms · Ignorados: ${stats.ignorados} · Duplicados: ${stats.duplicados}`
+    );
+  } catch (err) {
+    atualizarStatus(`<span class="err">Erro: ${err.message}</span>`, "");
+    console.error(err);
+  }
+});
 
-    if (localStorage.getItem("gh_token")) {
-      await puxarDoGitHub(true);
-      await listarCommitsGitHub(true);
+function lerArquivo(file) {
+  return new Promise((resolve, reject) => {
+    const r = new FileReader();
+    r.onload = (e) => resolve(e.target.result);
+    r.onerror = () => reject(new Error("Falha ao ler arquivo"));
+    r.readAsText(file, "UTF-8");
+  });
+}
+
+function renderPreview(nomeArquivo, texto, linhas, dt) {
+  const el = document.getElementById("preview");
+  const amostras = [];
+  let count = 0;
+  for (let i = 0; i < linhas.length && count < 8; i++) {
+    const l = linhas[i].trim();
+    if (!l) continue;
+    const p = parseLinha(l, i);
+    if (!p) continue;
+    amostras.push({ bruto: l, parsed: p });
+    count++;
+  }
+
+  let html = "";
+  html += `<span class="title">📄 Arquivo: ${nomeArquivo}</span>`;
+  html += `Tamanho: ${(texto.length / 1024 / 1024).toFixed(2)} MB · Linhas: ${linhas.length.toLocaleString("pt-BR")}<br>`;
+  html += `<span class="ok">✔ ${stats.validos.toLocaleString("pt-BR")} verbetes</span> · `;
+  html += `<span class="ok">✔ ${stats.personagens} personagens</span> · `;
+  html += `<span class="warn">↺ ${stats.duplicados} duplicados</span> · `;
+  html += `<span class="err">✘ ${stats.ignorados} ignorados</span><br>`;
+  html += `Tempo de parse: ${dt} ms<br>`;
+  html += `<span class="title">🔎 Amostra (8 primeiras linhas válidas)</span>`;
+
+  amostras.forEach((a, i) => {
+    const p = a.parsed;
+    if (p.tipo === "P") {
+      html += `<span class="ok">[${i}]</span> bruto: ${escapar(a.bruto)}<br>`;
+      html += `     → <b>PERSONAGEM</b> "${p.nome}" — ${escapar(p.bio.slice(0, 60))}<br>`;
+    } else {
+      html += `<span class="ok">[${i}]</span> bruto: ${escapar(a.bruto)}<br>`;
+      html += `     → <b>VERBETE</b> "${p.termo}" | cat: "${p.categoria}" | def: "${escapar(p.definicao.slice(0, 60))}"<br>`;
     }
   });
 
-  // DETECÇÃO COMPATÍVEL COM DESKTOP E TECLADOS DE CELULAR (ANDROID / IOS)
-  function processarEntradaTexto() {
-    salvarCapituloAtualNaMemoria();
-    if (!document.getElementById("togglePopupAuto").checked) return;
+  el.innerHTML = html;
+}
 
-    const sel = window.getSelection();
-    if (!sel.rangeCount) return;
+function escapar(s) {
+  return String(s)
+    .replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+}
 
-    const range = sel.getRangeAt(0);
-    let node = range.startContainer;
+function limparPreview() {
+  termosParsed = [];
+  personagensParsed = [];
+  stats = { validos: 0, ignorados: 0, duplicados: 0, personagens: 0 };
+  document.getElementById("txtInput").value = "";
+  document.getElementById("btnSubir").disabled = true;
+  document.getElementById("preview").innerHTML =
+    "Prévia limpa. Selecione outro .txt.";
+  atualizarStatus("Pronto.", "");
+}
 
-    let textoAntes = "";
-    if (node.nodeType === Node.TEXT_NODE) {
-      textoAntes = node.textContent.substring(0, range.startOffset);
-    } else if (node.innerText) {
-      textoAntes = node.innerText;
-    }
-
-    // Substitui espaços não-quebráveis do celular (\u00A0) por espaço normal
-    textoAntes = textoAntes.replace(/\u00A0/g, " ");
-
-    // Só testa quando há um espaço ou pontuação após a palavra (ou seja, palavra concluída)
-    const match = textoAntes.match(/([a-zA-ZÀ-ÿ0-9_-]+)[\s.,!?;:]+$/);
-    if (!match) return;
-
-    const chave = normalizarChave(match[1]);
-    if (chave.length < 2 || chave === ultimaPalavraPopup) return;
-
-    if (indicePersonagens.has(chave)) {
-      ultimaPalavraPopup = chave;
-      const p = indicePersonagens.get(chave);
-      mostrarPopup("PERSONAGEM", p.nome, `Papel: ${p.papel || 'Principal'}`, p.biografia_xhtml || "Sem biografia.");
-      return;
-    }
-
-    if (indiceDicionario.has(chave)) {
-      ultimaPalavraPopup = chave;
-      const t = indiceDicionario.get(chave);
-      mostrarPopup("DICIONÁRIO", t.termo, `Categoria: ${t.categoria || 'Geral'}`, t.definicao || "Sem definição.");
-      return;
-    }
+/* =========================================================================
+   FASE 2 — Upload para GitHub
+   ========================================================================= */
+async function subirParaGitHub() {
+  if (termosParsed.length === 0 && personagensParsed.length === 0) {
+    alert("Nada para subir. Selecione um .txt primeiro.");
+    return;
+  }
+  if (!cfg.token) {
+    alert("Configure o token do GitHub primeiro (⚙️ Config).");
+    configurar();
+    return;
   }
 
-  function mostrarPopup(tipo, palavra, subtitulo, significadoHtml) {
-    const popup = document.getElementById("popupDeteccao");
-    const badge = document.getElementById("popupBadge");
-    
-    badge.innerText = tipo === "PERSONAGEM" ? "👤 PERSONAGEM" : "📖 DICIONÁRIO";
-    badge.className = "badge-tipo " + (tipo === "PERSONAGEM" ? "badge-personagem" : "badge-dicionario");
-    
-    document.getElementById("popupPalavra").innerText = palavra;
-    document.getElementById("popupSub").innerText = subtitulo;
-    document.getElementById("popupSignificado").innerHTML = significadoHtml;
-    
-    popup.style.borderColor = tipo === "PERSONAGEM" ? "var(--accent-purple)" : "var(--accent-cyan)";
-    popup.style.display = "block";
+  const btn = document.getElementById("btnSubir");
+  btn.disabled = true;
+  btn.textContent = "⏳ Enviando...";
+
+  try {
+    // Personagens vão para um arquivo separado, para não misturar com o índice
+    const conteudoDicionario = JSON.stringify(termosParsed);
+    const conteudoPersonagens = JSON.stringify(personagensParsed);
+
+    atualizarStatus("Convertendo para base64...", "");
+    const b64Dict = b64EncodeUnicode(conteudoDicionario);
+    const b64Pers = b64EncodeUnicode(conteudoPersonagens);
+
+    atualizarStatus("Enviando dicionário.json...", "");
+    await putArquivoGitHub(cfg.arquivo, b64Dict, `Dicionário: ${termosParsed.length} termos`);
+
+    atualizarStatus("Enviando personagens.json...", "");
+    await putArquivoGitHub("personagens.json", b64Pers, `Personagens: ${personagensParsed.length}`);
+
+    atualizarStatus(
+      `<span class="ok">✔ dicionario.json e personagens.json enviados</span>`,
+      `Branch: ${cfg.branch}`
+    );
+    btn.textContent = "✔ Enviado";
+    setTimeout(() => {
+      btn.disabled = false;
+      btn.textContent = "☁️ Subir para o GitHub";
+    }, 2000);
+
+    alert(
+      `Enviado com sucesso!\n\n` +
+      `dicionario.json: ${termosParsed.length} termos\n` +
+      `personagens.json: ${personagensParsed.length} personagens\n\n` +
+      `Agora clique em "📥 Carregar do GitHub" para indexar e testar.`
+    );
+  } catch (err) {
+    console.error(err);
+    atualizarStatus(`<span class="err">Erro no upload: ${err.message}</span>`, "");
+    alert(`Falha ao subir para o GitHub:\n\n${err.message}\n\nVerifique o token (precisa de escopo "repo").`);
+    btn.disabled = false;
+    btn.textContent = "☁️ Subir para o GitHub";
+  }
+}
+
+function b64EncodeUnicode(str) {
+  return btoa(unescape(encodeURIComponent(str)));
+}
+
+function b64DecodeUnicode(str) {
+  return decodeURIComponent(escape(atob(str)));
+}
+
+async function putArquivoGitHub(nome, conteudoBase64, mensagem) {
+  const url = `https://api.github.com/repos/${cfg.repo}/contents/${nome}`;
+  const headers = {
+    "Authorization": `token ${cfg.token}`,
+    "Content-Type": "application/json",
+    "Accept": "application/vnd.github+json"
+  };
+
+  // Verifica se já existe (para pegar SHA e sobrescrever)
+  let sha = null;
+  const getRes = await fetch(url, { headers });
+  if (getRes.ok) {
+    const data = await getRes.json();
+    sha = data.sha;
   }
 
-  function fecharPopup() {
-    document.getElementById("popupDeteccao").style.display = "none";
-    ultimaPalavraPopup = "";
+  const body = { message: mensagem, content: conteudoBase64, branch: cfg.branch };
+  if (sha) body.sha = sha;
+
+  const putRes = await fetch(url, {
+    method: "PUT",
+    headers,
+    body: JSON.stringify(body)
+  });
+
+  if (!putRes.ok) {
+    const err = await putRes.json().catch(() => ({}));
+    throw new Error(err.message || `HTTP ${putRes.status}`);
   }
+}
 
-  function mudarAba(aba) {
-    document.getElementById('containerEditor').style.display = aba === 'editor' ? 'flex' : 'none';
-    document.getElementById('toolbarEditor').style.display = aba === 'editor' ? 'flex' : 'none';
-    document.getElementById('painelPersonagens').style.display = aba === 'personagens' ? 'flex' : 'none';
-    document.getElementById('painelDicionario').style.display = aba === 'dicionario' ? 'flex' : 'none';
-    
-    if (aba === 'personagens') {
-      renderizarListaPersonagens();
-      if (projetoLivro.personagens.length > 0 && !characterSelecionadoId) selecionarPersonagem(projetoLivro.personagens[0].id);
-    } else if (aba === 'dicionario') {
-      renderizarListaTermos();
-      if (projetoLivro.dicionario.length > 0 && !termoSelecionadoId) selecionarTermo(projetoLivro.dicionario[0].id);
-    }
-  }
+/* =========================================================================
+   FASE 3 — Carregar do GitHub e detectar
+   ========================================================================= */
+async function carregarDoGitHub() {
+  const btn = document.getElementById("btnCarregar");
+  btn.disabled = true;
+  btn.textContent = "⏳ Baixando...";
+  const t0 = performance.now();
 
-  function renderizarListaCapitulos() {
-    const lista = document.getElementById('chaptersList');
-    lista.innerHTML = '';
-    for (const [id, cap] of Object.entries(projetoLivro.capitulos)) {
-      const item = document.createElement('div');
-      item.className = 'item-card' + (id === capituloAtual ? ' active' : '');
-      item.innerHTML = `<strong>${cap.titulo}</strong>`;
-      item.onclick = () => trocarCapitulo(id);
-      lista.appendChild(item);
-    }
-  }
+  try {
+    const base = `https://raw.githubusercontent.com/${cfg.repo}/${cfg.branch}`;
 
-  function criarNovoCapitulo() {
-    const nome = prompt("Nome do capítulo:", `Capítulo ${Object.keys(projetoLivro.capitulos).length + 1}`);
-    if (!nome) return;
-    salvarCapituloAtualNaMemoria();
-    const id = 'cap_' + Date.now();
-    projetoLivro.capitulos[id] = { titulo: nome, conteudo_xhtml: `<p id="${id}_p1">Novo capítulo...</p>` };
-    capituloAtual = id;
-    renderizarListaCapitulos();
-    carregarCapituloNaTela(id);
-  }
+    atualizarStatus("Baixando dicionario.json...", "");
+    const dictRes = await fetch(`${base}/dicionario.json`, { cache: "no-cache" });
+    if (!dictRes.ok) throw new Error(`dicionario.json: HTTP ${dictRes.status}`);
+    const lista = await dictRes.json();
 
-  function trocarCapitulo(capId) {
-    salvarCapituloAtualNaMemoria();
-    capituloAtual = capId;
-    renderizarListaCapitulos();
-    carregarCapituloNaTela(capId);
-  }
-
-  function salvarCapituloAtualNaMemoria() {
-    if (projetoLivro.capitulos[capituloAtual]) {
-      projetoLivro.capitulos[capituloAtual].conteudo_xhtml = document.getElementById("editorContent").innerHTML;
-    }
-    atualizarContador();
-  }
-
-  function carregarCapituloNaTela(capId) {
-    capituloAtual = capId;
-    if (projetoLivro.capitulos[capId]) {
-      document.getElementById("editorContent").innerHTML = projetoLivro.capitulos[capId].conteudo_xhtml;
-      atualizarContador();
-    }
-  }
-
-  function renderizarListaPersonagens() {
-    const lista = document.getElementById('listaPersonagens');
-    lista.innerHTML = '';
-    if (!projetoLivro.personagens) projetoLivro.personagens = [];
-    document.getElementById('charCount').innerText = projetoLivro.personagens.length;
-
-    projetoLivro.personagens.forEach(p => {
-      const item = document.createElement('div');
-      item.className = 'item-card' + (p.id === characterSelecionadoId ? ' active' : '');
-      item.innerHTML = `<div><strong>${p.nome || 'Sem nome'}</strong><br><small style="color:var(--text-muted)">${p.papel || ''}</small></div>${p.imagemUrl ? '<span>🖼️</span>' : ''}`;
-      item.onclick = () => selecionarPersonagem(p.id);
-      lista.appendChild(item);
-    });
-  }
-
-  function criarNovoPersonagem() {
-    const novo = { id: 'char_' + Date.now(), nome: 'Novo Personagem', papel: 'Secundário', caracteristicas: [], imagemUrl: '', biografia_xhtml: '<p>Bio...</p>' };
-    if (!projetoLivro.personagens) projetoLivro.personagens = [];
-    projetoLivro.personagens.push(novo);
-    reconstruirIndices();
-    renderizarListaPersonagens();
-    selecionarPersonagem(novo.id);
-  }
-
-  function selecionarPersonagem(id) {
-    characterSelecionadoId = id;
-    const p = projetoLivro.personagens.find(item => item.id === id);
-    if (!p) return;
-    document.getElementById('charNome').value = p.nome || '';
-    document.getElementById('charPapel').value = p.papel || '';
-    document.getElementById('charTags').value = (p.caracteristicas || []).join(', ');
-    document.getElementById('charBiografia').innerHTML = p.biografia_xhtml || '';
-
-    const imgPreview = document.getElementById('charAvatarPreview');
-    const noPhotoText = document.getElementById('charNoPhotoText');
-    if (p.imagemUrl) {
-      imgPreview.src = p.imagemUrl;
-      imgPreview.style.display = 'block';
-      noPhotoText.style.display = 'none';
-    } else {
-      imgPreview.style.display = 'none';
-      noPhotoText.style.display = 'block';
-    }
-    renderizarListaPersonagens();
-  }
-
-  function atualizarPersonagemAtual() {
-    if (!characterSelecionadoId) return;
-    const p = projetoLivro.personagens.find(item => item.id === characterSelecionadoId);
-    if (!p) return;
-    p.nome = document.getElementById('charNome').value;
-    p.papel = document.getElementById('charPapel').value;
-    p.caracteristicas = document.getElementById('charTags').value.split(',').map(s => s.trim()).filter(Boolean);
-    p.biografia_xhtml = document.getElementById('charBiografia').innerHTML;
-    reconstruirIndices();
-    renderizarListaPersonagens();
-  }
-
-  function deletarPersonagemAtual() {
-    if (!characterSelecionadoId) return;
-    if (!confirm("Excluir personagem?")) return;
-    projetoLivro.personagens = projetoLivro.personagens.filter(p => p.id !== characterSelecionadoId);
-    characterSelecionadoId = projetoLivro.personagens.length > 0 ? projetoLivro.personagens[0].id : null;
-    reconstruirIndices();
-    renderizarListaPersonagens();
-    if (characterSelecionadoId) selecionarPersonagem(characterSelecionadoId);
-  }
-
-  function renderizarListaTermos() {
-    const lista = document.getElementById('listaTermos');
-    lista.innerHTML = '';
-    if (!projetoLivro.dicionario) projetoLivro.dicionario = [];
-    document.getElementById('termCount').innerText = projetoLivro.dicionario.length;
-
-    const limiteVisual = projetoLivro.dicionario.slice(0, 150);
-    limiteVisual.forEach(t => {
-      const item = document.createElement('div');
-      item.className = 'item-card' + (t.id === termoSelecionadoId ? ' active' : '');
-      item.innerHTML = `<div><strong>${t.termo || 'Novo Termo'}</strong><br><small style="color:var(--text-muted)">${t.categoria || 'Geral'}</small></div>`;
-      item.onclick = () => selecionarTermo(t.id);
-      lista.appendChild(item);
-    });
-  }
-
-  function criarNovoTermo() {
-    const novo = { id: 'term_' + Date.now(), termo: 'Novo Termo', categoria: 'Geral', definicao: '<p>Definição...</p>' };
-    if (!projetoLivro.dicionario) projetoLivro.dicionario = [];
-    projetoLivro.dicionario.unshift(novo);
-    reconstruirIndices();
-    renderizarListaTermos();
-    selecionarTermo(novo.id);
-  }
-
-  function selecionarTermo(id) {
-    termoSelecionadoId = id;
-    const t = projetoLivro.dicionario.find(item => item.id === id);
-    if (!t) return;
-    document.getElementById('termoTitulo').value = t.termo || '';
-    document.getElementById('termoCategoria').value = t.categoria || '';
-    document.getElementById('termoDefinicao').innerHTML = t.definicao || '';
-    renderizarListaTermos();
-  }
-
-  function atualizarTermoAtual() {
-    if (!termoSelecionadoId) return;
-    const t = projetoLivro.dicionario.find(item => item.id === termoSelecionadoId);
-    if (!t) return;
-    t.termo = document.getElementById('termoTitulo').value;
-    t.categoria = document.getElementById('termoCategoria').value;
-    t.definicao = document.getElementById('termoDefinicao').innerHTML;
-    reconstruirIndices();
-    renderizarListaTermos();
-  }
-
-  function deletarTermoAtual() {
-    if (!termoSelecionadoId) return;
-    if (!confirm("Excluir termo?")) return;
-    projetoLivro.dicionario = projetoLivro.dicionario.filter(t => t.id !== termoSelecionadoId);
-    termoSelecionadoId = projetoLivro.dicionario.length > 0 ? projetoLivro.dicionario[0].id : null;
-    reconstruirIndices();
-    renderizarListaTermos();
-    if (termoSelecionadoId) selecionarTermo(termoSelecionadoId);
-  }
-
-  function exportarDicionarioJson() {
-    const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(projetoLivro.dicionario));
-    const downloadAnchor = document.createElement('a');
-    downloadAnchor.setAttribute("href", dataStr);
-    downloadAnchor.setAttribute("download", "dicionario.json");
-    document.body.appendChild(downloadAnchor);
-    downloadAnchor.click();
-    downloadAnchor.remove();
-  }
-
-  function importarBaseTxt(event) {
-    const file = event.target.files[0];
-    if (!file) return;
-
-    document.getElementById("statusText").innerText = "PROCESSANDO TXT...";
-    const reader = new FileReader();
-    reader.onload = function(e) {
-      const linhas = e.target.result.split(/\r?\n/);
-      let importados = 0;
-
-      for (let i = 0; i < linhas.length; i++) {
-        const linha = linhas[i].trim();
-        if (!linha) continue;
-
-        if (linha.includes('|')) {
-          const partes = linha.split('|');
-          projetoLivro.dicionario.push({
-            id: 't_' + i + '_' + Date.now(),
-            termo: partes[0].trim(),
-            categoria: partes[1] ? partes[1].trim() : 'Geral',
-            definicao: partes[2] ? partes[2].trim() : 'Termo registrado.'
-          });
-          importados++;
-        } else {
-          projetoLivro.dicionario.push({
-            id: 't_' + i + '_' + Date.now(),
-            termo: linha,
-            categoria: 'Vocabulário',
-            definicao: 'Palavra validada.'
-          });
-          importados++;
-        }
-      }
-
-      reconstruirIndices();
-      renderizarListaTermos();
-      alert(`${importados} termos importados!`);
-    };
-    reader.readAsText(file);
-  }
-
-  async function carregarImagemPersonagem(event) {
-    const file = event.target.files[0];
-    if (!file || !characterSelecionadoId) return;
-    const repo = localStorage.getItem("gh_repo") || "andreyoldekamp-del/EditorUltimaMemoria";
-    const token = localStorage.getItem("gh_token");
-    if (!token) return alert("Configure o Token do GitHub!");
-
-    const reader = new FileReader();
-    reader.onload = async function(e) {
-      const base64Content = e.target.result.split(',')[1];
-      const fileName = `assets/${characterSelecionadoId}_${file.name.replace(/[^a-zA-Z0-9.]/g, '_')}`;
-      const url = `https://api.github.com/repos/${repo}/contents/${fileName}`;
-
-      try {
-        const res = await fetch(url, {
-          method: "PUT",
-          headers: { "Authorization": `token ${token}`, "Content-Type": "application/json" },
-          body: JSON.stringify({ message: `Foto ${characterSelecionadoId}`, content: base64Content })
-        });
-        if (res.ok) {
-          const rawUrl = `https://raw.githubusercontent.com/${repo}/main/${fileName}`;
-          const p = projetoLivro.personagens.find(item => item.id === characterSelecionadoId);
-          p.imagemUrl = rawUrl;
-          reconstruirIndices();
-          selecionarPersonagem(characterSelecionadoId);
-          alert("Foto salva!");
-        }
-      } catch(err) { alert("Erro ao enviar foto."); }
-    };
-    reader.readAsDataURL(file);
-  }
-
-  function formatar(cmd) { document.execCommand(cmd, false, null); salvarCapituloAtualNaMemoria(); }
-  function inserirParagrafoID() {
-    const ed = document.getElementById("editorContent");
-    const p = document.createElement("p");
-    p.id = `${capituloAtual}_p_${Date.now()}`;
-    p.innerHTML = "Novo parágrafo...";
-    ed.appendChild(p);
-    salvarCapituloAtualNaMemoria();
-  }
-
-  function configurarGitHub() {
-    const repo = prompt("Repositório:", localStorage.getItem("gh_repo") || "andreyoldekamp-del/EditorUltimaMemoria");
-    const token = prompt("Personal Access Token:", localStorage.getItem("gh_token") || "");
-    if (repo && token) {
-      localStorage.setItem("gh_repo", repo);
-      localStorage.setItem("gh_token", token);
-      alert("Configurações salvas!");
-    }
-  }
-
-  async function salvarNoGitHub() {
-    salvarCapituloAtualNaMemoria();
-    if (characterSelecionadoId) atualizarPersonagemAtual();
-
-    const repo = localStorage.getItem("gh_repo") || "andreyoldekamp-del/EditorUltimaMemoria";
-    const token = localStorage.getItem("gh_token");
-    if (!token) { alert("Configure o Token!"); configurarGitHub(); return; }
-
-    const url = `https://api.github.com/repos/${repo}/contents/historia.json`;
-    try {
-      let sha = "";
-      const getRes = await fetch(url, { headers: { "Authorization": `token ${token}` } });
-      if (getRes.ok) sha = (await getRes.json()).sha;
-
-      const payloadSalvar = {
-        metadados: projetoLivro.metadados,
-        capitulos: projetoLivro.capitulos,
-        personagens: projetoLivro.personagens,
-        dicionario: projetoLivro.dicionario.length > 5000 ? projetoLivro.dicionario.slice(0, 100) : projetoLivro.dicionario
-      };
-
-      const contentBase64 = btoa(unescape(encodeURIComponent(JSON.stringify(payloadSalvar, null, 2))));
-      const putRes = await fetch(url, {
-        method: "PUT",
-        headers: { "Authorization": `token ${token}`, "Content-Type": "application/json" },
-        body: JSON.stringify({ message: "Atualização GraphZO Mobile", content: contentBase64, sha: sha || undefined })
+    atualizarStatus(`Indexando ${lista.length.toLocaleString("pt-BR")} termos...`, "");
+    await new Promise(r => setTimeout(r, 10));
+    indice.clear();
+    for (let i = 0; i < lista.length; i++) {
+      const it = lista[i];
+      if (!it || !it.termo) continue;
+      const k = normalizarChave(it.termo);
+      if (!k) continue;
+      indice.set(k, {
+        termo: it.termo,
+        categoria: it.categoria || "Geral",
+        definicao: it.definicao || "Termo registrado.",
+        tipo: "DICIONÁRIO"
       });
+    }
 
-      if (putRes.ok) alert("Salvo no GitHub!");
-    } catch (e) { alert("Erro de conexão."); }
-  }
-
-  async function puxarDoGitHub(silencioso = false) {
-    const repo = localStorage.getItem("gh_repo") || "andreyoldekamp-del/EditorUltimaMemoria";
-    const token = localStorage.getItem("gh_token");
-    if (!token) return;
-
-    const url = `https://api.github.com/repos/${repo}/contents/historia.json`;
+    // Tenta também carregar personagens (se existir)
     try {
-      const res = await fetch(url, { headers: { "Authorization": `token ${token}` } });
-      const data = await res.json();
-      if (res.ok) {
-        const carregado = JSON.parse(decodeURIComponent(escape(atob(data.content))));
-        projetoLivro.metadados = carregado.metadados || projetoLivro.metadados;
-        projetoLivro.capitulos = carregado.capitulos || projetoLivro.capitulos;
-        projetoLivro.personagens = carregado.personagens || [];
-        if (carregado.dicionario) projetoLivro.dicionario = carregado.dicionario;
-        
-        reconstruirIndices();
-        renderizarListaCapitulos();
-        carregarCapituloNaTela(Object.keys(projetoLivro.capitulos)[0]);
-        if(!silencioso) alert("Dados carregados!");
+      const persRes = await fetch(`${base}/personagens.json`, { cache: "no-cache" });
+      if (persRes.ok) {
+        const pers = await persRes.json();
+        for (const p of pers) {
+          const k = normalizarChave(p.nome);
+          if (!k) continue;
+          indice.set(k, {
+            termo: p.nome,
+            categoria: "Personagem",
+            definicao: p.bio || "Personagem importado.",
+            tipo: "PERSONAGEM"
+          });
+        }
       }
-    } catch(e) {}
+    } catch (_) { /* personagens.json é opcional */ }
+
+    const dt = Math.round(performance.now() - t0);
+    atualizarStatus(
+      `<span class="ok"><b>${indice.size.toLocaleString("pt-BR")}</b> termos indexados</span>`,
+      `Carregado em ${dt} ms`
+    );
+
+    // Troca para a fase do editor
+    document.getElementById("faseImport").classList.add("hidden");
+    document.getElementById("faseEditor").classList.remove("hidden");
+    document.getElementById("editorContent").focus();
+  } catch (err) {
+    console.error(err);
+    atualizarStatus(`<span class="err">Erro: ${err.message}</span>`, "");
+    alert(
+      `Falha ao carregar:\n\n${err.message}\n\n` +
+      `Verifique:\n` +
+      `• Repo/branch configurados (⚙️ Config)\n` +
+      `• dicionario.json existe na raiz do repo\n` +
+      `• Repo é público (raw.githubusercontent.com)`
+    );
+  } finally {
+    btn.disabled = false;
+    btn.textContent = "🔄 Recarregar dicionário";
+  }
+}
+
+/* =========================================================================
+   DETECÇÃO EM TEMPO REAL
+   ========================================================================= */
+function agendarDeteccao() {
+  if (debounceTimer) clearTimeout(debounceTimer);
+  debounceTimer = setTimeout(detectarSobCursor, 60);
+}
+
+function detectarSobCursor() {
+  if (indice.size === 0) return;
+
+  const sel = window.getSelection();
+  if (!sel || sel.rangeCount === 0) return;
+  const range = sel.getRangeAt(0);
+  if (!range.collapsed) return;
+
+  const node = range.startContainer;
+  let palavra = "";
+
+  if (node.nodeType === Node.TEXT_NODE) {
+    const texto = node.textContent;
+    const pos = range.startOffset;
+    let ini = pos, fim = pos;
+    while (ini > 0 && /[A-Za-zÀ-ÿ0-9_-]/.test(texto[ini - 1])) ini--;
+    while (fim < texto.length && /[A-Za-zÀ-ÿ0-9_-]/.test(texto[fim])) fim++;
+    palavra = texto.slice(ini, fim);
+  } else if (node.nodeType === Node.ELEMENT_NODE) {
+    const off = range.startOffset;
+    if (off > 0 && node.childNodes[off - 1]) {
+      const t = node.childNodes[off - 1].textContent || "";
+      const m = t.match(/([A-Za-zÀ-ÿ0-9_-]+)\s*$/);
+      if (m) palavra = m[1];
+    }
   }
 
-  async function listarCommitsGitHub(silencioso = false) {
-    const repo = localStorage.getItem("gh_repo") || "andreyoldekamp-del/EditorUltimaMemoria";
-    const token = localStorage.getItem("gh_token");
-    if (!token) return;
-
-    const descarteLista = JSON.parse(localStorage.getItem("commits_descartados") || "[]");
-    const url = `https://api.github.com/repos/${repo}/commits?path=historia.json`;
-    try {
-      const res = await fetch(url, { headers: { "Authorization": `token ${token}` } });
-      const commits = await res.json();
-      if (res.ok && Array.isArray(commits)) {
-        const sel = document.getElementById("selectCommits");
-        sel.innerHTML = '<option value="">-- Versões --</option>';
-        commits.forEach(c => {
-          if (!descarteLista.includes(c.sha)) {
-            const opt = document.createElement("option");
-            opt.value = c.sha;
-            const dt = new Date(c.commit.author.date);
-            opt.textContent = `[${dt.toLocaleDateString()} ${dt.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}] ${c.commit.message.substring(0, 15)}`;
-            sel.appendChild(opt);
-          }
-        });
-      }
-    } catch(e) {}
+  if (!palavra || palavra.length < 2) {
+    fecharPopup();
+    ultimaChaveMostrada = "";
+    return;
   }
 
-  async function carregarVersaoSelecionada() {
-    const repo = localStorage.getItem("gh_repo") || "andreyoldekamp-del/EditorUltimaMemoria";
-    const token = localStorage.getItem("gh_token");
-    const sha = document.getElementById("selectCommits").value;
-    if (!token || !sha) return;
+  const chave = normalizarChave(palavra);
+  if (!chave || chave === ultimaChaveMostrada) return;
 
-    const url = `https://api.github.com/repos/${repo}/contents/historia.json?ref=${sha}`;
-    try {
-      const res = await fetch(url, { headers: { "Authorization": `token ${token}` } });
-      const data = await res.json();
-      if (res.ok) {
-        const carregado = JSON.parse(decodeURIComponent(escape(atob(data.content))));
-        projetoLivro.capitulos = carregado.capitulos || projetoLivro.capitulos;
-        projetoLivro.personagens = carregado.personagens || [];
-        if (carregado.dicionario) projetoLivro.dicionario = carregado.dicionario;
-        
-        reconstruirIndices();
-        renderizarListaCapitulos();
-        carregarCapituloNaTela(Object.keys(projetoLivro.capitulos)[0]);
-        renderizarListaPersonagens();
-        alert("Versão carregada!");
-      }
-    } catch(e) {}
+  const item = indice.get(chave);
+  if (item) {
+    ultimaChaveMostrada = chave;
+    mostrarPopup(item);
+  } else {
+    fecharPopup();
+    ultimaChaveMostrada = "";
   }
+}
 
-  function descartarVersaoAtual() {
-    const sha = document.getElementById("selectCommits").value;
-    if (!sha) return alert("Selecione uma versão.");
-    const descarte = JSON.parse(localStorage.getItem("commits_descartados") || "[]");
-    descarte.push(sha);
-    localStorage.setItem("commits_descartados", JSON.stringify(descarte));
-    listarCommitsGitHub(true);
-    alert("Versão ocultada.");
-  }
+function mostrarPopup(item) {
+  const badge = document.getElementById("popupBadge");
+  badge.textContent = item.tipo;
+  badge.style.background = item.tipo === "PERSONAGEM" ? "var(--accent-purple)" : "var(--accent-cyan)";
+  badge.style.color = item.tipo === "PERSONAGEM" ? "white" : "var(--bg-base)";
 
-  function atualizarContador() {
-    const texto = document.getElementById("editorContent").innerText;
-    document.getElementById("wordCount").innerText = `PALAVRAS: ${texto.trim() ? texto.trim().split(/\s+/).length : 0}`;
-  }
+  document.getElementById("popupPalavra").textContent = item.termo;
+  document.getElementById("popupSub").textContent = `Categoria: ${item.categoria}`;
+  document.getElementById("popupSignificado").textContent = item.definicao;
+  document.getElementById("popupDeteccao").style.display = "block";
+}
+
+function fecharPopup() {
+  document.getElementById("popupDeteccao").style.display = "none";
+}
+
+/* =========================================================================
+   EVENTOS GLOBAIS
+   ========================================================================= */
+window.addEventListener("DOMContentLoaded", () => {
+  atualizarCfgInfo();
+
+  const ed = document.getElementById("editorContent");
+  ed.addEventListener("input", agendarDeteccao);
+  ed.addEventListener("paste", () => setTimeout(agendarDeteccao, 0));
+  ed.addEventListener("click", agendarDeteccao);
+  ed.addEventListener("keyup", (e) => {
+    if (["ArrowLeft","ArrowRight","ArrowUp","ArrowDown","Home","End"].includes(e.key)) {
+      agendarDeteccao();
+    }
+  });
+
+  document.addEventListener("keydown", (e) => {
+    if (e.key === "Escape") fecharPopup();
+  });
+
+  document.addEventListener("mousedown", (e) => {
+    const pop = document.getElementById("popupDeteccao");
+    if (pop.style.display === "block" && !pop.contains(e.target) && !ed.contains(e.target)) {
+      fecharPopup();
+    }
+  });
+});
 </script>
 
 </body>
