@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>GraphZO // EDITOR COM DICIONÁRIO INTELIGENTE</title>
+  <title>GraphZO // DICIONÁRIO CORRIGIDO</title>
   <style>
     :root {
       --bg-base: #030712;
@@ -98,7 +98,7 @@
 <body>
 
   <header>
-    <h1>GraphZO // DICIONÁRIO INTELIGENTE</h1>
+    <h1>GraphZO // DICIONÁRIO ROBUSTO</h1>
     <div style="display: flex; gap: 8px; flex-wrap: wrap;">
       <label class="file-btn">
         📂 Carregar Dicionário (.txt)
@@ -108,7 +108,7 @@
   </header>
 
   <div class="editor-container">
-    <div id="statusInfo">Status: Carregue seu arquivo .txt de dicionário para indexar até 10k termos.</div>
+    <div id="statusInfo">Status: Carregue seu arquivo .txt de dicionário.</div>
     <div id="editorContent" contenteditable="true" spellcheck="false"></div>
   </div>
 
@@ -132,13 +132,15 @@
     dicionario: [
       { termo: "vento", categoria: "Clima", definicao: "Movimento natural do ar." },
       { termo: "casa", categoria: "Local", definicao: "Residência da família." },
-      { termo: "Dicionário", categoria: "Referência", definicao: "Livro ou repertório que contém palavras ou vocábulos de uma língua." }
+      { termo: "noite", categoria: "Tempo", definicao: "Período de escuridão." },
+      { termo: "chuva", categoria: "Clima", definicao: "Precipitação de água." },
+      { termo: "tempo", categoria: "Meteorologia", definicao: "Condições atmosféricas." },
+      { termo: "futuro", categoria: "Conceito", definicao: "Tempo que ainda não chegou." }
     ]
   };
 
   let indiceGeral = new Map();
 
-  // Remove acentos e maiúsculas apenas para a chave de busca, permitindo acertos flexíveis
   function normalizarChave(texto) {
     if (!texto) return "";
     return texto
@@ -154,7 +156,6 @@
   function construirIndiceUnico() {
     indiceGeral.clear();
 
-    // Indexa Personagens
     baseDados.personagens.forEach(p => {
       let chave = normalizarChave(p.nome);
       if (chave) {
@@ -167,20 +168,19 @@
       }
     });
 
-    // Indexa Dicionário (Mantendo a palavra original com acentos para exibir no popup)
     baseDados.dicionario.forEach(d => {
       let chave = normalizarChave(d.termo);
       if (chave) {
         indiceGeral.set(chave, {
           tipo: "DICIONÁRIO",
           palavra: d.termo,
-          sub: `Sinônimo / Categoria: ${d.categoria || 'Geral'}`,
-          significado: d.definicao || d.sinonimo || "Termo registrado."
+          sub: `Categoria: ${d.categoria || 'Geral'}`,
+          significado: d.definicao || "Termo registrado no dicionário."
         });
       }
     });
 
-    document.getElementById("statusInfo").innerText = `Status: ${indiceGeral.size} termos indexados e prontos para detecção!`;
+    document.getElementById("statusInfo").innerText = `Status: ${indiceGeral.size} termos indexados prontos para detecção!`;
   }
 
   window.onload = function() {
@@ -198,8 +198,6 @@
     if (node.nodeType !== Node.TEXT_NODE) return;
 
     const textoAteCursor = node.textContent.substring(0, range.startOffset).replace(/\u00A0/g, " ");
-    
-    // Captura a última palavra antes de espaço ou pontuação
     const match = textoAteCursor.match(/([a-zA-ZÀ-ÿ0-9_-]+)[\s.,!?;:]+$/);
     if (!match) return;
 
@@ -214,12 +212,12 @@
     }
   }
 
-  // IMPORTAÇÃO COM FILTRO EQUILIBRADO DE 10K POR LETRA (A-Z)
+  // IMPORTAÇÃO MELHORADA PARA LER DIFERENTES FORMATOS DE TXT
   function importarBaseTxt(event) {
     const file = event.target.files[0];
     if (!file) return;
 
-    document.getElementById("statusInfo").innerText = "Status: Lendo e filtrando base de dados...";
+    document.getElementById("statusInfo").innerText = "Status: Lendo arquivo de dicionário...";
     const reader = new FileReader();
 
     reader.onload = function(e) {
@@ -232,7 +230,7 @@
           const linha = linhas[i].trim();
           if (!linha) continue;
 
-          let termo = "", categoria = "Geral", definicao = "Termo registrado.";
+          let termo = "", categoria = "Dicionário", definicao = "Definição do verbete.";
 
           if (linha.includes("|")) {
             const partes = linha.split("|").map(s => s.trim());
@@ -243,8 +241,12 @@
             const idx = linha.indexOf(":");
             termo = linha.substring(0, idx).trim();
             definicao = linha.substring(idx + 1).trim();
-            categoria = "Dicionário";
+          } else if (linha.includes("-")) {
+            const idx = linha.indexOf("-");
+            termo = linha.substring(0, idx).trim();
+            definicao = linha.substring(idx + 1).trim();
           } else {
+            // Se for apenas uma lista de palavras por linha (sem separador)
             termo = linha;
           }
 
@@ -289,9 +291,9 @@
 
         baseDados.dicionario = termosFinais;
         construirIndiceUnico();
-        alert(`Sucesso! Foram indexados ${baseDados.dicionario.length} termos equilibrados de A a Z.`);
+        alert(`Sucesso! Foram indexados ${baseDados.dicionario.length} termos.`);
       } catch (err) {
-        alert("Erro ao processar o arquivo de texto.");
+        alert("Erro ao processar o arquivo.");
       }
     };
 
