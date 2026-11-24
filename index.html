@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>GraphZO // MINIMAL TEST</title>
+  <title>GraphZO // MÍNIMO + DICIONÁRIO 10K</title>
   <style>
     :root {
       --bg-base: #030712;
@@ -32,9 +32,11 @@
       display: flex;
       justify-content: space-between;
       align-items: center;
+      flex-wrap: wrap;
+      gap: 10px;
     }
 
-    button {
+    button, label.file-btn {
       background: var(--bg-base);
       color: var(--accent-cyan);
       border: 1px solid var(--accent-cyan);
@@ -42,9 +44,11 @@
       border-radius: 4px;
       cursor: pointer;
       font-weight: bold;
+      font-size: 12px;
+      display: inline-block;
     }
 
-    button:hover { background: var(--accent-cyan); color: var(--bg-base); }
+    button:hover, label.file-btn:hover { background: var(--accent-cyan); color: var(--bg-base); }
 
     .editor-container {
       flex: 1;
@@ -69,6 +73,12 @@
       line-height: 1.5;
     }
 
+    #statusInfo {
+      margin-bottom: 10px;
+      color: #9ca3af;
+      font-size: 12px;
+    }
+
     /* POPUP DE TESTE */
     #popupDeteccao {
       position: fixed;
@@ -88,16 +98,20 @@
 <body>
 
   <header>
-    <h1>GraphZO // MÍNIMO</h1>
-    <div>
-      <button onclick="configurarGitHub()">⚙️ Configurar GitHub</button>
-      <button onclick="puxarDoGitHub()">📥 Puxar do GitHub</button>
+    <h1>GraphZO // MÍNIMO + 10K</h1>
+    <div style="display: flex; gap: 8px; flex-wrap: wrap;">
+      <label class="file-btn">
+        📂 Carregar Dicionário (.txt)
+        <input type="file" id="txtInput" accept=".txt" style="display: none;" onchange="carregarDicionarioTxt(event)">
+      </label>
+      <button onclick="configurarGitHub()">⚙️ Config</button>
+      <button onclick="puxarDoGitHub()">📥 Puxar GitHub</button>
     </div>
   </header>
 
   <div class="editor-container">
-    <div style="margin-bottom: 10px; color: #9ca3af; font-size: 12px;">
-      Digite uma palavra de teste (ex: <strong>Teddy</strong> ou <strong>vento</strong>) e dê espaço:
+    <div id="statusInfo">
+      Status: Dicionário interno ativo (2 termos). Carregue seu .txt acima para testar os 10k.
     </div>
     <div id="editorContent" contenteditable="true" spellcheck="false"></div>
   </div>
@@ -113,7 +127,6 @@
   </div>
 
 <script>
-  // Banco de dados ultra-simplificado para testes imediatos
   let baseDados = {
     personagens: [
       { nome: "Teddy", papel: "Protagonista", bio: "Jovem do Kentucky." }
@@ -127,12 +140,24 @@
   let indiceP = new Map();
   let indiceD = new Map();
 
+  function normalizar(texto) {
+    return texto
+      .replace(/\u00A0/g, " ")
+      .replace(/[.,!?;:()"']/g, "")
+      .trim()
+      .toLowerCase();
+  }
+
   function reconstruirIndices() {
     indiceP.clear();
     indiceD.clear();
-    baseDados.personagens.forEach(p => indiceP.set(p.nome.toLowerCase(), p));
-    baseDados.dicionario.forEach(d => indiceD.set(d.termo.toLowerCase(), d));
-    console.log("Índices carregados com sucesso!");
+    baseDados.personagens.forEach(p => {
+      if (p.nome) indiceP.set(normalizar(p.nome), p);
+    });
+    baseDados.dicionario.forEach(d => {
+      if (d.termo) indiceD.set(normalizar(d.termo), d);
+    });
+    document.getElementById("statusInfo").innerText = `Status: ${indiceP.size} personagens e ${indiceD.size} palavras indexadas.`;
   }
 
   window.onload = function() {
@@ -141,7 +166,6 @@
     }
     reconstruirIndices();
 
-    // Evento de escuta direta no editor
     const ed = document.getElementById("editorContent");
     ed.addEventListener("input", detectarPalavra);
   };
@@ -154,34 +178,111 @@
     const node = range.startContainer;
     if (node.nodeType !== Node.TEXT_NODE) return;
 
-    const textoAteCursor = node.textContent.substring(0, range.startOffset);
-    const palavras = textoAteCursor.trim().split(/\s+/);
-    if (palavras.length === 0) return;
+    const textoAteCursor = node.textContent.substring(0, range.startOffset).replace(/\u00A0/g, " ");
+    
+    // Só dispara após digitar espaço ou pontuação no final da palavra
+    const match = textoAteCursor.match(/([a-zA-ZÀ-ÿ0-9_-]+)[\s.,!?;:]+$/);
+    if (!match) return;
 
-    // Pega a última palavra antes do espaço
-    const palavra = palavras[palavras.length - 1].replace(/[.,!?;:]/g, "").toLowerCase();
+    const palavra = normalizar(match[1]);
     if (palavra.length < 2) return;
 
-    // Testa personagem
     if (indiceP.has(palavra)) {
       const p = indiceP.get(palavra);
-      mostrarPopup("PERSONAGEM", p.nome, `${p.papel} - ${p.bio}`);
+      mostrarPopup("PERSONAGEM", p.nome, `${p.papel || 'Personagem'} - ${p.bio || p.biografia_xhtml || ''}`);
       return;
     }
 
-    // Testa dicionário
     if (indiceD.has(palavra)) {
       const d = indiceD.get(palavra);
-      mostrarPopup("DICIONÁRIO", d.termo, `[${d.categoria}] ${d.definicao}`);
+      mostrarPopup("DICIONÁRIO", d.termo, `[${d.categoria || 'Geral'}] ${d.definicao}`);
       return;
     }
+  }
+
+  // CARREGA E FILTRA O DICIONÁRIO EM 10K EQUILIBRADOS POR LETRA (A-Z)
+  function carregarDicionarioTxt(event) {
+    const file = event.target.files[0];
+    if (!file) return;
+
+    document.getElementById("statusInfo").innerText = "Status: Lendo e filtrando arquivo...";
+    const reader = new FileReader();
+
+    reader.onload = function(e) {
+      const linhas = e.target.result.split(/\r?\n/);
+      const brutos = [];
+
+      for (let i = 0; i < linhas.length; i++) {
+        const linha = linhas[i].trim();
+        if (!linha) continue;
+
+        let termo = "", categoria = "Vocabulário", definicao = "Palavra validada no dicionário.";
+
+        if (linha.includes("|")) {
+          const partes = linha.split("|").map(s => s.trim());
+          termo = partes[0];
+          if (partes[1]) categoria = partes[1];
+          if (partes[2]) definicao = partes[2];
+        } else if (linha.includes(":")) {
+          const idx = linha.indexOf(":");
+          termo = linha.substring(0, idx).trim();
+          definicao = linha.substring(idx + 1).trim();
+          categoria = "Dicionário";
+        } else {
+          termo = linha;
+        }
+
+        if (termo.length > 0) {
+          brutos.push({ termo, categoria, definicao });
+        }
+      }
+
+      const META = 10000;
+      let finais = brutos;
+
+      if (brutos.length > META) {
+        const grupos = {};
+        const letrasValidas = "abcdefghijklmnopqrstuvwxyzáéíóúâêîôûãõç";
+
+        brutos.forEach(item => {
+          let letra = item.termo.charAt(0).toLowerCase();
+          if (!letrasValidas.includes(letra)) letra = "#";
+          if (!grupos[letra]) grupos[letra] = [];
+          grupos[letra].push(item);
+        });
+
+        const chaves = Object.keys(grupos);
+        const cota = Math.floor(META / chaves.length);
+        let equilibrados = [];
+
+        chaves.forEach(letra => {
+          const lista = grupos[letra];
+          lista.sort(() => Math.random() - 0.5);
+          equilibrados.push(...lista.slice(0, cota));
+        });
+
+        if (equilibrados.length < META) {
+          const restantes = brutos.filter(t => !equilibrados.includes(t));
+          restantes.sort(() => Math.random() - 0.5);
+          equilibrados.push(...restantes.slice(0, META - equilibrados.length));
+        }
+
+        finais = equilibrados;
+      }
+
+      baseDados.dicionario = finais;
+      reconstruirIndices();
+      alert(`Pronto! ${indiceD.size} palavras carregadas e equilibradas de A a Z.`);
+    };
+
+    reader.readAsText(file);
   }
 
   function mostrarPopup(tipo, termo, texto) {
     const pop = document.getElementById("popupDeteccao");
     document.getElementById("popupBadge").innerText = tipo;
     document.getElementById("popupPalavra").innerText = termo;
-    document.getElementById("popupSignificado").innerText = texto;
+    document.getElementById("popupSignificado").innerHTML = texto;
     pop.style.display = "block";
   }
 
@@ -211,7 +312,7 @@
       if (res.ok) {
         const conteudo = JSON.parse(decodeURIComponent(escape(atob(data.content))));
         if (conteudo.personagens) baseDados.personagens = conteudo.personagens;
-        if (conteudo.dicionario) baseDados.dicionario = conteudo.dicionario;
+        if (conteudo.dicionario && conteudo.dicionario.length > 0) baseDados.dicionario = conteudo.dicionario;
         reconstruirIndices();
         alert("Dados puxados do GitHub com sucesso!");
       } else {
