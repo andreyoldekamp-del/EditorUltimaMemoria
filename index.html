@@ -708,113 +708,122 @@
     downloadAnchor.remove();
   }
 
-  // FUNÇÃO REFATORADA: IMPORTAÇÃO COM FILTRO EQUILIBRADO DE 10K POR LETRA
-  function importarBaseTxt(event) {
-    const file = event.target.files[0];
-    if (!file) return;
+/**
+ * Importa um arquivo .txt de dicionário, aplica um filtro equilibrado 
+ * de até 10.000 termos (proporcional por letra inicial) e atualiza o sistema.
+ */
+function importarBaseTxt(event) {
+  const file = event.target.files && event.target.files[0];
+  if (!file) return;
 
-    const statusEl = document.getElementById("statusText");
-    statusEl.innerText = "STATUS: LENDO BASE DE DADOS...";
+  const statusEl = document.getElementById("statusText");
+  statusEl.innerText = "STATUS: LENDO ARQUIVO DE TEXTO...";
 
-    const reader = new FileReader();
+  const reader = new FileReader();
 
-    reader.onerror = function() {
-      statusEl.innerText = "STATUS: ERRO AO LER O ARQUIVO";
-      alert("Não foi possível ler o arquivo selecionado.");
-    };
+  reader.onerror = () => {
+    statusEl.innerText = "STATUS: ERRO NA LEITURA";
+    alert("Falha ao ler o arquivo selecionado.");
+  };
 
-    reader.onload = function(e) {
-      try {
-        const conteudo = e.target.result;
-        const linhas = conteudo.split(/\r?\n/);
-        const termosBrutos = [];
+  reader.onload = (e) => {
+    try {
+      statusEl.innerText = "STATUS: PROCESSANDO TERMOS...";
+      const conteudo = e.target.result;
+      const linhas = conteudo.split(/\r?\n/);
+      const termosBrutos = [];
 
-        statusEl.innerText = "STATUS: PROCESSANDO LINHAS...";
+      // 1. Parseamento e limpeza das linhas do arquivo
+      linhas.forEach((linhaOriginal, index) => {
+        const linha = linhaOriginal.trim();
+        if (!linha) return;
 
-        for (let i = 0; i < linhas.length; i++) {
-          const linha = linhas[i].trim();
-          if (!linha) continue;
+        let termo = "";
+        let categoria = "Geral";
+        let definicao = "Termo registrado.";
 
-          let termo = "", categoria = "Geral", definicao = "Termo registrado.";
-
-          if (linha.includes('|')) {
-            const partes = linha.split('|').map(s => s.trim());
-            termo = partes[0];
-            if (partes[1]) categoria = partes[1];
-            if (partes[2]) definicao = partes[2];
-          } else if (linha.includes(':')) {
-            const idx = linha.indexOf(':');
-            termo = linha.substring(0, idx).trim();
-            definicao = linha.substring(idx + 1).trim();
-            categoria = "Dicionário";
-          } else {
-            termo = linha;
-            categoria = "Vocabulário";
-          }
-
-          if (termo.length > 0) {
-            termosBrutos.push({
-              id: `t_${i}_${Math.floor(Math.random() * 10000)}`,
-              termo,
-              categoria,
-              definicao
-            });
-          }
+        if (linha.includes("|")) {
+          const partes = linha.split("|").map(s => s.trim());
+          termo = partes[0] || "";
+          categoria = partes[1] || "Geral";
+          definicao = partes[2] || "Termo registrado.";
+        } else if (linha.includes(":")) {
+          const idx = linha.indexOf(":");
+          termo = linha.substring(0, idx).trim();
+          definicao = linha.substring(idx + 1).trim();
+          categoria = "Dicionário";
+        } else {
+          termo = linha;
+          categoria = "Vocabulário";
         }
 
-        statusEl.innerText = "STATUS: APLICANDO FILTRO EQUILIBRADO (10K)...";
-
-        const META_MAXIMA = 10000;
-        let termosFinais = termosBrutos;
-
-        if (termosBrutos.length > META_MAXIMA) {
-          const gruposPorLetra = {};
-          const alfabeto = "abcdefghijklmnopqrstuvwxyzáéíóúâêîôûãõç";
-
-          termosBrutos.forEach(item => {
-            let letra = item.termo.charAt(0).toLowerCase();
-            if (!alfabeto.includes(letra)) letra = '#';
-            
-            if (!gruposPorLetra[letra]) gruposPorLetra[letra] = [];
-            gruposPorLetra[letra].push(item);
+        if (termo.length > 0) {
+          termosBrutos.push({
+            id: `t_${index}_${Math.floor(Math.random() * 10000)}`,
+            termo,
+            categoria,
+            definicao
           });
+        }
+      });
 
-          const chavesLetras = Object.keys(gruposPorLetra);
-          const cotaPorLetra = Math.floor(META_MAXIMA / chavesLetras.length);
-          let termosEquilibrados = [];
+      statusEl.innerText = "STATUS: APLICANDO FILTRO EQUILIBRADO (10K)...";
 
-          chavesLetras.forEach(letra => {
-            const listaLetra = gruposPorLetra[letra];
-            listaLetra.sort(() => Math.random() - 0.5);
-            termosEquilibrados.push(...listaLetra.slice(0, cotaPorLetra));
-          });
+      const META_MAXIMA = 10000;
+      let termosFinais = termosBrutos;
 
-          if (termosEquilibrados.length < META_MAXIMA) {
-            const restantes = termosBrutos.filter(t => !termosEquilibrados.includes(t));
-            restantes.sort(() => Math.random() - 0.5);
-            const faltam = META_MAXIMA - termosEquilibrados.length;
-            termosEquilibrados.push(...restantes.slice(0, faltam));
-          }
+      // 2. Amostragem proporcional por letra inicial (se exceder a meta)
+      if (termosBrutos.length > META_MAXIMA) {
+        const gruposPorLetra = {};
+        const alfabetoValido = "abcdefghijklmnopqrstuvwxyzáéíóúâêîôûãõç";
 
-          termosFinais = termosEquilibrados;
+        termosBrutos.forEach(item => {
+          let letra = item.termo.charAt(0).toLowerCase();
+          if (!alfabetoValido.includes(letra)) letra = '#';
+          
+          if (!gruposPorLetra[letra]) gruposPorLetra[letra] = [];
+          gruposPorLetra[letra].push(item);
+        });
+
+        const chavesLetras = Object.keys(gruposPorLetra);
+        const cotaPorLetra = Math.floor(META_MAXIMA / chavesLetras.length);
+        let termosEquilibrados = [];
+
+        chavesLetras.forEach(letra => {
+          const listaLetra = gruposPorLetra[letra];
+          // Embaralha de forma aleatória mantendo a representatividade da letra
+          listaLetra.sort(() => Math.random() - 0.5);
+          termosEquilibrados.push(...listaLetra.slice(0, cotaPorLetra));
+        });
+
+        // Preenche eventuais vagas restantes para atingir exatamente a meta
+        if (termosEquilibrados.length < META_MAXIMA) {
+          const restantes = termosBrutos.filter(t => !termosEquilibrados.includes(t));
+          restantes.sort(() => Math.random() - 0.5);
+          const vagasFaltantes = META_MAXIMA - termosEquilibrados.length;
+          termosEquilibrados.push(...restantes.slice(0, vagasFaltantes));
         }
 
-        projetoLivro.dicionario = termosFinais;
-        reconstruirIndices();
-        renderizarListaTermos();
-
-        statusEl.innerText = `STATUS: ${projetoLivro.dicionario.length} TERMOS INDEXADOS!`;
-        alert(`Sucesso! Foram indexados ${projetoLivro.dicionario.length} termos equilibrados.`);
-
-      } catch (err) {
-        statusEl.innerText = "STATUS: ERRO NO PROCESSAMENTO";
-        console.error(err);
-        alert("Ocorreu um erro ao processar o arquivo de texto.");
+        termosFinais = termosEquilibrados;
       }
-    };
 
-    reader.readAsText(file);
-  }
+      // 3. Atualização do estado global e da interface
+      projetoLivro.dicionario = termosFinais;
+      reconstruirIndices();
+      renderizarListaTermos();
+
+      statusEl.innerText = `STATUS: ${projetoLivro.dicionario.length} TERMOS INDEXADOS!`;
+      alert(`Sucesso! Foram indexados ${projetoLivro.dicionario.length} termos equilibrados.`);
+
+    } catch (erro) {
+      statusEl.innerText = "STATUS: ERRO NO PROCESSAMENTO";
+      console.error("Erro ao processar base.txt:", erro);
+      alert("Ocorreu um erro ao estruturar os dados do arquivo.");
+    }
+  };
+
+  reader.readAsText(file);
+}
 
   async function carregarImagemPersonagem(event) {
     const file = event.target.files[0];
