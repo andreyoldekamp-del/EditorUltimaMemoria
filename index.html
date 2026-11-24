@@ -1,773 +1,321 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>GraphZO //VALIDAR 380K</title>
-<style>
-  :root {
-    --bg-base: #030712;
-    --bg-panel: #0b0f19;
-    --bg-card: #111827;
-    --accent-cyan: #06b6d4;
-    --accent-purple: #a855f7;
-    --text-main: #f3f4f6;
-    --text-muted: #9ca3af;
-    --border-neon: #1e3a8a;
-    --success: #10b981;
-    --danger: #ef4444;
-    --warn: #f59e0b;
-  }
-  * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
-  body {
-    font-family: 'Courier New', Courier, monospace;
-    background: var(--bg-base);
-    color: var(--text-main);
-    height: 100vh;
-    height: 100dvh;
-    display: flex;
-    flex-direction: column;
-    overflow: hidden;
-  }
-  header {
-    background: var(--bg-panel);
-    border-bottom: 2px solid var(--accent-cyan);
-    padding: 10px 16px;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    flex-wrap: wrap;
-    gap: 8px;
-    z-index: 20;
-  }
-  h1 { font-size: 14px; color: var(--accent-cyan); letter-spacing: 1px; }
-  h1 span { color: var(--text-muted); font-size: 11px; }
-  button, label.file-btn {
-    background: var(--bg-base);
-    color: var(--accent-cyan);
-    border: 1px solid var(--accent-cyan);
-    padding: 8px 12px;
-    border-radius: 4px;
-    cursor: pointer;
-    font-size: 12px;
-    font-weight: bold;
-    font-family: inherit;
-    min-height: 36px;
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-  }
-  button:active, label.file-btn:active { background: var(--accent-cyan); color: var(--bg-base); }
-  button:disabled { opacity: 0.5; cursor: wait; }
-  .btn-ok { background: var(--success); border-color: var(--success); color: white; }
-  .btn-warn { background: var(--warn); border-color: var(--warn); color: black; }
-  .btn-danger { background: var(--danger); border-color: var(--danger); color: white; }
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>GraphZO // DICIONÁRIO CORRIGIDO</title>
+  <style>
+    :root {
+      --bg-base: #030712;
+      --bg-panel: #0b0f19;
+      --accent-cyan: #06b6d4;
+      --accent-purple: #a855f7;
+      --text-main: #f3f4f6;
+      --border-neon: #1e3a8a;
+    }
 
-  #statusBar {
-    background: var(--bg-card);
-    padding: 8px 16px;
-    font-size: 11px;
-    color: var(--text-muted);
-    border-bottom: 1px solid var(--border-neon);
-    display: flex;
-    justify-content: space-between;
-    flex-wrap: wrap;
-    gap: 8px;
-  }
-  #statusBar b { color: var(--accent-cyan); }
+    * { margin: 0; padding: 0; box-sizing: border-box; }
 
-  .toolbar {
-    background: var(--bg-panel);
-    padding: 8px 16px;
-    border-bottom: 1px solid var(--border-neon);
-    display: flex;
-    gap: 8px;
-    flex-wrap: wrap;
-    align-items: center;
-  }
+    body {
+      font-family: 'Courier New', Courier, monospace;
+      background: var(--bg-base);
+      color: var(--text-main);
+      height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
 
-  #preview {
-    flex: 1;
-    overflow-y: auto;
-    padding: 16px;
-    font-size: 12px;
-    line-height: 1.6;
-    background: var(--bg-card);
-    margin: 16px;
-    border: 1px solid var(--border-neon);
-    border-radius: 4px;
-    font-family: 'Courier New', monospace;
-    white-space: pre-wrap;
-    word-break: break-word;
-    color: var(--text-muted);
-  }
-  #preview .ok { color: var(--success); }
-  #preview .err { color: var(--danger); }
-  #preview .warn { color: var(--warn); }
-  #preview .title { color: var(--accent-cyan); font-weight: bold; display: block; margin: 12px 0 4px; }
+    header {
+      background: var(--bg-panel);
+      border-bottom: 2px solid var(--accent-cyan);
+      padding: 12px 24px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 10px;
+    }
 
-  #editorContent {
-    flex: 1;
-    padding: 24px;
-    background: var(--bg-card);
-    color: var(--text-main);
-    font-family: 'Times New Roman', serif;
-    font-size: 17px;
-    line-height: 1.7;
-    outline: none;
-    overflow-y: auto;
-    max-width: 900px;
-    margin: 0 auto;
-    width: 100%;
-  }
-  #editorContent:empty::before {
-    content: "Digite aqui... as palavras do dicionário serão detectadas enquanto você escreve.";
-    color: #4b5563;
-    font-style: italic;
-  }
+    button, label.file-btn {
+      background: var(--bg-base);
+      color: var(--accent-cyan);
+      border: 1px solid var(--accent-cyan);
+      padding: 8px 14px;
+      border-radius: 4px;
+      cursor: pointer;
+      font-weight: bold;
+      font-size: 12px;
+      display: inline-block;
+    }
 
-  #popupDeteccao {
-    position: fixed;
-    bottom: 20px;
-    right: 20px;
-    left: 20px;
-    max-width: 400px;
-    margin-left: auto;
-    background: var(--bg-panel);
-    border: 2px solid var(--accent-cyan);
-    border-radius: 8px;
-    padding: 14px;
-    box-shadow: 0 10px 40px rgba(0,0,0,0.95);
-    z-index: 9999;
-    display: none;
-  }
-  .popup-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 8px;
-    padding-bottom: 6px;
-    border-bottom: 1px solid var(--border-neon);
-  }
-  .badge {
-    font-size: 10px;
-    padding: 3px 8px;
-    border-radius: 3px;
-    font-weight: bold;
-    background: var(--accent-cyan);
-    color: var(--bg-base);
-  }
-  .popup-palavra { font-size: 18px; font-weight: bold; color: white; margin-bottom: 4px; }
-  .popup-sub { font-size: 11px; color: var(--text-muted); margin-bottom: 8px; }
-  .popup-significado {
-    font-size: 13px;
-    line-height: 1.5;
-    color: var(--text-main);
-    max-height: 160px;
-    overflow-y: auto;
-    background: var(--bg-card);
-    padding: 10px;
-    border-radius: 4px;
-  }
-  #popupFechar { padding: 2px 8px; min-height: 26px; font-size: 11px; }
+    button:hover, label.file-btn:hover { background: var(--accent-cyan); color: var(--bg-base); }
 
-  .hidden { display: none !important; }
+    .editor-container {
+      flex: 1;
+      padding: 30px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      position: relative;
+    }
 
-  @media (max-width: 600px) {
-    #editorContent { padding: 16px; font-size: 16px; }
-    h1 { font-size: 12px; }
-    #preview { margin: 8px; padding: 10px; }
-  }
-</style>
+    #editorContent {
+      width: 100%;
+      max-width: 700px;
+      height: 60vh;
+      background: #111827;
+      border: 1px solid var(--border-neon);
+      padding: 20px;
+      color: white;
+      font-size: 16px;
+      outline: none;
+      border-radius: 4px;
+      line-height: 1.5;
+    }
+
+    #statusInfo {
+      margin-bottom: 10px;
+      color: #9ca3af;
+      font-size: 12px;
+    }
+
+    /* POPUP DE DETECÇÃO */
+    #popupDeteccao {
+      position: fixed;
+      bottom: 30px;
+      right: 30px;
+      width: 340px;
+      background: var(--bg-panel);
+      border: 2px solid var(--accent-cyan);
+      border-radius: 8px;
+      padding: 16px;
+      box-shadow: 0 10px 25px rgba(0,0,0,0.8);
+      display: none;
+      z-index: 999;
+    }
+  </style>
 </head>
 <body>
 
-<header>
-  <div>
-    <h1>GraphZO // IMPORTADOR <span>380K</span></h1>
-    <div id="cfgInfo" style="font-size: 10px; color: var(--text-muted);">Repo: —</div>
-  </div>
-  <div style="display: flex; gap: 6px; flex-wrap: wrap;">
-    <button onclick="configurar()">⚙️ Config</button>
-    <button id="btnCarregar" onclick="carregarDoGitHub()">📥 Carregar do GitHub</button>
-  </div>
-</header>
+  <header>
+    <h1>GraphZO // DICIONÁRIO ROBUSTO</h1>
+    <div style="display: flex; gap: 8px; flex-wrap: wrap;">
+      <label class="file-btn">
+        📂 Carregar Dicionário (.txt)
+        <input type="file" id="txtInput" accept=".txt" style="display: none;" onchange="importarBaseTxt(event)">
+      </label>
+    </div>
+  </header>
 
-<div id="statusBar">
-  <span id="statusText">Pronto. Selecione o .txt ou carregue o JSON do GitHub.</span>
-  <span id="perfText"></span>
-</div>
-
-<!-- ================= FASE 1: IMPORTAÇÃO ================= -->
-<div id="faseImport" style="display:flex;flex-direction:column;flex:1;overflow:hidden;">
-  <div class="toolbar">
-    <label class="file-btn">
-      📂 Selecionar .txt
-      <input type="file" id="txtInput" accept=".txt,text/plain" style="display: none;">
-    </label>
-    <button id="btnSubir" class="btn-ok" onclick="subirParaGitHub()" disabled>☁️ Subir para o GitHub</button>
-    <button class="btn-danger" onclick="limparPreview()">🗑️ Limpar prévia</button>
+  <div class="editor-container">
+    <div id="statusInfo">Status: Carregue seu arquivo .txt de dicionário.</div>
+    <div id="editorContent" contenteditable="true" spellcheck="false"></div>
   </div>
-  <div id="preview">
-    Nenhum arquivo selecionado.<br><br>
-    Formatos aceitos no TXT:<br>
-    · <span class="ok">[P] Nome</span> → vira personagem<br>
-    · <span class="ok">[D] termo = categoria ‖ definição</span> → vira verbete<br>
-    · <span class="ok">termo | categoria | definição</span> → vira verbete<br>
-    · <span class="ok">termo</span> → vira verbete simples
-  </div>
-</div>
 
-<!-- ================= FASE 2: EDITOR ================= -->
-<div id="faseEditor" class="hidden" style="flex:1; display:flex; flex-direction:column;">
-  <div id="editorContent" contenteditable="true" spellcheck="false"></div>
-</div>
-
-<div id="popupDeteccao">
-  <div class="popup-header">
-    <span class="badge" id="popupBadge">TERMO</span>
-    <button id="popupFechar" onclick="fecharPopup()">✖</button>
+  <!-- POPUP -->
+  <div id="popupDeteccao">
+    <div style="display: flex; justify-content: space-between; margin-bottom: 8px;">
+      <span id="popupBadge" style="font-size: 10px; font-weight: bold; padding: 2px 6px; background: var(--accent-cyan); color: black;">TIPO</span>
+      <button onclick="fecharPopup()" style="padding: 0 6px; font-size: 10px; cursor: pointer;">X</button>
+    </div>
+    <div id="popupPalavra" style="font-size: 16px; font-weight: bold; margin-bottom: 4px;">Palavra</div>
+    <div id="popupSignificado" style="font-size: 12px; color: #d1d5db; max-height: 120px; overflow-y: auto;">Significado aqui...</div>
   </div>
-  <div class="popup-palavra" id="popupPalavra">Palavra</div>
-  <div class="popup-sub" id="popupSub">Categoria</div>
-  <div class="popup-significado" id="popupSignificado">Significado...</div>
-</div>
 
 <script>
-/* =========================================================================
-   CONFIGURAÇÃO — usa exatamente as mesmas chaves do seu programa:
-   gh_repo, gh_token  (o branch "main" é fixo, igual ao seu)
-   ========================================================================= */
-const REPO_PADRAO = "andreyoldekamp-del/EditorUltimaMemoria";
+  let baseDados = {
+    personagens: [
+      { nome: "Teddy", papel: "Protagonista", bio: "Jovem do Kentucky." },
+      { nome: "Jeames", papel: "Irmão", bio: "Irmão mais novo." },
+      { nome: "Suzane", papel: "Misteriosa", bio: "Personagem secundária." }
+    ],
+    dicionario: [
+      { termo: "vento", categoria: "Clima", definicao: "Movimento natural do ar." },
+      { termo: "casa", categoria: "Local", definicao: "Residência da família." },
+      { termo: "noite", categoria: "Tempo", definicao: "Período de escuridão." },
+      { termo: "chuva", categoria: "Clima", definicao: "Precipitação de água." },
+      { termo: "tempo", categoria: "Meteorologia", definicao: "Condições atmosféricas." },
+      { termo: "futuro", categoria: "Conceito", definicao: "Tempo que ainda não chegou." }
+    ]
+  };
 
-function getRepo() {
-  return localStorage.getItem("gh_repo") || REPO_PADRAO;
-}
-function getToken() {
-  return localStorage.getItem("gh_token") || "";
-}
+  let indiceGeral = new Map();
 
-/* =========================================================================
-   ESTADO
-   ========================================================================= */
-let indice = new Map();
-let termosParsed = [];
-let personagensParsed = [];
-let stats = { validos: 0, ignorados: 0, duplicados: 0, personagens: 0 };
-let ultimaChaveMostrada = "";
-let debounceTimer = null;
-
-/* =========================================================================
-   UTIL
-   ========================================================================= */
-function normalizarChave(texto) {
-  if (!texto) return "";
-  return String(texto)
-    .normalize("NFD")
-    .replace(/[\u0300-\u036f]/g, "")
-    .replace(/[\uFEFF\u00A0\u200B\u200C\u200D]/g, "")
-    .replace(/[.,!?;:()"'«»—–-]/g, "")
-    .replace(/\s+/g, " ")
-    .trim()
-    .toLowerCase();
-}
-
-function atualizarStatus(msg, perf) {
-  document.getElementById("statusText").innerHTML = msg;
-  if (perf !== undefined) document.getElementById("perfText").textContent = perf;
-}
-
-function atualizarCfgInfo() {
-  const el = document.getElementById("cfgInfo");
-  const repo = getRepo();
-  const temToken = getToken() ? "✓ token" : "✗ sem token";
-  el.textContent = `Repo: ${repo} · main · ${temToken}`;
-}
-
-/* =========================================================================
-   CONFIGURAÇÃO — mesmo padrão do seu programa (prompt + localStorage)
-   ========================================================================= */
-function configurar() {
-  const repo = prompt("Repositório:", getRepo());
-  const token = prompt("Personal Access Token:", getToken() || "");
-  if (repo && token) {
-    localStorage.setItem("gh_repo", repo);
-    localStorage.setItem("gh_token", token);
-    atualizarCfgInfo();
-    alert("Configurações salvas!");
+  function normalizarChave(texto) {
+    if (!texto) return "";
+    return texto
+      .toString()
+      .normalize("NFD")
+      .replace(/[\u0300-\u036f]/g, "")
+      .replace(/[\u00A0\u200B]/g, " ")
+      .replace(/[.,!?;:()"'«»—–-]/g, "")
+      .trim()
+      .toLowerCase();
   }
-}
 
-/* =========================================================================
-   PARSER DO TXT
-   ========================================================================= */
-function parseLinha(linhaOriginal) {
-  let linha = String(linhaOriginal || "")
-    .replace(/^[\uFEFF\u00A0\u200B\u200C\u200D]+/, "")
-    .trim();
-  if (!linha) return null;
-  if (linha.startsWith("#") || linha.startsWith("//")) return null;
+  function construirIndiceUnico() {
+    indiceGeral.clear();
 
-  // [P] / [D]
-  const mPrefixo = linha.match(/^\[([PD])\]\s*(.+)$/i);
-  if (mPrefixo) {
-    const tag = mPrefixo[1].toUpperCase();
-    const resto = mPrefixo[2].trim();
-    if (!resto) return null;
-
-    if (tag === "P") {
-      const mBio = resto.match(/^([^=]+?)\s*=\s*(.+)$/);
-      const nome = (mBio ? mBio[1] : resto).trim();
-      if (!nome) return null;
-      return { tipo: "P", nome, bio: mBio ? mBio[2].trim() : "Personagem importado." };
-    }
-
-    const idxIgual = resto.indexOf("=");
-    if (idxIgual === -1) {
-      return { tipo: "D", termo: resto, categoria: "Geral", definicao: "Termo registrado." };
-    }
-    const termo = resto.slice(0, idxIgual).trim();
-    if (!termo) return null;
-    let cauda = resto.slice(idxIgual + 1).trim();
-    cauda = cauda.replace(/\s*(·|Â·).*$/, "").trim();
-    const partes = cauda.split("‖").map(s => s.trim()).filter(Boolean);
-    let categoria = "Geral";
-    let definicao = "Termo registrado.";
-    if (partes.length === 1) {
-      const p = partes[0];
-      if (p.length <= 40 && !p.includes(" ") && !/[.!?]/.test(p)) {
-        categoria = p;
-      } else {
-        definicao = p;
+    baseDados.personagens.forEach(p => {
+      let chave = normalizarChave(p.nome);
+      if (chave) {
+        indiceGeral.set(chave, {
+          tipo: "PERSONAGEM",
+          palavra: p.nome,
+          sub: `Papel: ${p.papel}`,
+          significado: p.bio
+        });
       }
-    } else if (partes.length >= 2) {
-      categoria = partes[0];
-      definicao = partes.slice(1).join(" ‖ ");
+    });
+
+    baseDados.dicionario.forEach(d => {
+      let chave = normalizarChave(d.termo);
+      if (chave) {
+        indiceGeral.set(chave, {
+          tipo: "DICIONÁRIO",
+          palavra: d.termo,
+          sub: `Categoria: ${d.categoria || 'Geral'}`,
+          significado: d.definicao || "Termo registrado no dicionário."
+        });
+      }
+    });
+
+    document.getElementById("statusInfo").innerText = `Status: ${indiceGeral.size} termos indexados prontos para detecção!`;
+  }
+
+  window.onload = function() {
+    construirIndiceUnico();
+    const ed = document.getElementById("editorContent");
+    ed.addEventListener("input", detectarPalavra);
+  };
+
+  function detectarPalavra() {
+    const sel = window.getSelection();
+    if (!sel.rangeCount) return;
+
+    const range = sel.getRangeAt(0);
+    const node = range.startContainer;
+    if (node.nodeType !== Node.TEXT_NODE) return;
+
+    const textoAteCursor = node.textContent.substring(0, range.startOffset).replace(/\u00A0/g, " ");
+    const match = textoAteCursor.match(/([a-zA-ZÀ-ÿ0-9_-]+)[\s.,!?;:]+$/);
+    if (!match) return;
+
+    const palavraBruta = match[1];
+    const chave = normalizarChave(palavraBruta);
+
+    if (chave.length < 2) return;
+
+    if (indiceGeral.has(chave)) {
+      const item = indiceGeral.get(chave);
+      mostrarPopup(item.tipo, item.palavra, `${item.sub} — ${item.significado}`);
     }
-    return { tipo: "D", termo, categoria, definicao };
   }
 
-  // termo | categoria | definição
-  if (linha.includes("|")) {
-    const p = linha.split("|").map(s => s.trim());
-    if (!p[0]) return null;
-    return {
-      tipo: "D",
-      termo: p[0],
-      categoria: p[1] || "Geral",
-      definicao: p[2] || "Termo registrado."
-    };
-  }
+  // IMPORTAÇÃO MELHORADA PARA LER DIFERENTES FORMATOS DE TXT
+  function importarBaseTxt(event) {
+    const file = event.target.files[0];
+    if (!file) return;
 
-  // só termo
-  return { tipo: "D", termo: linha, categoria: "Geral", definicao: "Termo registrado." };
-}
+    document.getElementById("statusInfo").innerText = "Status: Lendo arquivo de dicionário...";
+    const reader = new FileReader();
 
-/* =========================================================================
-   FASE 1 — Seleção do TXT e parse
-   ========================================================================= */
-document.getElementById("txtInput").addEventListener("change", async (event) => {
-  const file = event.target.files && event.target.files[0];
-  if (!file) return;
+    reader.onload = function(e) {
+      try {
+        const conteudo = e.target.result;
+        const linhas = conteudo.split(/\r?\n/);
+        const termosBrutos = [];
 
-  const t0 = performance.now();
-  atualizarStatus("Lendo arquivo...", "");
+        for (let i = 0; i < linhas.length; i++) {
+          const linha = linhas[i].trim();
+          if (!linha) continue;
 
-  try {
-    const texto = await lerArquivo(file);
-    atualizarStatus("Fazendo parse...", "");
+          let termo = "", categoria = "Dicionário", definicao = "Definição do verbete.";
 
-    const linhas = texto.split(/\r?\n/);
-    const vistos = new Set();
-    termosParsed = [];
-    personagensParsed = [];
-    stats = { validos: 0, ignorados: 0, duplicados: 0, personagens: 0 };
+          if (linha.includes("|")) {
+            const partes = linha.split("|").map(s => s.trim());
+            termo = partes[0];
+            if (partes[1]) categoria = partes[1];
+            if (partes[2]) definicao = partes[2];
+          } else if (linha.includes(":")) {
+            const idx = linha.indexOf(":");
+            termo = linha.substring(0, idx).trim();
+            definicao = linha.substring(idx + 1).trim();
+          } else if (linha.includes("-")) {
+            const idx = linha.indexOf("-");
+            termo = linha.substring(0, idx).trim();
+            definicao = linha.substring(idx + 1).trim();
+          } else {
+            // Se for apenas uma lista de palavras por linha (sem separador)
+            termo = linha;
+          }
 
-    const CHUNK = 5000;
-    for (let start = 0; start < linhas.length; start += CHUNK) {
-      const fim = Math.min(start + CHUNK, linhas.length);
-      for (let i = start; i < fim; i++) {
-        const linha = linhas[i];
-        if (!linha.trim()) continue;
-        const item = parseLinha(linha);
-        if (!item) { stats.ignorados++; continue; }
-        if (item.tipo === "P") {
-          const k = normalizarChave(item.nome);
-          if (!k) { stats.ignorados++; continue; }
-          if (vistos.has("P:" + k)) { stats.duplicados++; continue; }
-          vistos.add("P:" + k);
-          personagensParsed.push({ nome: item.nome, bio: item.bio });
-          stats.personagens++;
-        } else {
-          const k = normalizarChave(item.termo);
-          if (!k) { stats.ignorados++; continue; }
-          if (vistos.has("D:" + k)) { stats.duplicados++; continue; }
-          vistos.add("D:" + k);
-          termosParsed.push({ termo: item.termo, categoria: item.categoria, definicao: item.definicao });
-          stats.validos++;
+          if (termo.length > 0) {
+            termosBrutos.push({ termo, categoria, definicao });
+          }
         }
-      }
-      if (fim < linhas.length) await new Promise(r => setTimeout(r, 0));
-    }
 
-    const dt = Math.round(performance.now() - t0);
-    renderPreview(file.name, texto, linhas, dt);
-    document.getElementById("btnSubir").disabled = false;
+        const META_MAXIMA = 10000;
+        let termosFinais = termosBrutos;
 
-    atualizarStatus(
-      `<span class="ok"><b>${stats.validos.toLocaleString("pt-BR")}</b> verbetes + <b>${stats.personagens}</b> personagens prontos</span>`,
-      `Parse: ${dt} ms · Ignorados: ${stats.ignorados} · Duplicados: ${stats.duplicados}`
-    );
-  } catch (err) {
-    atualizarStatus(`<span class="err">Erro: ${err.message}</span>`, "");
-    console.error(err);
-  }
-});
+        if (termosBrutos.length > META_MAXIMA) {
+          const gruposPorLetra = {};
+          const alfabetoValido = "abcdefghijklmnopqrstuvwxyzáéíóúâêîôûãõç";
 
-function lerArquivo(file) {
-  return new Promise((resolve, reject) => {
-    const r = new FileReader();
-    r.onload = (e) => resolve(e.target.result);
-    r.onerror = () => reject(new Error("Falha ao ler arquivo"));
-    r.readAsText(file, "UTF-8");
-  });
-}
-
-function renderPreview(nomeArquivo, texto, linhas, dt) {
-  const el = document.getElementById("preview");
-  const amostras = [];
-  let count = 0;
-  for (let i = 0; i < linhas.length && count < 8; i++) {
-    const l = linhas[i].trim();
-    if (!l) continue;
-    const p = parseLinha(l);
-    if (!p) continue;
-    amostras.push({ bruto: l, parsed: p });
-    count++;
-  }
-
-  let html = "";
-  html += `<span class="title">📄 Arquivo: ${escapar(nomeArquivo)}</span>`;
-  html += `Tamanho: ${(texto.length / 1024 / 1024).toFixed(2)} MB · Linhas: ${linhas.length.toLocaleString("pt-BR")}<br>`;
-  html += `<span class="ok">✔ ${stats.validos.toLocaleString("pt-BR")} verbetes</span> · `;
-  html += `<span class="ok">✔ ${stats.personagens} personagens</span> · `;
-  html += `<span class="warn">↺ ${stats.duplicados} duplicados</span> · `;
-  html += `<span class="err">✘ ${stats.ignorados} ignorados</span><br>`;
-  html += `Tempo de parse: ${dt} ms<br>`;
-  html += `<span class="title">🔎 Amostra (8 primeiras linhas válidas)</span>`;
-
-  amostras.forEach((a, i) => {
-    const p = a.parsed;
-    if (p.tipo === "P") {
-      html += `<span class="ok">[${i}]</span> bruto: ${escapar(a.bruto)}<br>`;
-      html += `     → <b>PERSONAGEM</b> "${escapar(p.nome)}" — ${escapar(p.bio.slice(0, 60))}<br>`;
-    } else {
-      html += `<span class="ok">[${i}]</span> bruto: ${escapar(a.bruto)}<br>`;
-      html += `     → <b>VERBETE</b> "${escapar(p.termo)}" | cat: "${escapar(p.categoria)}" | def: "${escapar(p.definicao.slice(0, 60))}"<br>`;
-    }
-  });
-
-  el.innerHTML = html;
-}
-
-function escapar(s) {
-  return String(s)
-    .replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
-}
-
-function limparPreview() {
-  termosParsed = [];
-  personagensParsed = [];
-  stats = { validos: 0, ignorados: 0, duplicados: 0, personagens: 0 };
-  document.getElementById("txtInput").value = "";
-  document.getElementById("btnSubir").disabled = true;
-  document.getElementById("preview").innerHTML = "Prévia limpa. Selecione outro .txt.";
-  atualizarStatus("Pronto.", "");
-}
-
-/* =========================================================================
-   FASE 2 — Upload para GitHub
-   MOTOR IDÊNTICO AO SEU CÓDIGO QUE FUNCIONA:
-   - fetch simples, sem Accept extra
-   - Authorization: token ...
-   - Content-Type: application/json
-   - GET para pegar SHA, depois PUT
-   - btoa(unescape(encodeURIComponent(...)))
-   ========================================================================= */
-async function subirParaGitHub() {
-  if (termosParsed.length === 0 && personagensParsed.length === 0) {
-    alert("Nada para subir. Selecione um .txt primeiro.");
-    return;
-  }
-  const token = getToken();
-  const repo = getRepo();
-  if (!token) {
-    alert("Configure o Token primeiro!");
-    configurar();
-    return;
-  }
-
-  const btn = document.getElementById("btnSubir");
-  btn.disabled = true;
-  btn.textContent = "⏳ Enviando...";
-
-  try {
-    // ---- dicionario.json ----
-    atualizarStatus("Enviando dicionario.json...", "");
-    await salvarArquivoNoGitHub(
-      repo,
-      token,
-      "dicionario.json",
-      JSON.stringify(termosParsed),
-      `Dicionário: ${termosParsed.length} termos`
-    );
-
-    // ---- personagens.json ----
-    atualizarStatus("Enviando personagens.json...", "");
-    await salvarArquivoNoGitHub(
-      repo,
-      token,
-      "personagens.json",
-      JSON.stringify(personagensParsed),
-      `Personagens: ${personagensParsed.length}`
-    );
-
-    atualizarStatus(
-      `<span class="ok">✔ dicionario.json e personagens.json enviados</span>`,
-      ""
-    );
-    btn.textContent = "✔ Enviado";
-    setTimeout(() => {
-      btn.disabled = false;
-      btn.textContent = "☁️ Subir para o GitHub";
-    }, 2000);
-
-    alert(
-      `Enviado com sucesso!\n\n` +
-      `dicionario.json: ${termosParsed.length} termos\n` +
-      `personagens.json: ${personagensParsed.length} personagens\n\n` +
-      `Agora clique em "📥 Carregar do GitHub" para indexar e testar.`
-    );
-  } catch (err) {
-    console.error(err);
-    atualizarStatus(`<span class="err">Erro no upload: ${err.message}</span>`, "");
-    alert(`Falha ao subir:\n\n${err.message}`);
-    btn.disabled = false;
-    btn.textContent = "☁️ Subir para o GitHub";
-  }
-}
-
-/**
- * Salva/atualiza um arquivo no GitHub.
- * Motor idêntico ao do seu programa que funciona.
- */
-async function salvarArquivoNoGitHub(repo, token, nomeArquivo, conteudoTexto, mensagem) {
-  const url = `https://api.github.com/repos/${repo}/contents/${nomeArquivo}`;
-
-  // 1) GET para pegar SHA (se existir)
-  let sha = "";
-  const getRes = await fetch(url, {
-    headers: { "Authorization": `token ${token}` }
-  });
-  if (getRes.ok) {
-    sha = (await getRes.json()).sha;
-  }
-
-  // 2) Codifica exatamente como o seu código
-  const conteudoBase64 = btoa(unescape(encodeURIComponent(conteudoTexto)));
-
-  // 3) PUT
-  const putRes = await fetch(url, {
-    method: "PUT",
-    headers: {
-      "Authorization": `token ${token}`,
-      "Content-Type": "application/json"
-    },
-    body: JSON.stringify({
-      message: mensagem,
-      content: conteudoBase64,
-      sha: sha || undefined
-    })
-  });
-
-  if (!putRes.ok) {
-    const err = await putRes.json().catch(() => ({}));
-    throw new Error(`${nomeArquivo}: ${err.message || "HTTP " + putRes.status}`);
-  }
-}
-
-/* =========================================================================
-   FASE 3 — Carregar do GitHub (raw, igual ao seu puxarDoGitHub usa a API,
-   mas aqui uso raw.githubusercontent que é mais rápido para 30MB e é público)
-   ========================================================================= */
-async function carregarDoGitHub() {
-  const repo = getRepo();
-  const btn = document.getElementById("btnCarregar");
-  btn.disabled = true;
-  btn.textContent = "⏳ Baixando...";
-  const t0 = performance.now();
-
-  try {
-    const base = `https://raw.githubusercontent.com/${repo}/main`;
-
-    atualizarStatus("Baixando dicionario.json...", "");
-    const dictRes = await fetch(`${base}/dicionario.json`, { cache: "no-cache" });
-    if (!dictRes.ok) throw new Error(`dicionario.json: HTTP ${dictRes.status}`);
-    const lista = await dictRes.json();
-
-    atualizarStatus(`Indexando ${lista.length.toLocaleString("pt-BR")} termos...`, "");
-    await new Promise(r => setTimeout(r, 10));
-    indice.clear();
-    for (let i = 0; i < lista.length; i++) {
-      const it = lista[i];
-      if (!it || !it.termo) continue;
-      const k = normalizarChave(it.termo);
-      if (!k) continue;
-      indice.set(k, {
-        termo: it.termo,
-        categoria: it.categoria || "Geral",
-        definicao: it.definicao || "Termo registrado.",
-        tipo: "DICIONÁRIO"
-      });
-    }
-
-    // personagens.json (opcional)
-    try {
-      const persRes = await fetch(`${base}/personagens.json`, { cache: "no-cache" });
-      if (persRes.ok) {
-        const pers = await persRes.json();
-        for (const p of pers) {
-          const k = normalizarChave(p.nome);
-          if (!k) continue;
-          indice.set(k, {
-            termo: p.nome,
-            categoria: "Personagem",
-            definicao: p.bio || "Personagem importado.",
-            tipo: "PERSONAGEM"
+          termosBrutos.forEach(item => {
+            let letra = item.termo.charAt(0).toLowerCase();
+            if (!alfabetoValido.includes(letra)) letra = '#';
+            if (!gruposPorLetra[letra]) gruposPorLetra[letra] = [];
+            gruposPorLetra[letra].push(item);
           });
+
+          const chavesLetras = Object.keys(gruposPorLetra);
+          const cotaPorLetra = Math.floor(META_MAXIMA / chavesLetras.length);
+          let termosEquilibrados = [];
+
+          chavesLetras.forEach(letra => {
+            const listaLetra = gruposPorLetra[letra];
+            listaLetra.sort(() => Math.random() - 0.5);
+            termosEquilibrados.push(...listaLetra.slice(0, cotaPorLetra));
+          });
+
+          if (termosEquilibrados.length < META_MAXIMA) {
+            const restantes = termosBrutos.filter(t => !termosEquilibrados.includes(t));
+            restantes.sort(() => Math.random() - 0.5);
+            const vagasFaltantes = META_MAXIMA - termosEquilibrados.length;
+            termosEquilibrados.push(...restantes.slice(0, vagasFaltantes));
+          }
+
+          termosFinais = termosEquilibrados;
         }
+
+        baseDados.dicionario = termosFinais;
+        construirIndiceUnico();
+        alert(`Sucesso! Foram indexados ${baseDados.dicionario.length} termos.`);
+      } catch (err) {
+        alert("Erro ao processar o arquivo.");
       }
-    } catch (_) { /* opcional */ }
+    };
 
-    const dt = Math.round(performance.now() - t0);
-    atualizarStatus(
-      `<span class="ok"><b>${indice.size.toLocaleString("pt-BR")}</b> termos indexados</span>`,
-      `Carregado em ${dt} ms`
-    );
-
-    document.getElementById("faseImport").classList.add("hidden");
-    document.getElementById("faseEditor").classList.remove("hidden");
-    document.getElementById("editorContent").focus();
-  } catch (err) {
-    console.error(err);
-    atualizarStatus(`<span class="err">Erro: ${err.message}</span>`, "");
-    alert(
-      `Falha ao carregar:\n\n${err.message}\n\n` +
-      `Verifique se dicionario.json existe na raiz do repo e se o repo é público.`
-    );
-  } finally {
-    btn.disabled = false;
-    btn.textContent = "🔄 Recarregar dicionário";
-  }
-}
-
-/* =========================================================================
-   DETECÇÃO EM TEMPO REAL
-   ========================================================================= */
-function agendarDeteccao() {
-  if (debounceTimer) clearTimeout(debounceTimer);
-  debounceTimer = setTimeout(detectarSobCursor, 60);
-}
-
-function detectarSobCursor() {
-  if (indice.size === 0) return;
-
-  const sel = window.getSelection();
-  if (!sel || sel.rangeCount === 0) return;
-  const range = sel.getRangeAt(0);
-  if (!range.collapsed) return;
-
-  const node = range.startContainer;
-  let palavra = "";
-
-  if (node.nodeType === Node.TEXT_NODE) {
-    const texto = node.textContent;
-    const pos = range.startOffset;
-    let ini = pos, fim = pos;
-    while (ini > 0 && /[A-Za-zÀ-ÿ0-9_-]/.test(texto[ini - 1])) ini--;
-    while (fim < texto.length && /[A-Za-zÀ-ÿ0-9_-]/.test(texto[fim])) fim++;
-    palavra = texto.slice(ini, fim);
-  } else if (node.nodeType === Node.ELEMENT_NODE) {
-    const off = range.startOffset;
-    if (off > 0 && node.childNodes[off - 1]) {
-      const t = node.childNodes[off - 1].textContent || "";
-      const m = t.match(/([A-Za-zÀ-ÿ0-9_-]+)\s*$/);
-      if (m) palavra = m[1];
-    }
+    reader.readAsText(file);
   }
 
-  if (!palavra || palavra.length < 2) {
-    fecharPopup();
-    ultimaChaveMostrada = "";
-    return;
-  }
-
-  const chave = normalizarChave(palavra);
-  if (!chave || chave === ultimaChaveMostrada) return;
-
-  const item = indice.get(chave);
-  if (item) {
-    ultimaChaveMostrada = chave;
-    mostrarPopup(item);
-  } else {
-    fecharPopup();
-    ultimaChaveMostrada = "";
-  }
-}
-
-function mostrarPopup(item) {
-  const badge = document.getElementById("popupBadge");
-  badge.textContent = item.tipo;
-  badge.style.background = item.tipo === "PERSONAGEM" ? "var(--accent-purple)" : "var(--accent-cyan)";
-  badge.style.color = item.tipo === "PERSONAGEM" ? "white" : "var(--bg-base)";
-
-  document.getElementById("popupPalavra").textContent = item.termo;
-  document.getElementById("popupSub").textContent = `Categoria: ${item.categoria}`;
-  document.getElementById("popupSignificado").textContent = item.definicao;
-  document.getElementById("popupDeteccao").style.display = "block";
-}
-
-function fecharPopup() {
-  document.getElementById("popupDeteccao").style.display = "none";
-}
-
-/* =========================================================================
-   EVENTOS GLOBAIS
-   ========================================================================= */
-window.addEventListener("DOMContentLoaded", () => {
-  atualizarCfgInfo();
-
-  const ed = document.getElementById("editorContent");
-  ed.addEventListener("input", agendarDeteccao);
-  ed.addEventListener("paste", () => setTimeout(agendarDeteccao, 0));
-  ed.addEventListener("click", agendarDeteccao);
-  ed.addEventListener("keyup", (e) => {
-    if (["ArrowLeft","ArrowRight","ArrowUp","ArrowDown","Home","End"].includes(e.key)) {
-      agendarDeteccao();
-    }
-  });
-
-  document.addEventListener("keydown", (e) => {
-    if (e.key === "Escape") fecharPopup();
-  });
-
-  document.addEventListener("mousedown", (e) => {
+  function mostrarPopup(tipo, termo, texto) {
     const pop = document.getElementById("popupDeteccao");
-    if (pop.style.display === "block" && !pop.contains(e.target) && !ed.contains(e.target)) {
-      fecharPopup();
-    }
-  });
-});
+    const badge = document.getElementById("popupBadge");
+    
+    badge.innerText = tipo;
+    badge.style.background = tipo === "PERSONAGEM" ? "var(--accent-purple)" : "var(--accent-cyan)";
+    badge.style.color = tipo === "PERSONAGEM" ? "white" : "black";
+
+    document.getElementById("popupPalavra").innerText = termo;
+    document.getElementById("popupSignificado").innerText = texto;
+    pop.style.display = "block";
+  }
+
+  function fecharPopup() {
+    document.getElementById("popupDeteccao").style.display = "none";
+  }
 </script>
 
 </body>
