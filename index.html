@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>GraphZO //V14</title>
+  <title>GraphZO // ÚLTIMA MEMÓRIA [NEON V13 - GLOBAL DICT]</title>
   <style>
     :root {
       --bg-base: #030712;
@@ -95,6 +95,7 @@
 
     .btn-save { background: var(--success); border-color: var(--success); color: white; }
     .btn-danger { background: var(--danger); border-color: var(--danger); color: white; }
+    .btn-purple { background: var(--accent-purple); border-color: var(--accent-purple); color: white; }
 
     .main-container {
       display: flex;
@@ -184,7 +185,6 @@
       gap: 6px;
     }
 
-    /* POPUP FLUTUANTE DE DETECÇÃO */
     #popupDeteccao {
       position: fixed;
       bottom: 45px;
@@ -233,6 +233,19 @@
       border-radius: 4px;
     }
 
+    .popup-actions {
+      margin-top: 10px;
+      display: flex;
+      gap: 6px;
+      flex-wrap: wrap;
+    }
+
+    .popup-actions button {
+      font-size: 11px;
+      padding: 6px 10px;
+      min-height: 30px;
+    }
+
     @media (max-width: 768px) {
       .main-container {
         flex-direction: column;
@@ -254,7 +267,7 @@
 
   <header>
     <div>
-      <h1>SYS_GRAPHZO // <span>NEON V12</span></h1>
+      <h1>SYS_GRAPHZO // <span>NEON V13</span></h1>
       <div id="lastSavedBadge" style="font-size: 10px; color: var(--success);">🕒 Pronto para edição</div>
     </div>
     <div style="display: flex; gap: 6px; flex-wrap: wrap;">
@@ -343,15 +356,23 @@
     <div style="flex: 1; padding: 16px; overflow-y: auto; background: var(--bg-base);">
       <div style="max-width: 750px; margin: 0 auto; background: var(--bg-card); padding: 16px; border-radius: 4px; border: 1px solid var(--border-neon);">
         
-        <div style="margin-bottom: 16px; padding: 12px; background: var(--bg-panel); border: 1px dashed var(--accent-cyan); border-radius: 4px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px;">
-          <div>
-            <strong>Importar Base (.txt):</strong>
-            <div style="font-size: 10px; color: var(--text-muted);">Termo | Categoria | Descrição (Filtro 10k equilibrado)</div>
+        <div style="margin-bottom: 16px; padding: 12px; background: var(--bg-panel); border: 1px dashed var(--accent-cyan); border-radius: 4px; display: flex; flex-direction: column; gap: 10px;">
+          <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px;">
+            <div>
+              <strong>Importar Base (.txt):</strong>
+              <div style="font-size: 10px; color: var(--text-muted);">Termo | Categoria | Descrição (Filtro 10k equilibrado)</div>
+            </div>
+            <label class="file-btn">
+              📂 Carregar .txt
+              <input type="file" id="txtBaseInput" accept=".txt,text/plain" style="display: none;" onchange="importarBaseTxt(event)">
+            </label>
           </div>
-          <label class="file-btn">
-            📂 Carregar .txt
-            <input type="file" id="txtBaseInput" accept=".txt,text/plain" style="display: none;" onchange="importarBaseTxt(event)">
-          </label>
+          
+          <div style="display: flex; gap: 8px; flex-wrap: wrap; padding-top: 8px; border-top: 1px solid var(--border-neon);">
+            <button type="button" class="btn-purple" onclick="salvarDicionarioGlobal()">💾 Salvar Global</button>
+            <button type="button" class="btn-purple" onclick="carregarDicionarioGlobal()">📥 Carregar Global</button>
+            <button type="button" onclick="exportarDicionarioJson()">💾 Exportar JSON</button>
+          </div>
         </div>
 
         <div style="display: flex; flex-direction: column; gap: 8px;">
@@ -363,7 +384,6 @@
         <div id="termoDefinicao" contenteditable="true" oninput="atualizarTermoAtual()" style="min-height: 120px; background: var(--bg-base); border: 1px solid var(--border-neon); padding: 10px; outline: none;"></div>
         
         <div style="margin-top: 12px; display: flex; justify-content: space-between; gap: 8px; flex-wrap: wrap;">
-          <button type="button" onclick="exportarDicionarioJson()">💾 Exportar JSON</button>
           <button type="button" class="btn-danger" onclick="deletarTermoAtual()">🗑️ Excluir</button>
         </div>
       </div>
@@ -379,6 +399,10 @@
     <div id="popupPalavra" class="popup-palavra">Palavra</div>
     <div id="popupSub" class="popup-sub">Categoria / Papel</div>
     <div id="popupSignificado" class="popup-significado">Significado...</div>
+    <div class="popup-actions">
+      <button type="button" class="btn-purple" onclick="adicionarAoDicionario()">➕ Adicionar ao Dicionário</button>
+      <button type="button" onclick="fecharPopup()">Fechar</button>
+    </div>
   </div>
 
   <div class="status-bar">
@@ -400,6 +424,10 @@
     ]
   };
 
+  // DICIONÁRIO GLOBAL (persiste entre histórias)
+  let dicionarioGlobal = [];
+  let indiceDicionarioGlobal = new Map();
+
   let indicePersonagens = new Map();
   let indiceDicionario = new Map();
 
@@ -407,6 +435,7 @@
   let characterSelecionadoId = null;
   let termoSelecionadoId = null;
   let ultimaPalavraPopup = "";
+  let palavraPopupAtual = "";
 
   function normalizarChave(texto) {
     return texto
@@ -432,10 +461,17 @@
       });
     }
 
-    document.getElementById("statusText").innerText = `INDEXADOS: ${indicePersonagens.size} PERS. / ${indiceDicionario.size} TERMOS`;
+    // Reconstruir índice global também
+    indiceDicionarioGlobal.clear();
+    if (dicionarioGlobal) {
+      dicionarioGlobal.forEach(t => {
+        if (t.termo) indiceDicionarioGlobal.set(normalizarChave(t.termo), t);
+      });
+    }
+
+    document.getElementById("statusText").innerText = `INDEXADOS: ${indicePersonagens.size} PERS. / ${indiceDicionario.size} TERMOS / ${indiceDicionarioGlobal.size} GLOBAIS`;
   }
 
-  // --- NOVA FUNÇÃO: Atualiza o nome do capítulo dinamicamente baseado no texto ---
   function atualizarTituloCapituloDinamico() {
     const editor = document.getElementById("editorContent");
     const texto = editor.innerText || "";
@@ -445,17 +481,14 @@
     
     for (let i = 0; i < Math.min(linhas.length, 5); i++) {
       const linha = linhas[i].trim();
-      // Procura por "CAPÍTULO" seguido de número ou algarismo romano
       const match = linha.match(/CAPÍTULO\s+([A-Z0-9]+)\s*(.*)/i);
       if (match) {
         const num = match[1];
-        // Pega o que vem depois, removendo hífens, dois pontos ou traços opcionais no início
         let resto = match[2].replace(/^[-–—:\s]+/, '').trim();
         
         if (resto) {
           novoTitulo = `Capítulo ${num} - ${resto}`;
         } else if (linhas[i + 1] && linhas[i + 1].trim()) {
-          // Se não tiver nada na mesma linha, pega a próxima linha
           novoTitulo = `Capítulo ${num} - ${linhas[i + 1].trim()}`;
         } else {
           novoTitulo = `Capítulo ${num}`;
@@ -464,7 +497,6 @@
       }
     }
     
-    // Se não encontrar "CAPÍTULO X", usa a primeira linha não vazia como fallback
     if (novoTitulo === "Sem título") {
       const primeiraLinhaNaoVazia = linhas.find(l => l.trim() !== "");
       if (primeiraLinhaNaoVazia) {
@@ -472,11 +504,90 @@
       }
     }
 
-    // Atualiza apenas se mudou para evitar re-renderizações desnecessárias da lista
     if (projetoLivro.capitulos[capituloAtual] && projetoLivro.capitulos[capituloAtual].titulo !== novoTitulo) {
       projetoLivro.capitulos[capituloAtual].titulo = novoTitulo;
       renderizarListaCapitulos();
     }
+  }
+
+  // DICIONÁRIO GLOBAL - SALVAR
+  function salvarDicionarioGlobal() {
+    try {
+      localStorage.setItem("dicionario_global", JSON.stringify(projetoLivro.dicionario));
+      alert(`Dicionário global salvo! ${projetoLivro.dicionario.length} termos armazenados localmente.`);
+    } catch (e) {
+      alert("Erro ao salvar. O dicionário pode ser muito grande para o localStorage.");
+    }
+  }
+
+  // DICIONÁRIO GLOBAL - CARREGAR
+  function carregarDicionarioGlobal() {
+    const dados = localStorage.getItem("dicionario_global");
+    if (!dados) {
+      alert("Nenhum dicionário global encontrado.");
+      return;
+    }
+    
+    try {
+      const carregado = JSON.parse(dados);
+      if (confirm(`Carregar ${carregado.length} termos do dicionário global? Isso substituirá o dicionário atual.`)) {
+        projetoLivro.dicionario = carregado;
+        reconstruirIndices();
+        renderizarListaTermos();
+        alert("Dicionário global carregado!");
+      }
+    } catch (e) {
+      alert("Erro ao carregar o dicionário global.");
+    }
+  }
+
+  // DICIONÁRIO GLOBAL - SALVAR NO GITHUB
+  async function salvarDicionarioGlobalGitHub() {
+    const repo = localStorage.getItem("gh_repo") || "andreyoldekamp-del/EditorUltimaMemoria";
+    const token = localStorage.getItem("gh_token");
+    if (!token) { alert("Configure o Token!"); return; }
+
+    const url = `https://api.github.com/repos/${repo}/contents/dicionario_global.json`;
+    try {
+      let sha = "";
+      const getRes = await fetch(url, { headers: { "Authorization": `token ${token}` } });
+      if (getRes.ok) sha = (await getRes.json()).sha;
+
+      const contentBase64 = btoa(unescape(encodeURIComponent(JSON.stringify(projetoLivro.dicionario, null, 2))));
+      const putRes = await fetch(url, {
+        method: "PUT",
+        headers: { "Authorization": `token ${token}`, "Content-Type": "application/json" },
+        body: JSON.stringify({ message: "Atualizar dicionário global", content: contentBase64, sha: sha || undefined })
+      });
+
+      if (putRes.ok) {
+        localStorage.setItem("dicionario_global", JSON.stringify(projetoLivro.dicionario));
+        alert("Dicionário global salvo no GitHub!");
+      }
+    } catch (e) { alert("Erro ao salvar no GitHub."); }
+  }
+
+  // DICIONÁRIO GLOBAL - CARREGAR DO GITHUB
+  async function carregarDicionarioGlobalGitHub() {
+    const repo = localStorage.getItem("gh_repo") || "andreyoldekamp-del/EditorUltimaMemoria";
+    const token = localStorage.getItem("gh_token");
+    if (!token) return;
+
+    const url = `https://api.github.com/repos/${repo}/contents/dicionario_global.json`;
+    try {
+      const res = await fetch(url, { headers: { "Authorization": `token ${token}` } });
+      const data = await res.json();
+      if (res.ok) {
+        const carregado = JSON.parse(decodeURIComponent(escape(atob(data.content))));
+        if (confirm(`Carregar ${carregado.length} termos do GitHub?`)) {
+          projetoLivro.dicionario = carregado;
+          reconstruirIndices();
+          renderizarListaTermos();
+          localStorage.setItem("dicionario_global", JSON.stringify(carregado));
+          alert("Dicionário global carregado do GitHub!");
+        }
+      }
+    } catch(e) {}
   }
 
   window.addEventListener("DOMContentLoaded", async function() {
@@ -484,18 +595,66 @@
       localStorage.setItem("gh_repo", "andreyoldekamp-del/EditorUltimaMemoria");
     }
 
+    // Carregar dicionário global do localStorage ao iniciar
+    const dictGlobal = localStorage.getItem("dicionario_global");
+    if (dictGlobal) {
+      try {
+        dicionarioGlobal = JSON.parse(dictGlobal);
+      } catch(e) {
+        dicionarioGlobal = [];
+      }
+    }
+
     const editor = document.getElementById("editorContent");
     editor.addEventListener("input", processarEntradaTexto);
     editor.addEventListener("keyup", processarEntradaTexto);
 
-    // --- NOVO: Auto-pular para o próximo capítulo ao rolar até o fim ---
+    // CLIQUE DUPLO para buscar palavra
+    editor.addEventListener("dblclick", function(event) {
+      const sel = window.getSelection();
+      if (!sel.rangeCount) return;
+
+      const range = sel.getRangeAt(0);
+      const palavra = sel.toString().trim();
+      
+      if (!palavra) return;
+
+      const chave = normalizarChave(palavra);
+      if (chave.length < 2) return;
+
+      palavraPopupAtual = palavra;
+
+      // Busca em personagens
+      if (indicePersonagens.has(chave)) {
+        const p = indicePersonagens.get(chave);
+        mostrarPopup("PERSONAGEM", p.nome, `Papel: ${p.papel || 'Principal'}`, p.biografia_xhtml || "Sem biografia.");
+        return;
+      }
+
+      // Busca no dicionário local
+      if (indiceDicionario.has(chave)) {
+        const t = indiceDicionario.get(chave);
+        mostrarPopup("DICIONÁRIO", t.termo, `Categoria: ${t.categoria || 'Geral'}`, t.definicao || "Sem definição.");
+        return;
+      }
+
+      // Busca no dicionário global
+      if (indiceDicionarioGlobal.has(chave)) {
+        const t = indiceDicionarioGlobal.get(chave);
+        mostrarPopup("DICIONÁRIO GLOBAL", t.termo, `Categoria: ${t.categoria || 'Geral'}`, t.definicao || "Sem definição.");
+        return;
+      }
+
+      // Se não encontrou, mostra popup para adicionar
+      mostrarPopup("NÃO ENCONTRADO", palavra, "Adicionar ao dicionário?", "Esta palavra não está no dicionário.");
+    });
+
     const editorArea = document.querySelector('.editor-area');
     let scrollTimeout;
     
     editorArea.addEventListener('scroll', () => {
       if (scrollTimeout) return;
       
-      // Verifica se está a menos de 50px do final do conteúdo rolável
       if (editorArea.scrollTop + editorArea.clientHeight >= editorArea.scrollHeight - 50) {
         scrollTimeout = setTimeout(() => {
           scrollTimeout = null;
@@ -503,20 +662,17 @@
           const capIds = Object.keys(projetoLivro.capitulos);
           const currentIndex = capIds.indexOf(capituloAtual);
           
-          // Se existir um próximo capítulo, pula para ele
           if (currentIndex !== -1 && currentIndex < capIds.length - 1) {
             const nextCapId = capIds[currentIndex + 1];
             trocarCapitulo(nextCapId);
             
-            // Rola suavemente para o topo do novo capítulo após a troca
             setTimeout(() => {
               editorArea.scrollTo({ top: 0, behavior: 'smooth' });
             }, 50);
           }
-        }, 800); // 800ms de delay para confirmar que o usuário parou no fim e não foi um scroll acidental
+        }, 800);
       }
     });
-    // -------------------------------------------------------------------
 
     reconstruirIndices();
     renderizarListaCapitulos();
@@ -530,7 +686,7 @@
 
   function processarEntradaTexto() {
     salvarCapituloAtualNaMemoria();
-    atualizarTituloCapituloDinamico(); // Atualiza o título dinamicamente enquanto digita
+    atualizarTituloCapituloDinamico();
     
     if (!document.getElementById("togglePopupAuto").checked) return;
 
@@ -555,6 +711,8 @@
     const chave = normalizarChave(match[1]);
     if (chave.length < 2 || chave === ultimaPalavraPopup) return;
 
+    palavraPopupAtual = match[1];
+
     if (indicePersonagens.has(chave)) {
       ultimaPalavraPopup = chave;
       const p = indicePersonagens.get(chave);
@@ -568,14 +726,38 @@
       mostrarPopup("DICIONÁRIO", t.termo, `Categoria: ${t.categoria || 'Geral'}`, t.definicao || "Sem definição.");
       return;
     }
+
+    if (indiceDicionarioGlobal.has(chave)) {
+      ultimaPalavraPopup = chave;
+      const t = indiceDicionarioGlobal.get(chave);
+      mostrarPopup("DICIONÁRIO GLOBAL", t.termo, `Categoria: ${t.categoria || 'Geral'}`, t.definicao || "Sem definição.");
+      return;
+    }
   }
 
   function mostrarPopup(tipo, palavra, subtitulo, significadoHtml) {
     const popup = document.getElementById("popupDeteccao");
     const badge = document.getElementById("popupBadge");
     
-    badge.innerText = tipo === "PERSONAGEM" ? "👤 PERSONAGEM" : "📖 DICIONÁRIO";
-    badge.className = "badge-tipo " + (tipo === "PERSONAGEM" ? "badge-personagem" : "badge-dicionario");
+    let badgeText = tipo;
+    let badgeClass = "badge-dicionario";
+    
+    if (tipo === "PERSONAGEM") {
+      badgeText = "👤 PERSONAGEM";
+      badgeClass = "badge-personagem";
+    } else if (tipo === "DICIONÁRIO") {
+      badgeText = "📖 DICIONÁRIO";
+      badgeClass = "badge-dicionario";
+    } else if (tipo === "DICIONÁRIO GLOBAL") {
+      badgeText = "🌍 GLOBAL";
+      badgeClass = "badge-dicionario";
+    } else if (tipo === "NÃO ENCONTRADO") {
+      badgeText = "❓ NÃO ENCONTRADO";
+      badgeClass = "badge-dicionario";
+    }
+    
+    badge.innerText = badgeText;
+    badge.className = "badge-tipo " + badgeClass;
     
     document.getElementById("popupPalavra").innerText = palavra;
     document.getElementById("popupSub").innerText = subtitulo;
@@ -588,6 +770,35 @@
   function fecharPopup() {
     document.getElementById("popupDeteccao").style.display = "none";
     ultimaPalavraPopup = "";
+    palavraPopupAtual = "";
+  }
+
+  // ADICIONAR PALAVRA AO DICIONÁRIO
+  function adicionarAoDicionario() {
+    if (!palavraPopupAtual) {
+      alert("Nenhuma palavra selecionada.");
+      return;
+    }
+
+    const categoria = prompt("Categoria para '" + palavraPopupAtual + "':", "Geral");
+    if (!categoria) return;
+
+    const definicao = prompt("Definição para '" + palavraPopupAtual + "':", "Termo registrado.");
+    if (!definicao) return;
+
+    const novoTermo = {
+      id: 'term_' + Date.now(),
+      termo: palavraPopupAtual,
+      categoria: categoria,
+      definicao: `<p>${definicao}</p>`
+    };
+
+    projetoLivro.dicionario.unshift(novoTermo);
+    reconstruirIndices();
+    renderizarListaTermos();
+    
+    fecharPopup();
+    alert(`"${palavraPopupAtual}" adicionado ao dicionário!`);
   }
 
   function mudarAba(aba) {
@@ -647,7 +858,7 @@
     if (projetoLivro.capitulos[capId]) {
       document.getElementById("editorContent").innerHTML = projetoLivro.capitulos[capId].conteudo_xhtml;
       atualizarContador();
-      atualizarTituloCapituloDinamico(); // Garante que o título esteja correto ao carregar
+      atualizarTituloCapituloDinamico();
     }
   }
 
