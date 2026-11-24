@@ -467,7 +467,7 @@
     }
   });
 
-  function processarEntradaTexto() {
+function processarEntradaTexto(event) {
     salvarCapituloAtualNaMemoria();
     if (!document.getElementById("togglePopupAuto").checked) return;
 
@@ -486,15 +486,14 @@
 
     textoAntes = textoAntes.replace(/\u00A0/g, " ");
 
-    // Captura a última palavra antes de espaço ou pontuação
+    // Captura a palavra imediatamente anterior ao espaço ou pontuação digitada
     const match = textoAntes.match(/([a-zA-ZÀ-ÿ0-9_-]+)[\s.,!?;:]+$/);
     if (!match) return;
 
     const palavraBruta = match[1];
     const chave = normalizarChave(palavraBruta);
 
-    if (chave.length < 2 || chave === ultimaChaveProcessada) return;
-    ultimaChaveProcessada = chave;
+    if (chave.length < 2) return;
 
     // 1. Verifica nos Personagens
     if (indicePersonagens.has(chave)) {
