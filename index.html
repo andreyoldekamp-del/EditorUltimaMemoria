@@ -1008,8 +1008,11 @@
     try {
       const res = await fetch(url, { headers: { "Authorization": `token ${token}` } });
       const data = await res.json();
-      if (res.ok) {
-        const carregado = JSON.parse(decodeURIComponent(escape(atob(data.content))));
+      if (res.ok && data.content) {
+        // Limpa espaços e quebras de linha do Base64 para evitar falha no atob()
+        const cleanContent = data.content.replace(/\s/g, '');
+        const carregado = JSON.parse(decodeURIComponent(escape(atob(cleanContent))));
+        
         projetoLivro.metadados = carregado.metadados || projetoLivro.metadados;
         projetoLivro.capitulos = carregado.capitulos || projetoLivro.capitulos;
         projetoLivro.personagens = carregado.personagens || [];
@@ -1020,7 +1023,9 @@
         carregarCapituloNaTela(Object.keys(projetoLivro.capitulos)[0]);
         if(!silencioso) alert("Dados carregados!");
       }
-    } catch(e) {}
+    } catch(e) {
+      if(!silencioso) alert("Erro ao carregar dados do GitHub.");
+    }
   }
 
   async function listarCommitsGitHub(silencioso = false) {
@@ -1059,8 +1064,10 @@
     try {
       const res = await fetch(url, { headers: { "Authorization": `token ${token}` } });
       const data = await res.json();
-      if (res.ok) {
-        const carregado = JSON.parse(decodeURIComponent(escape(atob(data.content))));
+      if (res.ok && data.content) {
+        const cleanContent = data.content.replace(/\s/g, '');
+        const carregado = JSON.parse(decodeURIComponent(escape(atob(cleanContent))));
+        
         projetoLivro.capitulos = carregado.capitulos || projetoLivro.capitulos;
         projetoLivro.personagens = carregado.personagens || [];
         if (carregado.dicionario) projetoLivro.dicionario = carregado.dicionario;
@@ -1071,3 +1078,26 @@
         renderizarListaPersonagens();
         alert("Versão carregada!");
       }
+    } catch(e) {
+      alert("Erro ao carregar a versão selecionada.");
+    }
+  }
+
+  function descartarVersaoAtual() {
+    const sha = document.getElementById("selectCommits").value;
+    if (!sha) return alert("Selecione uma versão.");
+    const descarte = JSON.parse(localStorage.getItem("commits_descartados") || "[]");
+    descarte.push(sha);
+    localStorage.setItem("commits_descartados", JSON.stringify(descarte));
+    listarCommitsGitHub(true);
+    alert("Versão ocultada.");
+  }
+
+  function atualizarContador() {
+    const texto = document.getElementById("editorContent").innerText;
+    document.getElementById("wordCount").innerText = `PALAVRAS: ${texto.trim() ? texto.trim().split(/\s+/).length : 0}`;
+  }
+</script>
+
+</body>
+</html>
