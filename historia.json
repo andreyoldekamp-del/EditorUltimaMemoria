@@ -3,7 +3,7 @@
     "titulo": "Última Memória",
     "autor": "Autor"
   },
-  "atualizadoEm": 1795544655646,
+  "atualizadoEm": 1795544696869,
   "capitulos": {
     "cap_1": {
       "titulo": "Capítulo 1 - Tempestade.",
@@ -78,6 +78,14 @@
       "caracteristicas": [],
       "imagemUrl": "https://raw.githubusercontent.com/andreyoldekamp-del/EditorUltimaMemoria/main/assets/char_1795544621284.jpg?v=1795544655646",
       "biografia_xhtml": "<h1 style=\"margin-top: 18px; margin-bottom: 12px;\"><span style=\"font-family: &quot;Segoe UI&quot;; font-size: xx-large;\">Lima Papa, trinta e dois</span></h1><p>\n</p><p style=\"margin-top: 12px; margin-bottom: 12px;\"><span style=\" font-family:'Segoe UI'; font-size:12px;\">Nome da nave do Capitão Beacon, o Teddy do rancho alvorada&nbsp;</span></p>"
+    },
+    {
+      "id": "char_1795544669644",
+      "nome": "Sargento Kepler",
+      "papel": "Secundário",
+      "caracteristicas": [],
+      "imagemUrl": "https://raw.githubusercontent.com/andreyoldekamp-del/EditorUltimaMemoria/main/assets/char_1795544669644.jpg?v=1795544696869",
+      "biografia_xhtml": "<h1 style=\"margin-top: 18px; margin-bottom: 12px;\"><span style=\"font-family: &quot;Segoe UI&quot;; font-size: xx-large;\">Sargento Kepler</span></h1><p>\n</p><p style=\"margin-top: 12px; margin-bottom: 12px;\"><span style=\" font-family:'Segoe UI'; font-size:12px;\">Sargento da divisão 678 Alfa Bravo Pelotão do Capitão Beacon</span></p>"
     }
   ],
   "dicionarioRef": "dicionario_global.json"
