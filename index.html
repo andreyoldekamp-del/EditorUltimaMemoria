@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>GraphZO // DICIONÁRIO ROBUSTO V4</title>
+<title>GraphZO // DICT v5</title>
 <style>
   :root {
     --bg-base: #030712;
@@ -60,7 +60,6 @@
     align-items: stretch;
     overflow: hidden;
   }
-
   .main-col {
     flex: 1;
     display: flex;
@@ -68,7 +67,6 @@
     align-items: center;
     min-width: 0;
   }
-
   #statusInfo {
     margin-bottom: 10px;
     color: #9ca3af;
@@ -77,7 +75,6 @@
     width: 100%;
     text-align: center;
   }
-
   #editorContent {
     width: 100%;
     max-width: 700px;
@@ -96,7 +93,6 @@
     min-height: 300px;
   }
   #editorContent:focus { border-color: var(--accent-cyan); }
-
   .hint {
     color: #6b7280;
     font-size: 10px;
@@ -107,9 +103,8 @@
   }
   .hint code { color: var(--accent-cyan); }
 
-  /* PAINEL DE DIAGNÓSTICO */
   #debugPanel {
-    width: 320px;
+    width: 340px;
     flex-shrink: 0;
     background: var(--bg-panel);
     border: 1px solid var(--border-neon);
@@ -141,16 +136,13 @@
     padding: 6px;
     font-size: 10px;
     line-height: 1.5;
+    font-family: 'Courier New', monospace;
+    white-space: pre-wrap;
+    word-break: break-all;
   }
   #debugLista .tipo-P { color: var(--accent-purple); }
   #debugLista .tipo-D { color: var(--accent-cyan); }
-  #debugLista .faltando { color: var(--accent-red); }
-
-  #testeRapido {
-    display: flex;
-    gap: 4px;
-    margin-top: 4px;
-  }
+  #testeRapido { display: flex; gap: 4px; margin-top: 4px; }
   #testeRapido input {
     flex: 1;
     background: #0f172a;
@@ -174,7 +166,6 @@
   #testeResultado.ok { background: rgba(16,185,129,0.15); color: var(--accent-green); border: 1px solid var(--accent-green); }
   #testeResultado.nok { background: rgba(239,68,68,0.15); color: var(--accent-red); border: 1px solid var(--accent-red); }
 
-  /* POPUP DE DETECÇÃO */
   #popupDeteccao {
     position: fixed;
     bottom: 30px;
@@ -209,18 +200,8 @@
     border-radius: 3px;
     letter-spacing: 1px;
   }
-  #popupFechar {
-    padding: 0 8px;
-    font-size: 11px;
-    line-height: 18px;
-    border-radius: 3px;
-  }
-  #popupPalavra {
-    font-size: 16px;
-    font-weight: bold;
-    margin-bottom: 4px;
-    word-break: break-word;
-  }
+  #popupFechar { padding: 0 8px; font-size: 11px; line-height: 18px; border-radius: 3px; }
+  #popupPalavra { font-size: 16px; font-weight: bold; margin-bottom: 4px; word-break: break-word; }
   #popupSignificado {
     font-size: 12px;
     color: #d1d5db;
@@ -239,7 +220,7 @@
 <body>
 
 <header>
-  <h1>GraphZO // DICIONÁRIO ROBUSTO v3</h1>
+  <h1>GraphZO // DICIONÁRIO ROBUSTO v4</h1>
   <div style="display: flex; gap: 8px; flex-wrap: wrap;">
     <label class="file-btn">
       📂 Carregar Dicionário (.txt)
@@ -254,7 +235,7 @@
     <div id="statusInfo">Status: Carregue seu arquivo .txt de dicionário.</div>
     <div id="editorContent" contenteditable="true" spellcheck="false"></div>
     <div class="hint">
-      Formatos aceitos: <code>termo</code> · <code>termo: definição</code> · <code>termo | categoria | definição</code> · <code>termo - definição</code>
+      Formatos aceitos: <code>[P] nome</code> · <code>[D] termo = categoria ‖ definição</code> · <code>termo</code> · <code>termo: definição</code> · <code>termo | categoria | definição</code>
     </div>
   </div>
 
@@ -265,16 +246,15 @@
     <div class="row"><span>Total índice:</span><span id="dbgTotal">0</span></div>
     <h2 style="margin-top:4px;">Teste rápido</h2>
     <div id="testeRapido">
-      <input type="text" id="testeInput" placeholder="digite: casa, vento..." />
+      <input type="text" id="testeInput" placeholder="ex: casa, vir, teddy" />
       <button id="testeBtn">OK</button>
     </div>
     <div id="testeResultado">Aguardando teste...</div>
-    <h2 style="margin-top:4px;">Termos indexados</h2>
+    <h2 style="margin-top:4px;">Chaves indexadas</h2>
     <div id="debugLista"></div>
   </aside>
 </div>
 
-<!-- POPUP -->
 <div id="popupDeteccao" role="dialog" aria-live="polite">
   <div class="popup-header">
     <span id="popupBadge">TIPO</span>
@@ -286,7 +266,7 @@
 
 <script>
 /* =========================================================================
-   BASE INICIAL (sempre presente — nunca é apagada)
+   BASE INICIAL
    ========================================================================= */
 const baseInicial = {
   personagens: [
@@ -305,17 +285,14 @@ const baseInicial = {
 };
 
 /* =========================================================================
-   ESTADO GLOBAL
+   ESTADO
    ========================================================================= */
 const estado = {
   personagens: [...baseInicial.personagens],
-  dicionario:  [...baseInicial.dicionario],
-  importados:  []   // guarda o que veio do TXT (para diagnóstico)
+  dicionario:  [...baseInicial.dicionario]
 };
 
-/** Map<chaveNormalizada, {tipo, palavra, sub, significado}> */
 const indiceGeral = new Map();
-
 const META_MAXIMA_TERMOS = 10000;
 
 /* =========================================================================
@@ -339,7 +316,6 @@ function normalizarChave(texto) {
 function construirIndiceUnico() {
   indiceGeral.clear();
 
-  // 1) Personagens (prioridade máxima)
   for (const p of estado.personagens) {
     const chave = normalizarChave(p.nome);
     if (!chave) continue;
@@ -351,11 +327,10 @@ function construirIndiceUnico() {
     });
   }
 
-  // 2) Dicionário (padrão + importado, já mesclados em estado.dicionario)
   for (const d of estado.dicionario) {
     const chave = normalizarChave(d.termo);
     if (!chave) continue;
-    if (indiceGeral.has(chave)) continue; // personagem tem prioridade
+    if (indiceGeral.has(chave)) continue;
     indiceGeral.set(chave, {
       tipo: "DICIONÁRIO",
       palavra: d.termo,
@@ -368,7 +343,7 @@ function construirIndiceUnico() {
 }
 
 /* =========================================================================
-   DIAGNÓSTICO (painel lateral)
+   DIAGNÓSTICO
    ========================================================================= */
 function atualizarDebug() {
   const totalP = estado.personagens.length;
@@ -382,13 +357,15 @@ function atualizarDebug() {
   document.getElementById("statusInfo").innerText =
     `Status: ${totalI} termos indexados (${totalP} personagens + ${totalD} verbetes).`;
 
-  // Lista de termos (até 200, para não travar)
   const lista = document.getElementById("debugLista");
   lista.innerHTML = "";
   let count = 0;
   for (const [chave, item] of indiceGeral) {
-    if (count++ >= 200) {
-      lista.innerHTML += `<div style="color:#6b7280;">... e mais ${totalI - 200}</div>`;
+    if (count++ >= 300) {
+      const div = document.createElement("div");
+      div.style.color = "#6b7280";
+      div.textContent = `... e mais ${totalI - 300}`;
+      lista.appendChild(div);
       break;
     }
     const div = document.createElement("div");
@@ -399,7 +376,7 @@ function atualizarDebug() {
 }
 
 /* =========================================================================
-   DETECÇÃO — pega a palavra contígua sob o cursor
+   DETECÇÃO
    ========================================================================= */
 let debounceTimer = null;
 
@@ -411,34 +388,29 @@ function agendarDeteccao() {
 function detectarSobCursor() {
   const sel = window.getSelection();
   if (!sel || sel.rangeCount === 0) return;
-
   const range = sel.getRangeAt(0);
   if (!range.collapsed) return;
 
   const node = range.startContainer;
 
-  // Caso A: cursor em nó de texto
   if (node.nodeType === Node.TEXT_NODE) {
     const texto = node.textContent;
     const pos = range.startOffset;
-
     let inicio = pos;
     let fim = pos;
-    while (inicio > 0 && /[A-Za-zÀ-ÿ0-9_-]/.test(texto[inicio - 1])) inicio--;
-    while (fim < texto.length && /[A-Za-zÀ-ÿ0-9_-]/.test(texto[fim])) fim++;
-
+    while (inicio > 0 && /[A-Za-zÀ-ÿ0-9ªº_-]/.test(texto[inicio - 1])) inicio--;
+    while (fim < texto.length && /[A-Za-zÀ-ÿ0-9ªº_-]/.test(texto[fim])) fim++;
     const palavra = texto.slice(inicio, fim);
-    if (palavra.length >= 2) consultarPalavra(palavra);
+    if (palavra.length >= 1) consultarPalavra(palavra);
     return;
   }
 
-  // Caso B: cursor em nó elemento (ex: <div> vazio, <br>)
   if (node.nodeType === Node.ELEMENT_NODE) {
     const offset = range.startOffset;
     if (offset > 0 && node.childNodes[offset - 1]) {
       const prev = node.childNodes[offset - 1];
       const texto = prev.textContent || "";
-      const m = texto.match(/([A-Za-zÀ-ÿ0-9_-]+)\s*$/);
+      const m = texto.match(/([A-Za-zÀ-ÿ0-9ªº_-]+)\s*$/);
       if (m) consultarPalavra(m[1]);
     }
   }
@@ -446,8 +418,7 @@ function detectarSobCursor() {
 
 function consultarPalavra(palavraBruta) {
   const chave = normalizarChave(palavraBruta);
-  if (!chave || chave.length < 2) return;
-
+  if (!chave) return;
   const item = indiceGeral.get(chave);
   if (item) {
     mostrarPopup(item.tipo, item.palavra, `${item.sub} — ${item.significado}`);
@@ -455,55 +426,123 @@ function consultarPalavra(palavraBruta) {
 }
 
 /* =========================================================================
-   PARSER DE TXT
+   PARSER — reconhece [P], [D], =, ‖, ·, |, :, -
    ========================================================================= */
 function parseLinha(linhaOriginal) {
-  let linha = linhaOriginal;
-  if (typeof linha !== "string") return null;
+  if (typeof linhaOriginal !== "string") return null;
 
-  // Remove BOM e invisíveis no início
-  linha = linha.replace(/^[\uFEFF\u00A0\u200B\u200C\u200D]+/, "").trim();
+  let linha = linhaOriginal
+    .replace(/^[\uFEFF\u00A0\u200B\u200C\u200D]+/, "")
+    .trim();
+
   if (!linha) return null;
-
-  // Ignora comentários
   if (linha.startsWith("#") || linha.startsWith("//")) return null;
 
-  // Formato 1: termo | categoria | definicao
+  // ---------------------------------------------------------------
+  // FORMATO PRINCIPAL DO SEU TXT:  [P] nome  /  [D] termo = ...
+  // ---------------------------------------------------------------
+  const mPrefixo = linha.match(/^\[([PD])\]\s*(.+)$/i);
+  if (mPrefixo) {
+    const tipo = mPrefixo[1].toUpperCase(); // 'P' ou 'D'
+    const resto = mPrefixo[2].trim();
+    if (!resto) return null;
+
+    if (tipo === "P") {
+      // Personagem: [P] nome
+      // Pode ter "= bio" opcional
+      const mBio = resto.match(/^([^=]+?)\s*=\s*(.+)$/);
+      const nome = (mBio ? mBio[1] : resto).trim();
+      const bio  = mBio ? mBio[2].trim() : "Personagem importado.";
+      if (!nome) return null;
+      return { tipo: "PERSONAGEM", nome, papel: "Importado", bio };
+    }
+
+    // Dicionário: [D] termo = categoria ‖ definição [‖ ...] [· ex]
+    // Passo 1: separa termo do resto no primeiro '='
+    const idxIgual = resto.indexOf("=");
+    let termo, categoria, definicao;
+
+    if (idxIgual === -1) {
+      // [D] termo  (sem categoria nem definição)
+      termo = resto.trim();
+      categoria = "Dicionário";
+      definicao = "Definição do verbete.";
+    } else {
+      termo = resto.slice(0, idxIgual).trim();
+      let cauda = resto.slice(idxIgual + 1).trim();
+
+      // Remove sufixo de exemplo: "· ex..." (middle dot U+00B7)
+      // e o " ex" após "·"
+      cauda = cauda.replace(/\s*·.*$/, "").trim();
+
+      // Separa por ‖ (U+2016) — pode haver múltiplos
+      const partes = cauda.split("‖").map(s => s.trim()).filter(Boolean);
+
+      if (partes.length === 0) {
+        categoria = "Dicionário";
+        definicao = "Definição do verbete.";
+      } else if (partes.length === 1) {
+        // Só uma parte: se for curta e sem espaços, é categoria;
+        // senão é definição.
+        const p = partes[0];
+        if (p.length <= 40 && !p.includes(" ") && !/[.!?]/.test(p)) {
+          categoria = p;
+          definicao = "Definição do verbete.";
+        } else {
+          categoria = "Dicionário";
+          definicao = p;
+        }
+      } else {
+        // 2+ partes: primeira é categoria, resto é definição
+        categoria = partes[0];
+        definicao = partes.slice(1).join(" ‖ ");
+      }
+    }
+
+    if (!termo) return null;
+    return { tipo: "DICIONARIO", termo, categoria, definicao };
+  }
+
+  // ---------------------------------------------------------------
+  // Formatos alternativos (compatibilidade)
+  // ---------------------------------------------------------------
   if (linha.includes("|")) {
     const p = linha.split("|").map(s => s.trim());
     if (!p[0]) return null;
     return {
+      tipo: "DICIONARIO",
       termo: p[0],
       categoria: p[1] || "Dicionário",
       definicao: p[2] || "Definição do verbete."
     };
   }
 
-  // Formato 2: termo: definicao
   const idxDP = linha.indexOf(":");
   if (idxDP > 0 && idxDP < 80) {
     const termo = linha.slice(0, idxDP).trim();
     const def   = linha.slice(idxDP + 1).trim();
     if (!termo) return null;
     return {
+      tipo: "DICIONARIO",
       termo,
       categoria: "Dicionário",
       definicao: def || "Definição do verbete."
     };
   }
 
-  // Formato 3: termo - definicao (hífen com espaços em volta)
   const mHifen = linha.match(/^(.+?)\s+-\s+(.+)$/);
   if (mHifen) {
     return {
+      tipo: "DICIONARIO",
       termo: mHifen[1].trim(),
       categoria: "Dicionário",
       definicao: mHifen[2].trim()
     };
   }
 
-  // Formato 4: só o termo (não quebra em hífen)
+  // Só termo
   return {
+    tipo: "DICIONARIO",
     termo: linha,
     categoria: "Dicionário",
     definicao: "Definição do verbete."
@@ -511,7 +550,7 @@ function parseLinha(linhaOriginal) {
 }
 
 /* =========================================================================
-   IMPORTAÇÃO — MESCLA com o padrão (não substitui!)
+   IMPORTAÇÃO — mescla com a base inicial
    ========================================================================= */
 function importarBaseTxt(event) {
   const file = event.target.files && event.target.files[0];
@@ -527,42 +566,62 @@ function importarBaseTxt(event) {
       const texto = e.target.result;
       const linhas = texto.split(/\r?\n/);
 
-      const novos = [];
-      const vistos = new Set();
+      // chaves já existentes na base inicial
+      const chavesPersonagens = new Set(estado.personagens.map(p => normalizarChave(p.nome)));
+      const chavesDicionario  = new Set(estado.dicionario.map(d => normalizarChave(d.termo)));
 
-      // já considera o que existe no padrão para não duplicar
-      for (const d of estado.dicionario) {
-        vistos.add(normalizarChave(d.termo));
-      }
+      const novosP = [];
+      const novosD = [];
+      let linhasValidas = 0;
+      let linhasIgnoradas = 0;
+      let linhasDuplicadas = 0;
 
       for (const linha of linhas) {
+        if (!linha.trim()) continue;
+
         const item = parseLinha(linha);
-        if (!item) continue;
-        const chave = normalizarChave(item.termo);
-        if (!chave) continue;
-        if (vistos.has(chave)) continue;
-        vistos.add(chave);
-        novos.push(item);
+        if (!item) { linhasIgnoradas++; continue; }
+
+        linhasValidas++;
+
+        if (item.tipo === "PERSONAGEM") {
+          const chave = normalizarChave(item.nome);
+          if (!chave) { linhasIgnoradas++; continue; }
+          if (chavesPersonagens.has(chave)) { linhasDuplicadas++; continue; }
+          chavesPersonagens.add(chave);
+          novosP.push({ nome: item.nome, papel: item.papel, bio: item.bio });
+        } else {
+          const chave = normalizarChave(item.termo);
+          if (!chave) { linhasIgnoradas++; continue; }
+          if (chavesPersonagens.has(chave)) { linhasDuplicadas++; continue; }
+          if (chavesDicionario.has(chave)) { linhasDuplicadas++; continue; }
+          chavesDicionario.add(chave);
+          novosD.push({ termo: item.termo, categoria: item.categoria, definicao: item.definicao });
+        }
       }
 
-      if (novos.length === 0) {
-        alert("Nenhum termo novo encontrado no arquivo (todos já existiam ou nenhum era válido).");
-        statusEl.innerText = "Status: Nenhum termo novo importado.";
+      if (novosP.length === 0 && novosD.length === 0) {
+        alert(
+          `Nenhum termo novo importado.\n\n` +
+          `Linhas lidas: ${linhas.length}\n` +
+          `Válidas: ${linhasValidas}\n` +
+          `Duplicadas (já existiam): ${linhasDuplicadas}\n` +
+          `Ignoradas (formato desconhecido): ${linhasIgnoradas}\n\n` +
+          `Veja o painel lateral para os termos que já estão indexados.`
+        );
         atualizarDebug();
         return;
       }
 
-      estado.importados = novos;
+      // Mescla
+      let combinado = [...estado.dicionario, ...novosD];
 
-      // Mescla com o dicionário padrão (padrão + importados)
-      let combinado = [...baseInicial.dicionario, ...novos];
-
-      // Se ultrapassar a meta, equilibra por letra
+      // Equilíbrio por letra se passar da meta
       if (combinado.length > META_MAXIMA_TERMOS) {
         const grupos = {};
         const alfabeto = "abcdefghijklmnopqrstuvwxyz0123456789";
         for (const item of combinado) {
-          const c = (item.termo[0] || "").toLowerCase();
+          const c = (String(item.termo)[0] || "").toLowerCase();
           const letra = alfabeto.includes(c) ? c : "#";
           (grupos[letra] = grupos[letra] || []).push(item);
         }
@@ -589,10 +648,18 @@ function importarBaseTxt(event) {
         combinado = equilibrados;
       }
 
-      estado.dicionario = combinado;
+      estado.personagens = [...estado.personagens, ...novosP];
+      estado.dicionario  = combinado;
       construirIndiceUnico();
 
-      alert(`Sucesso! ${novos.length} termos novos importados. Total no dicionário: ${estado.dicionario.length}.`);
+      alert(
+        `Importação concluída!\n\n` +
+        `+${novosP.length} personagens\n` +
+        `+${novosD.length} verbetes\n` +
+        `Duplicadas (ignoradas): ${linhasDuplicadas}\n` +
+        `Ignoradas (formato desconhecido): ${linhasIgnoradas}\n\n` +
+        `Total agora: ${estado.personagens.length} personagens + ${estado.dicionario.length} verbetes`
+      );
     } catch (err) {
       console.error(err);
       alert("Erro ao processar o arquivo: " + err.message);
@@ -606,7 +673,7 @@ function importarBaseTxt(event) {
   };
 
   reader.readAsText(file, "UTF-8");
-  event.target.value = ""; // permite reimportar o mesmo arquivo
+  event.target.value = "";
 }
 
 /* =========================================================================
@@ -630,7 +697,7 @@ function fecharPopup() {
 }
 
 /* =========================================================================
-   TESTE RÁPIDO (painel lateral)
+   TESTE RÁPIDO
    ========================================================================= */
 function executarTesteRapido() {
   const inp = document.getElementById("testeInput");
@@ -645,15 +712,15 @@ function executarTesteRapido() {
   const item = indiceGeral.get(chave);
   if (item) {
     res.className = "ok";
-    res.textContent = `✔ ENCONTRADO [${item.tipo}] ${item.palavra} — ${item.sub}`;
+    res.textContent = `✔ [${item.tipo}] ${item.palavra} — ${item.sub}`;
   } else {
     res.className = "nok";
-    res.textContent = `✘ NÃO encontrado. Chave testada: "${chave}"`;
+    res.textContent = `✘ Não encontrado. Chave: "${chave}"`;
   }
 }
 
 /* =========================================================================
-   EVENTOS GLOBAIS
+   EVENTOS
    ========================================================================= */
 window.addEventListener("DOMContentLoaded", () => {
   construirIndiceUnico();
@@ -685,7 +752,6 @@ window.addEventListener("DOMContentLoaded", () => {
     editor.innerHTML = "";
     estado.personagens = [...baseInicial.personagens];
     estado.dicionario  = [...baseInicial.dicionario];
-    estado.importados  = [];
     construirIndiceUnico();
     fecharPopup();
   });
