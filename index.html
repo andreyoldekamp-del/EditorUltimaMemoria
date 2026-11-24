@@ -1,321 +1,566 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>GraphZO // VERSÃO 13</title>
-  <style>
-    :root {
-      --bg-base: #030712;
-      --bg-panel: #0b0f19;
-      --accent-cyan: #06b6d4;
-      --accent-purple: #a855f7;
-      --text-main: #f3f4f6;
-      --border-neon: #1e3a8a;
-    }
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>GraphZO //DICT v2</title>
+<style>
+  :root {
+    --bg-base: #030712;
+    --bg-panel: #0b0f19;
+    --accent-cyan: #06b6d4;
+    --accent-purple: #a855f7;
+    --text-main: #f3f4f6;
+    --border-neon: #1e3a8a;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
 
-    * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    font-family: 'Courier New', Courier, monospace;
+    background: var(--bg-base);
+    color: var(--text-main);
+    height: 100vh;
+    display: flex;
+    flex-direction: column;
+  }
 
-    body {
-      font-family: 'Courier New', Courier, monospace;
-      background: var(--bg-base);
-      color: var(--text-main);
-      height: 100vh;
-      display: flex;
-      flex-direction: column;
-    }
+  header {
+    background: var(--bg-panel);
+    border-bottom: 2px solid var(--accent-cyan);
+    padding: 12px 24px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 10px;
+  }
 
-    header {
-      background: var(--bg-panel);
-      border-bottom: 2px solid var(--accent-cyan);
-      padding: 12px 24px;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      flex-wrap: wrap;
-      gap: 10px;
-    }
+  h1 { font-size: 16px; letter-spacing: 1px; }
 
-    button, label.file-btn {
-      background: var(--bg-base);
-      color: var(--accent-cyan);
-      border: 1px solid var(--accent-cyan);
-      padding: 8px 14px;
-      border-radius: 4px;
-      cursor: pointer;
-      font-weight: bold;
-      font-size: 12px;
-      display: inline-block;
-    }
+  button, label.file-btn {
+    background: var(--bg-base);
+    color: var(--accent-cyan);
+    border: 1px solid var(--accent-cyan);
+    padding: 8px 14px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-weight: bold;
+    font-size: 12px;
+    display: inline-block;
+    font-family: inherit;
+  }
+  button:hover, label.file-btn:hover { background: var(--accent-cyan); color: var(--bg-base); }
 
-    button:hover, label.file-btn:hover { background: var(--accent-cyan); color: var(--bg-base); }
+  .editor-container {
+    flex: 1;
+    padding: 30px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    position: relative;
+    overflow: hidden;
+  }
 
-    .editor-container {
-      flex: 1;
-      padding: 30px;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      position: relative;
-    }
+  #statusInfo {
+    margin-bottom: 10px;
+    color: #9ca3af;
+    font-size: 12px;
+    max-width: 700px;
+    width: 100%;
+    text-align: center;
+  }
 
-    #editorContent {
-      width: 100%;
-      max-width: 700px;
-      height: 60vh;
-      background: #111827;
-      border: 1px solid var(--border-neon);
-      padding: 20px;
-      color: white;
-      font-size: 16px;
-      outline: none;
-      border-radius: 4px;
-      line-height: 1.5;
-    }
+  #editorContent {
+    width: 100%;
+    max-width: 700px;
+    height: 60vh;
+    background: #111827;
+    border: 1px solid var(--border-neon);
+    padding: 20px;
+    color: white;
+    font-size: 16px;
+    outline: none;
+    border-radius: 4px;
+    line-height: 1.6;
+    overflow-y: auto;
+    white-space: pre-wrap;
+    word-wrap: break-word;
+  }
 
-    #statusInfo {
-      margin-bottom: 10px;
-      color: #9ca3af;
-      font-size: 12px;
-    }
+  #editorContent:focus { border-color: var(--accent-cyan); }
 
-    /* POPUP DE DETECÇÃO */
-    #popupDeteccao {
-      position: fixed;
-      bottom: 30px;
-      right: 30px;
-      width: 340px;
-      background: var(--bg-panel);
-      border: 2px solid var(--accent-cyan);
-      border-radius: 8px;
-      padding: 16px;
-      box-shadow: 0 10px 25px rgba(0,0,0,0.8);
-      display: none;
-      z-index: 999;
-    }
-  </style>
+  /* POPUP DE DETECÇÃO */
+  #popupDeteccao {
+    position: fixed;
+    bottom: 30px;
+    right: 30px;
+    width: 340px;
+    max-width: calc(100vw - 60px);
+    background: var(--bg-panel);
+    border: 2px solid var(--accent-cyan);
+    border-radius: 8px;
+    padding: 16px;
+    box-shadow: 0 10px 25px rgba(0,0,0,0.8);
+    display: none;
+    z-index: 999;
+    animation: fadeIn 0.15s ease;
+  }
+  @keyframes fadeIn {
+    from { opacity: 0; transform: translateY(10px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+
+  .popup-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 8px;
+  }
+
+  #popupBadge {
+    font-size: 10px;
+    font-weight: bold;
+    padding: 2px 6px;
+    background: var(--accent-cyan);
+    color: black;
+    border-radius: 3px;
+    letter-spacing: 1px;
+  }
+
+  #popupFechar {
+    padding: 0 8px;
+    font-size: 11px;
+    line-height: 18px;
+    border-radius: 3px;
+  }
+
+  #popupPalavra {
+    font-size: 16px;
+    font-weight: bold;
+    margin-bottom: 4px;
+    word-break: break-word;
+  }
+
+  #popupSignificado {
+    font-size: 12px;
+    color: #d1d5db;
+    max-height: 140px;
+    overflow-y: auto;
+    line-height: 1.5;
+    white-space: pre-wrap;
+  }
+
+  .hint { color: #6b7280; font-size: 10px; margin-top: 6px; }
+</style>
 </head>
 <body>
 
-  <header>
-    <h1>GraphZO // DICIONÁRIO ROBUSTO</h1>
-    <div style="display: flex; gap: 8px; flex-wrap: wrap;">
-      <label class="file-btn">
-        📂 Carregar Dicionário (.txt)
-        <input type="file" id="txtInput" accept=".txt" style="display: none;" onchange="importarBaseTxt(event)">
-      </label>
-    </div>
-  </header>
-
-  <div class="editor-container">
-    <div id="statusInfo">Status: Carregue seu arquivo .txt de dicionário.</div>
-    <div id="editorContent" contenteditable="true" spellcheck="false"></div>
+<header>
+  <h1>GraphZO // DICIONÁRIO ROBUSTO v2</h1>
+  <div style="display: flex; gap: 8px; flex-wrap: wrap;">
+    <label class="file-btn">
+      📂 Carregar Dicionário (.txt)
+      <input type="file" id="txtInput" accept=".txt,text/plain" style="display: none;">
+    </label>
+    <button id="btnLimpar" title="Limpar editor e base importada">🗑 Limpar</button>
   </div>
+</header>
 
-  <!-- POPUP -->
-  <div id="popupDeteccao">
-    <div style="display: flex; justify-content: space-between; margin-bottom: 8px;">
-      <span id="popupBadge" style="font-size: 10px; font-weight: bold; padding: 2px 6px; background: var(--accent-cyan); color: black;">TIPO</span>
-      <button onclick="fecharPopup()" style="padding: 0 6px; font-size: 10px; cursor: pointer;">X</button>
-    </div>
-    <div id="popupPalavra" style="font-size: 16px; font-weight: bold; margin-bottom: 4px;">Palavra</div>
-    <div id="popupSignificado" style="font-size: 12px; color: #d1d5db; max-height: 120px; overflow-y: auto;">Significado aqui...</div>
+<div class="editor-container">
+  <div id="statusInfo">Status: Carregue seu arquivo .txt de dicionário.</div>
+  <div id="editorContent" contenteditable="true" spellcheck="false"></div>
+  <div class="hint">Formatos aceitos: <code>termo</code> · <code>termo: definição</code> · <code>termo | categoria | definição</code> · <code>termo - definição</code></div>
+</div>
+
+<!-- POPUP -->
+<div id="popupDeteccao" role="dialog" aria-live="polite">
+  <div class="popup-header">
+    <span id="popupBadge">TIPO</span>
+    <button id="popupFechar" onclick="fecharPopup()">X</button>
   </div>
+  <div id="popupPalavra">Palavra</div>
+  <div id="popupSignificado">Significado aqui...</div>
+</div>
 
 <script>
-  let baseDados = {
-    personagens: [
-      { nome: "Teddy", papel: "Protagonista", bio: "Jovem do Kentucky." },
-      { nome: "Jeames", papel: "Irmão", bio: "Irmão mais novo." },
-      { nome: "Suzane", papel: "Misteriosa", bio: "Personagem secundária." }
-    ],
-    dicionario: [
-      { termo: "vento", categoria: "Clima", definicao: "Movimento natural do ar." },
-      { termo: "casa", categoria: "Local", definicao: "Residência da família." },
-      { termo: "noite", categoria: "Tempo", definicao: "Período de escuridão." },
-      { termo: "chuva", categoria: "Clima", definicao: "Precipitação de água." },
-      { termo: "tempo", categoria: "Meteorologia", definicao: "Condições atmosféricas." },
-      { termo: "futuro", categoria: "Conceito", definicao: "Tempo que ainda não chegou." }
-    ]
-  };
+/* =========================================================================
+   BASE INICIAL (embutida — sempre presente)
+   ========================================================================= */
+const baseInicial = {
+  personagens: [
+    { nome: "Teddy",  papel: "Protagonista", bio: "Jovem do Kentucky." },
+    { nome: "Jeames", papel: "Irmão",        bio: "Irmão mais novo." },
+    { nome: "Suzane", papel: "Misteriosa",   bio: "Personagem secundária." }
+  ],
+  dicionario: [
+    { termo: "vento",  categoria: "Clima",         definicao: "Movimento natural do ar." },
+    { termo: "casa",   categoria: "Local",         definicao: "Residência da família." },
+    { termo: "noite",  categoria: "Tempo",         definicao: "Período de escuridão." },
+    { termo: "chuva",  categoria: "Clima",         definicao: "Precipitação de água." },
+    { termo: "tempo",  categoria: "Meteorologia",  definicao: "Condições atmosféricas." },
+    { termo: "futuro", categoria: "Conceito",      definicao: "Tempo que ainda não chegou." }
+  ]
+};
 
-  let indiceGeral = new Map();
+/* =========================================================================
+   ESTADO GLOBAL
+   ========================================================================= */
+let baseDados = {
+  personagens: [...baseInicial.personagens],
+  dicionario:  [...baseInicial.dicionario]
+};
 
-  function normalizarChave(texto) {
-    if (!texto) return "";
-    return texto
-      .toString()
-      .normalize("NFD")
-      .replace(/[\u0300-\u036f]/g, "")
-      .replace(/[\u00A0\u200B]/g, " ")
-      .replace(/[.,!?;:()"'«»—–-]/g, "")
-      .trim()
-      .toLowerCase();
+/** Map<chaveNormalizada, {tipo, palavra, sub, significado}> */
+const indiceGeral = new Map();
+
+const META_MAXIMA_TERMOS = 10000;
+
+/* =========================================================================
+   NORMALIZAÇÃO
+   ========================================================================= */
+function normalizarChave(texto) {
+  if (texto === null || texto === undefined) return "";
+  return String(texto)
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")           // remove acentos
+    .replace(/[\uFEFF\u00A0\u200B\u200C\u200D]/g, "") // remove BOM e invisíveis
+    .replace(/[.,!?;:()"'«»—–]/g, "")          // remove pontuação (mantém '-')
+    .replace(/\s+/g, " ")                       // colapsa espaços
+    .trim()
+    .toLowerCase();
+}
+
+/* =========================================================================
+   CONSTRUÇÃO DO ÍNDICE
+   ========================================================================= */
+function construirIndiceUnico() {
+  indiceGeral.clear();
+
+  // Personagens
+  for (const p of baseDados.personagens) {
+    const chave = normalizarChave(p.nome);
+    if (!chave) continue;
+    indiceGeral.set(chave, {
+      tipo: "PERSONAGEM",
+      palavra: p.nome,
+      sub: `Papel: ${p.papel || "—"}`,
+      significado: p.bio || "Sem biografia registrada."
+    });
   }
 
-  function construirIndiceUnico() {
-    indiceGeral.clear();
-
-    baseDados.personagens.forEach(p => {
-      let chave = normalizarChave(p.nome);
-      if (chave) {
-        indiceGeral.set(chave, {
-          tipo: "PERSONAGEM",
-          palavra: p.nome,
-          sub: `Papel: ${p.papel}`,
-          significado: p.bio
-        });
-      }
+  // Dicionário
+  for (const d of baseDados.dicionario) {
+    const chave = normalizarChave(d.termo);
+    if (!chave) continue;
+    // Não sobrescreve personagens com mesmo nome — prioriza personagem
+    if (indiceGeral.has(chave)) continue;
+    indiceGeral.set(chave, {
+      tipo: "DICIONÁRIO",
+      palavra: d.termo,
+      sub: `Categoria: ${d.categoria || "Geral"}`,
+      significado: d.definicao || "Termo registrado no dicionário."
     });
-
-    baseDados.dicionario.forEach(d => {
-      let chave = normalizarChave(d.termo);
-      if (chave) {
-        indiceGeral.set(chave, {
-          tipo: "DICIONÁRIO",
-          palavra: d.termo,
-          sub: `Categoria: ${d.categoria || 'Geral'}`,
-          significado: d.definicao || "Termo registrado no dicionário."
-        });
-      }
-    });
-
-    document.getElementById("statusInfo").innerText = `Status: ${indiceGeral.size} termos indexados prontos para detecção!`;
   }
 
-  window.onload = function() {
-    construirIndiceUnico();
-    const ed = document.getElementById("editorContent");
-    ed.addEventListener("input", detectarPalavra);
-  };
+  const el = document.getElementById("statusInfo");
+  el.innerText = `Status: ${indiceGeral.size} termos indexados prontos para detecção.`;
+  console.log("[GraphZO] Índice construído. Exemplos:", [...indiceGeral.keys()].slice(0, 15));
+}
 
-  function detectarPalavra() {
-    const sel = window.getSelection();
-    if (!sel.rangeCount) return;
+/* =========================================================================
+   DETECÇÃO (funciona ao digitar E ao colar)
+   ========================================================================= */
+let debounceTimer = null;
 
-    const range = sel.getRangeAt(0);
-    const node = range.startContainer;
-    if (node.nodeType !== Node.TEXT_NODE) return;
+function agendarDeteccao() {
+  if (debounceTimer) clearTimeout(debounceTimer);
+  debounceTimer = setTimeout(detectarSobCursor, 80);
+}
 
-    const textoAteCursor = node.textContent.substring(0, range.startOffset).replace(/\u00A0/g, " ");
-    const match = textoAteCursor.match(/([a-zA-ZÀ-ÿ0-9_-]+)[\s.,!?;:]+$/);
-    if (!match) return;
+function detectarSobCursor() {
+  const sel = window.getSelection();
+  if (!sel || sel.rangeCount === 0) return;
 
-    const palavraBruta = match[1];
-    const chave = normalizarChave(palavraBruta);
+  const range = sel.getRangeAt(0);
+  if (!range.collapsed) return; // não detecta se há seleção
 
-    if (chave.length < 2) return;
+  const node = range.startContainer;
 
-    if (indiceGeral.has(chave)) {
-      const item = indiceGeral.get(chave);
-      mostrarPopup(item.tipo, item.palavra, `${item.sub} — ${item.significado}`);
+  // Caso 1: cursor dentro de um texto
+  if (node.nodeType === Node.TEXT_NODE) {
+    const texto = node.textContent;
+    const pos = range.startOffset;
+
+    // Pega a palavra inteira que contém o cursor (ou termina antes dele)
+    const antes = texto.slice(0, pos);
+    const depois = texto.slice(pos);
+
+    const matchAntes  = antes.match(/([A-Za-zÀ-ÿ0-9_-]+)$/);
+    const matchDepois = depois.match(/^([A-Za-zÀ-ÿ0-9_-]+)/);
+
+    // Palavra sob o cursor: junta o que vem antes e depois
+    let palavra = "";
+    if (matchAntes)  palavra += matchAntes[1];
+    if (matchDepois) palavra += matchDepois[1];
+
+    if (palavra.length >= 2) {
+      consultarPalavra(palavra);
+    }
+    return;
+  }
+
+  // Caso 2: cursor em um elemento (ex: <div>, <br>)
+  // Tenta olhar o texto do nó anterior
+  if (node.nodeType === Node.ELEMENT_NODE) {
+    const offset = range.startOffset;
+    if (offset > 0 && node.childNodes[offset - 1]) {
+      const prev = node.childNodes[offset - 1];
+      const texto = prev.textContent || "";
+      const match = texto.match(/([A-Za-zÀ-ÿ0-9_-]+)\s*$/);
+      if (match) consultarPalavra(match[1]);
     }
   }
+}
 
-  // IMPORTAÇÃO MELHORADA PARA LER DIFERENTES FORMATOS DE TXT
-  function importarBaseTxt(event) {
-    const file = event.target.files[0];
-    if (!file) return;
+function consultarPalavra(palavraBruta) {
+  const chave = normalizarChave(palavraBruta);
+  if (!chave || chave.length < 2) return;
 
-    document.getElementById("statusInfo").innerText = "Status: Lendo arquivo de dicionário...";
-    const reader = new FileReader();
+  const item = indiceGeral.get(chave);
+  if (item) {
+    mostrarPopup(item.tipo, item.palavra, `${item.sub} — ${item.significado}`);
+  }
+}
 
-    reader.onload = function(e) {
-      try {
-        const conteudo = e.target.result;
-        const linhas = conteudo.split(/\r?\n/);
-        const termosBrutos = [];
+/* =========================================================================
+   PARSER DE TXT IMPORTADO (seguro)
+   ========================================================================= */
+function parseLinha(linhaOriginal) {
+  let linha = linhaOriginal.trim();
+  if (!linha) return null;
 
-        for (let i = 0; i < linhas.length; i++) {
-          const linha = linhas[i].trim();
-          if (!linha) continue;
+  // Remove BOM residual e caracteres invisíveis
+  linha = linha.replace(/^[\uFEFF\u00A0\u200B\u200C\u200D]+/, "").trim();
+  if (!linha) return null;
 
-          let termo = "", categoria = "Dicionário", definicao = "Definição do verbete.";
+  // Comentário? (# ou //)
+  if (linha.startsWith("#") || linha.startsWith("//")) return null;
 
-          if (linha.includes("|")) {
-            const partes = linha.split("|").map(s => s.trim());
-            termo = partes[0];
-            if (partes[1]) categoria = partes[1];
-            if (partes[2]) definicao = partes[2];
-          } else if (linha.includes(":")) {
-            const idx = linha.indexOf(":");
-            termo = linha.substring(0, idx).trim();
-            definicao = linha.substring(idx + 1).trim();
-          } else if (linha.includes("-")) {
-            const idx = linha.indexOf("-");
-            termo = linha.substring(0, idx).trim();
-            definicao = linha.substring(idx + 1).trim();
-          } else {
-            // Se for apenas uma lista de palavras por linha (sem separador)
-            termo = linha;
-          }
-
-          if (termo.length > 0) {
-            termosBrutos.push({ termo, categoria, definicao });
-          }
-        }
-
-        const META_MAXIMA = 10000;
-        let termosFinais = termosBrutos;
-
-        if (termosBrutos.length > META_MAXIMA) {
-          const gruposPorLetra = {};
-          const alfabetoValido = "abcdefghijklmnopqrstuvwxyzáéíóúâêîôûãõç";
-
-          termosBrutos.forEach(item => {
-            let letra = item.termo.charAt(0).toLowerCase();
-            if (!alfabetoValido.includes(letra)) letra = '#';
-            if (!gruposPorLetra[letra]) gruposPorLetra[letra] = [];
-            gruposPorLetra[letra].push(item);
-          });
-
-          const chavesLetras = Object.keys(gruposPorLetra);
-          const cotaPorLetra = Math.floor(META_MAXIMA / chavesLetras.length);
-          let termosEquilibrados = [];
-
-          chavesLetras.forEach(letra => {
-            const listaLetra = gruposPorLetra[letra];
-            listaLetra.sort(() => Math.random() - 0.5);
-            termosEquilibrados.push(...listaLetra.slice(0, cotaPorLetra));
-          });
-
-          if (termosEquilibrados.length < META_MAXIMA) {
-            const restantes = termosBrutos.filter(t => !termosEquilibrados.includes(t));
-            restantes.sort(() => Math.random() - 0.5);
-            const vagasFaltantes = META_MAXIMA - termosEquilibrados.length;
-            termosEquilibrados.push(...restantes.slice(0, vagasFaltantes));
-          }
-
-          termosFinais = termosEquilibrados;
-        }
-
-        baseDados.dicionario = termosFinais;
-        construirIndiceUnico();
-        alert(`Sucesso! Foram indexados ${baseDados.dicionario.length} termos.`);
-      } catch (err) {
-        alert("Erro ao processar o arquivo.");
-      }
+  // Formato 1: termo | categoria | definicao
+  if (linha.includes("|")) {
+    const p = linha.split("|").map(s => s.trim());
+    if (!p[0]) return null;
+    return {
+      termo: p[0],
+      categoria: p[1] || "Dicionário",
+      definicao: p[2] || "Definição do verbete."
     };
-
-    reader.readAsText(file);
   }
 
-  function mostrarPopup(tipo, termo, texto) {
+  // Formato 2: termo: definicao  (só se ':' estiver no início, não no fim)
+  const idxDoisPontos = linha.indexOf(":");
+  if (idxDoisPontos > 0 && idxDoisPontos < 60) {
+    const termo = linha.slice(0, idxDoisPontos).trim();
+    const def   = linha.slice(idxDoisPontos + 1).trim();
+    if (!termo) return null;
+    return {
+      termo,
+      categoria: "Dicionário",
+      definicao: def || "Definição do verbete."
+    };
+  }
+
+  // Formato 3: termo - definicao  (SÓ se o hífen tiver espaços em volta)
+  const mHifen = linha.match(/^(.+?)\s+-\s+(.+)$/);
+  if (mHifen) {
+    return {
+      termo: mHifen[1].trim(),
+      categoria: "Dicionário",
+      definicao: mHifen[2].trim()
+    };
+  }
+
+  // Formato 4: só o termo (uma palavra/expressão por linha)
+  // NÃO quebra em hífen (ex: "guarda-chuva" permanece inteiro)
+  return {
+    termo: linha,
+    categoria: "Dicionário",
+    definicao: "Definição do verbete."
+  };
+}
+
+/* =========================================================================
+   IMPORTAÇÃO
+   ========================================================================= */
+function importarBaseTxt(event) {
+  const file = event.target.files && event.target.files[0];
+  if (!file) return;
+
+  const statusEl = document.getElementById("statusInfo");
+  statusEl.innerText = "Status: Lendo arquivo de dicionário...";
+
+  const reader = new FileReader();
+
+  reader.onload = function (e) {
+    try {
+      const texto = e.target.result;
+      const linhas = texto.split(/\r?\n/);
+
+      const termosBrutos = [];
+      const vistos = new Set();
+
+      for (const linha of linhas) {
+        const item = parseLinha(linha);
+        if (!item) continue;
+
+        const chave = normalizarChave(item.termo);
+        if (!chave) continue;
+
+        if (vistos.has(chave)) continue; // dedup
+        vistos.add(chave);
+
+        termosBrutos.push(item);
+      }
+
+      if (termosBrutos.length === 0) {
+        alert("Nenhum termo válido encontrado no arquivo.");
+        statusEl.innerText = "Status: Nenhum termo válido encontrado.";
+        return;
+      }
+
+      let termosFinais = termosBrutos;
+
+      // Equilíbrio por letra se ultrapassar a meta
+      if (termosBrutos.length > META_MAXIMA_TERMOS) {
+        const grupos = {};
+        const alfabeto = "abcdefghijklmnopqrstuvwxyz0123456789";
+
+        for (const item of termosBrutos) {
+          const c = item.termo[0].toLowerCase();
+          const letra = alfabeto.includes(c) ? c : "#";
+          (grupos[letra] = grupos[letra] || []).push(item);
+        }
+
+        const chaves = Object.keys(grupos);
+        const cota = Math.floor(META_MAXIMA_TERMOS / chaves.length);
+        const equilibrados = [];
+
+        for (const l of chaves) {
+          const lista = grupos[l];
+          // amostra aleatória sem viés
+          for (let i = lista.length - 1; i > 0; i--) {
+            const j = Math.floor(Math.random() * (i + 1));
+            [lista[i], lista[j]] = [lista[j], lista[i]];
+          }
+          equilibrados.push(...lista.slice(0, cota));
+        }
+
+        if (equilibrados.length < META_MAXIMA_TERMOS) {
+          const restantes = termosBrutos.filter(t => !equilibrados.includes(t));
+          for (let i = restantes.length - 1; i > 0; i--) {
+            const j = Math.floor(Math.random() * (i + 1));
+            [restantes[i], restantes[j]] = [restantes[j], restantes[i]];
+          }
+          const falta = META_MAXIMA_TERMOS - equilibrados.length;
+          equilibrados.push(...restantes.slice(0, falta));
+        }
+
+        termosFinais = equilibrados;
+      }
+
+      // Substitui apenas o dicionário; personagens da base inicial permanecem
+      baseDados.dicionario = termosFinais;
+      construirIndiceUnico();
+
+      alert(`Sucesso! Foram indexados ${baseDados.dicionario.length} termos.`);
+    } catch (err) {
+      console.error(err);
+      alert("Erro ao processar o arquivo: " + err.message);
+      statusEl.innerText = "Status: Erro ao processar o arquivo.";
+    }
+  };
+
+  reader.onerror = function () {
+    alert("Não foi possível ler o arquivo.");
+    statusEl.innerText = "Status: Erro de leitura do arquivo.";
+  };
+
+  reader.readAsText(file, "UTF-8");
+  // Permite reimportar o mesmo arquivo
+  event.target.value = "";
+}
+
+/* =========================================================================
+   POPUP
+   ========================================================================= */
+function mostrarPopup(tipo, termo, texto) {
+  const pop = document.getElementById("popupDeteccao");
+  const badge = document.getElementById("popupBadge");
+
+  badge.textContent = tipo;
+  badge.style.background = tipo === "PERSONAGEM" ? "var(--accent-purple)" : "var(--accent-cyan)";
+  badge.style.color = tipo === "PERSONAGEM" ? "white" : "black";
+
+  document.getElementById("popupPalavra").textContent = termo;
+  document.getElementById("popupSignificado").textContent = texto;
+
+  pop.style.display = "block";
+}
+
+function fecharPopup() {
+  document.getElementById("popupDeteccao").style.display = "none";
+}
+
+/* =========================================================================
+   EVENTOS GLOBAIS
+   ========================================================================= */
+window.addEventListener("DOMContentLoaded", () => {
+  construirIndiceUnico();
+
+  const editor = document.getElementById("editorContent");
+
+  // Detecta ao digitar
+  editor.addEventListener("input", agendarDeteccao);
+
+  // Detecta ao colar (após o paste ser aplicado)
+  editor.addEventListener("paste", () => setTimeout(agendarDeteccao, 0));
+
+  // Detecta ao mover o cursor
+  editor.addEventListener("click", agendarDeteccao);
+  editor.addEventListener("keyup", (e) => {
+    if (["ArrowLeft", "ArrowRight", "ArrowUp", "ArrowDown", "Home", "End"].includes(e.key)) {
+      agendarDeteccao();
+    }
+  });
+
+  // Fecha popup com ESC
+  document.addEventListener("keydown", (e) => {
+    if (e.key === "Escape") fecharPopup();
+  });
+
+  // Fecha popup ao clicar fora
+  document.addEventListener("mousedown", (e) => {
     const pop = document.getElementById("popupDeteccao");
-    const badge = document.getElementById("popupBadge");
-    
-    badge.innerText = tipo;
-    badge.style.background = tipo === "PERSONAGEM" ? "var(--accent-purple)" : "var(--accent-cyan)";
-    badge.style.color = tipo === "PERSONAGEM" ? "white" : "black";
+    if (pop.style.display === "block" && !pop.contains(e.target) && !editor.contains(e.target)) {
+      fecharPopup();
+    }
+  });
 
-    document.getElementById("popupPalavra").innerText = termo;
-    document.getElementById("popupSignificado").innerText = texto;
-    pop.style.display = "block";
-  }
+  // Botão limpar
+  document.getElementById("btnLimpar").addEventListener("click", () => {
+    if (!confirm("Limpar editor e restaurar base inicial?")) return;
+    editor.innerHTML = "";
+    baseDados = {
+      personagens: [...baseInicial.personagens],
+      dicionario:  [...baseInicial.dicionario]
+    };
+    construirIndiceUnico();
+    fecharPopup();
+  });
 
-  function fecharPopup() {
-    document.getElementById("popupDeteccao").style.display = "none";
-  }
+  // Upload
+  document.getElementById("txtInput").addEventListener("change", importarBaseTxt);
+});
 </script>
 
 </body>
