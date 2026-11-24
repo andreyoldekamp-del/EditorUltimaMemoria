@@ -721,19 +721,28 @@
   }
 
 function importarBaseTxt(event) {
-    const file = event.target.files[0];
-    if (!file) return;
+  const file = event.target.files[0];
+  if (!file) return;
 
-    document.getElementById("statusText").innerText = "STATUS: LENDO BASE COMPLETA...";
-    const reader = new FileReader();
-    
-    reader.onload = function(e) {
+  const statusEl = document.getElementById("statusText");
+  statusEl.innerText = "STATUS: LENDO BASE DE DADOS...";
+
+  const reader = new FileReader();
+
+  reader.onerror = function() {
+    statusEl.innerText = "STATUS: ERRO AO LER O ARQUIVO";
+    alert("Não foi possível ler o arquivo selecionado.");
+  };
+
+  reader.onload = function(e) {
+    try {
       const conteudo = e.target.result;
       const linhas = conteudo.split(/\r?\n/);
-      
-      let termosBrutos = [];
+      const termosBrutos = [];
 
-      // 1. Processa todas as linhas válidas do arquivo
+      statusEl.innerText = "STATUS: PROCESSANDO LINHAS...";
+
+      // 1. Processamento e limpeza de todas as linhas válidas
       for (let i = 0; i < linhas.length; i++) {
         const linha = linhas[i].trim();
         if (!linha) continue;
@@ -741,10 +750,10 @@ function importarBaseTxt(event) {
         let termo = "", categoria = "Geral", definicao = "Termo registrado.";
 
         if (linha.includes('|')) {
-          const partes = linha.split('|');
-          termo = partes[0].trim();
-          if (partes[1]) categoria = partes[1].trim();
-          if (partes[2]) definicao = partes[2].trim();
+          const partes = linha.split('|').map(s => s.trim());
+          termo = partes[0];
+          if (partes[1]) categoria = partes[1];
+          if (partes[2]) definicao = partes[2];
         } else if (linha.includes(':')) {
           const idx = linha.indexOf(':');
           termo = linha.substring(0, idx).trim();
@@ -757,70 +766,71 @@ function importarBaseTxt(event) {
 
         if (termo.length > 0) {
           termosBrutos.push({
-            id: 't_' + i + '_' + Math.floor(Math.random() * 10000),
-            termo: termo,
-            categoria: categoria,
-            definicao: definicao
+            id: `t_${i}_${Math.floor(Math.random() * 10000)}`,
+            termo,
+            categoria,
+            definicao
           });
         }
       }
 
-      document.getElementById("statusText").innerText = `STATUS: FILTRANDO PARA 10K EQUILIBRADOS...`;
+      statusEl.innerText = "STATUS: APLICANDO FILTRO EQUILIBRADO (10K)...";
 
-      // 2. Se o arquivo tiver mais de 10 mil palavras, aplica o filtro proporcional por letra
       const META_MAXIMA = 10000;
       let termosFinais = termosBrutos;
 
+      // 2. Amostragem proporcional por letra se exceder o limite
       if (termosBrutos.length > META_MAXIMA) {
-        // Agrupa por letra inicial (A-Z)
-        let gruposPorLetra = {};
+        const gruposPorLetra = {};
         const alfabeto = "abcdefghijklmnopqrstuvwxyzáéíóúâêîôûãõç";
 
         termosBrutos.forEach(item => {
-          let primeiraLetra = item.termo.charAt(0).toLowerCase();
-          if (!alfabeto.includes(primeiraLetra)) primeiraLetra = '#'; // Caracteres especiais ou números
+          let letra = item.termo.charAt(0).toLowerCase();
+          if (!alfabeto.includes(letra)) letra = '#';
           
-          if (!gruposPorLetra[primeiraLetra]) gruposPorLetra[primeiraLetra] = [];
-          gruposPorLetra[primeiraLetra].push(item);
+          if (!gruposPorLetra[letra]) gruposPorLetra[letra] = [];
+          gruposPorLetra[letra].push(item);
         });
 
-        let chavesLetras = Object.keys(gruposPorLetra);
-        let cotaPorLetra = Math.floor(META_MAXIMA / chavesLetras.length);
+        const chavesLetras = Object.keys(gruposPorLetra);
+        const cotaPorLetra = Math.floor(META_MAXIMA / chavesLetras.length);
         let termosEquilibrados = [];
 
-        // Retira uma proporção aleatória de cada letra para não perder nenhuma letra do alfabeto
         chavesLetras.forEach(letra => {
-          let listaLetra = gruposPorLetra[letra];
-          // Embaralha aleatoriamente os termos dessa letra específica
+          const listaLetra = gruposPorLetra[letra];
+          // Embaralha aleatoriamente mantendo a representatividade da letra
           listaLetra.sort(() => Math.random() - 0.5);
-          
-          // Pega a cota proporcional ou todos se houver menos que a cota
-          let selecionados = listaLetra.slice(0, cotaPorLetra);
-          termosEquilibrados = termosEquilibrados.concat(selecionados);
+          termosEquilibrados.push(...listaLetra.slice(0, cotaPorLetra));
         });
 
-        // Se ainda faltar alguma vaga para bater exatamente 10k, completa com termos aleatórios restantes
+        // Completa vagas restantes se necessário
         if (termosEquilibrados.length < META_MAXIMA) {
-          let restantes = termosBrutos.filter(t => !termosEquilibrados.includes(t));
+          const restantes = termosBrutos.filter(t => !termosEquilibrados.includes(t));
           restantes.sort(() => Math.random() - 0.5);
-          let faltam = META_MAXIMA - termosEquilibrados.length;
-          termosEquilibrados = termosEquilibrados.concat(restantes.slice(0, faltam));
+          const faltam = META_MAXIMA - termosEquilibrados.length;
+          termosEquilibrados.push(...restantes.slice(0, faltam));
         }
 
         termosFinais = termosEquilibrados;
       }
 
-      // 3. Atualiza o projeto e reconstrói os índices de busca
+      // 3. Atualização do estado global
       projetoLivro.dicionario = termosFinais;
       reconstruirIndices();
       renderizarListaTermos();
 
-      document.getElementById("statusText").innerText = `STATUS: 10K TERMOS INDEXADOS COM SUCESSO!`;
-      alert(`Sucesso! Foram indexados ${projetoLivro.dicionario.length} termos equilibrados de A a Z.`);
-    };
+      statusEl.innerText = `STATUS: ${projetoLivro.dicionario.length} TERMOS INDEXADOS COM SUCESSO!`;
+      alert(`Sucesso! Foram indexados ${projetoLivro.dicionario.length} termos equilibrados.`);
 
-    reader.readAsText(file);
-  }
+    } catch (err) {
+      statusEl.innerText = "STATUS: ERRO NO PROCESSAMENTO";
+      console.error(err);
+      alert("Ocorreu um erro ao processar o arquivo de texto.");
+    }
+  };
+
+  reader.readAsText(file);
+}
 
   async function carregarImagemPersonagem(event) {
     const file = event.target.files[0];
