@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>GraphZO // ÚLTIMA MEMÓRIA [NEON V12 - REFACTOR]</title>
+  <title>GraphZO //NEON V11 - MOBILE & POPUP</title>
   <style>
     :root {
       --bg-base: #030712;
@@ -233,6 +233,7 @@
       border-radius: 4px;
     }
 
+    /* RESPONSIVIDADE PARA CELULAR */
     @media (max-width: 768px) {
       .main-container {
         flex-direction: column;
@@ -244,9 +245,17 @@
         border-right: none;
         border-bottom: 1px solid var(--border-neon);
       }
-      .editor-area { padding: 10px; }
-      #editorContent { padding: 14px; min-height: 50vh; }
-      .git-controls { width: 100%; margin-left: 0 !important; }
+      .editor-area {
+        padding: 10px;
+      }
+      #editorContent {
+        padding: 14px;
+        min-height: 50vh;
+      }
+      .git-controls {
+        width: 100%;
+        margin-left: 0 !important;
+      }
     }
   </style>
 </head>
@@ -254,7 +263,7 @@
 
   <header>
     <div>
-      <h1>SYS_GRAPHZO // <span>NEON V12</span></h1>
+      <h1>SYS_GRAPHZO // <span>NEON V11</span></h1>
       <div id="lastSavedBadge" style="font-size: 10px; color: var(--success);">🕒 Pronto para edição</div>
     </div>
     <div style="display: flex; gap: 6px; flex-wrap: wrap;">
@@ -346,7 +355,7 @@
         <div style="margin-bottom: 16px; padding: 12px; background: var(--bg-panel); border: 1px dashed var(--accent-cyan); border-radius: 4px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px;">
           <div>
             <strong>Importar Base (.txt):</strong>
-            <div style="font-size: 10px; color: var(--text-muted);">Termo | Categoria | Descrição (Filtro 10k equilibrado)</div>
+            <div style="font-size: 10px; color: var(--text-muted);">Termo | Categoria | Descrição</div>
           </div>
           <label class="file-btn">
             📂 Carregar .txt
@@ -390,7 +399,7 @@
   let projetoLivro = {
     "metadados": { "titulo": "Última Memória", "autor": "Autor" },
     "capitulos": {
-      "cap_1": { "titulo": "Capítulo 1", "conteudo_xhtml": '<p id="cap_1_p1">Digite Teddy ou uma palavra e dê espaço...</p>' }
+      "cap_1": { "titulo": "Capítulo 1", "conteudo_xhtml": '<p id="cap_1_p1">Digite Teddy ou Rede e dê espaço...</p>' }
     },
     "personagens": [
       { id: "char_teste", nome: "Teddy", papel: "Protagonista", biografia_xhtml: "<p>Jovem do Kentucky que questiona suas memórias.</p>" }
@@ -444,6 +453,14 @@
     editor.addEventListener("input", processarEntradaTexto);
     editor.addEventListener("keyup", processarEntradaTexto);
 
+    // Evento de rolagem para pular automaticamente para o próximo capítulo
+    const editorArea = document.querySelector('.editor-area');
+    editorArea.addEventListener('scroll', () => {
+      if (editorArea.scrollTop + editorArea.clientHeight >= editorArea.scrollHeight - 20) {
+        avancarProximoCapitulo();
+      }
+    });
+
     reconstruirIndices();
     renderizarListaCapitulos();
     carregarCapituloNaTela("cap_1");
@@ -454,8 +471,42 @@
     }
   });
 
+  function avancarProximoCapitulo() {
+    const chaves = Object.keys(projetoLivro.capitulos);
+    const indexAtual = chaves.indexOf(capituloAtual);
+    if (indexAtual !== -1 && indexAtual < chaves.length - 1) {
+      salvarCapituloAtualNaMemoria();
+      const proximoId = chaves[indexAtual + 1];
+      trocarCapitulo(proximoId);
+      document.querySelector('.editor-area').scrollTop = 0;
+    }
+  }
+
+  // ATUALIZAÇÃO DINÂMICA DO TÍTULO DO CAPÍTULO PELA PRIMEIRA LINHA
+  function atualizarTituloDinamico() {
+    const editor = document.getElementById("editorContent");
+    const texto = editor.innerText || "";
+    const primeiraLinha = texto.split(/\r?\n/)[0] || "";
+    
+    const match = primeiraLinha.match(/cap[íi]tulo\s+(\d+)(.*)/i);
+    if (match) {
+      const num = match[1];
+      let resto = match[2].replace(/^[:\s\-\–—]+/, "").trim();
+      if (resto) {
+        projetoLivro.capitulos[capituloAtual].titulo = `Capítulo ${num}: ${resto}`;
+      } else {
+        projetoLivro.capitulos[capituloAtual].titulo = `Capítulo ${num}`;
+      }
+    } else if (primeiraLinha.trim()) {
+      projetoLivro.capitulos[capituloAtual].titulo = primeiraLinha.trim().substring(0, 35);
+    }
+    renderizarListaCapitulos();
+  }
+
+  // DETECÇÃO COMPATÍVEL COM DESKTOP E TECLADOS DE CELULAR (ANDROID / IOS)
   function processarEntradaTexto() {
     salvarCapituloAtualNaMemoria();
+    atualizarTituloDinamico();
     if (!document.getElementById("togglePopupAuto").checked) return;
 
     const sel = window.getSelection();
@@ -708,112 +759,160 @@
     downloadAnchor.remove();
   }
 
-  // FUNÇÃO REFATORADA: IMPORTAÇÃO COM FILTRO EQUILIBRADO DE 10K POR LETRA
   function importarBaseTxt(event) {
     const file = event.target.files[0];
     if (!file) return;
 
-    const statusEl = document.getElementById("statusText");
-    statusEl.innerText = "STATUS: LENDO BASE DE DADOS...";
-
+    document.getElementById("statusText").innerText = "PROCESSANDO TXT...";
     const reader = new FileReader();
 
-    reader.onerror = function() {
-      statusEl.innerText = "STATUS: ERRO AO LER O ARQUIVO";
-      alert("Não foi possível ler o arquivo selecionado.");
-    };
+    reader.onload = function (e) {
+      const texto = e.target.result;
+      const linhas = texto.split(/\r?\n/);
 
-    reader.onload = function(e) {
-      try {
-        const conteudo = e.target.result;
-        const linhas = conteudo.split(/\r?\n/);
-        const termosBrutos = [];
+      let importados = 0;
+      let ignoradas = 0;
+      let duplicadas = 0;
 
-        statusEl.innerText = "STATUS: PROCESSANDO LINHAS...";
+      const chavesExistentes = new Set();
+      projetoLivro.dicionario.forEach(t => {
+        if (t.termo) chavesExistentes.add(normalizarChave(t.termo));
+      });
+      projetoLivro.personagens.forEach(p => {
+        if (p.nome) chavesExistentes.add(normalizarChave(p.nome));
+      });
 
-        for (let i = 0; i < linhas.length; i++) {
-          const linha = linhas[i].trim();
-          if (!linha) continue;
+      for (let i = 0; i < linhas.length; i++) {
+        let linha = linhas[i]
+          .replace(/^[\uFEFF\u00A0\u200B\u200C\u200D]+/, "")
+          .trim();
 
-          let termo = "", categoria = "Geral", definicao = "Termo registrado.";
+        if (!linha) continue;
+        if (linha.startsWith("#") || linha.startsWith("//")) continue;
 
-          if (linha.includes('|')) {
-            const partes = linha.split('|').map(s => s.trim());
-            termo = partes[0];
-            if (partes[1]) categoria = partes[1];
-            if (partes[2]) definicao = partes[2];
-          } else if (linha.includes(':')) {
-            const idx = linha.indexOf(':');
-            termo = linha.substring(0, idx).trim();
-            definicao = linha.substring(idx + 1).trim();
-            categoria = "Dicionário";
-          } else {
-            termo = linha;
-            categoria = "Vocabulário";
-          }
+        let tipo = null;
+        let termo = null;
+        let categoria = "Geral";
+        let definicao = "Termo registrado.";
 
-          if (termo.length > 0) {
-            termosBrutos.push({
-              id: `t_${i}_${Math.floor(Math.random() * 10000)}`,
-              termo,
-              categoria,
-              definicao
+        const mPrefixo = linha.match(/^\[([PD])\]\s*(.+)$/i);
+        if (mPrefixo) {
+          const tag = mPrefixo[1].toUpperCase();
+          const resto = mPrefixo[2].trim();
+
+          if (tag === "P") {
+            const mBio = resto.match(/^([^=]+?)\s*=\s*(.+)$/);
+            termo = (mBio ? mBio[1] : resto).trim();
+            if (!termo) { ignoradas++; continue; }
+
+            const chave = normalizarChave(termo);
+            if (chavesExistentes.has(chave)) { duplicadas++; continue; }
+            chavesExistentes.add(chave);
+
+            projetoLivro.personagens.push({
+              id: 'char_txt_' + i + '_' + Date.now(),
+              nome: termo,
+              papel: "Importado",
+              imagemUrl: "",
+              biografia_xhtml: mBio ? `<p>${mBio[2].trim()}</p>` : "<p>Personagem importado.</p>"
             });
-          }
-        }
-
-        statusEl.innerText = "STATUS: APLICANDO FILTRO EQUILIBRADO (10K)...";
-
-        const META_MAXIMA = 10000;
-        let termosFinais = termosBrutos;
-
-        if (termosBrutos.length > META_MAXIMA) {
-          const gruposPorLetra = {};
-          const alfabeto = "abcdefghijklmnopqrstuvwxyzáéíóúâêîôûãõç";
-
-          termosBrutos.forEach(item => {
-            let letra = item.termo.charAt(0).toLowerCase();
-            if (!alfabeto.includes(letra)) letra = '#';
-            
-            if (!gruposPorLetra[letra]) gruposPorLetra[letra] = [];
-            gruposPorLetra[letra].push(item);
-          });
-
-          const chavesLetras = Object.keys(gruposPorLetra);
-          const cotaPorLetra = Math.floor(META_MAXIMA / chavesLetras.length);
-          let termosEquilibrados = [];
-
-          chavesLetras.forEach(letra => {
-            const listaLetra = gruposPorLetra[letra];
-            listaLetra.sort(() => Math.random() - 0.5);
-            termosEquilibrados.push(...listaLetra.slice(0, cotaPorLetra));
-          });
-
-          if (termosEquilibrados.length < META_MAXIMA) {
-            const restantes = termosBrutos.filter(t => !termosEquilibrados.includes(t));
-            restantes.sort(() => Math.random() - 0.5);
-            const faltam = META_MAXIMA - termosEquilibrados.length;
-            termosEquilibrados.push(...restantes.slice(0, faltam));
+            importados++;
+            continue;
           }
 
-          termosFinais = termosEquilibrados;
+          const idxIgual = resto.indexOf("=");
+          if (idxIgual === -1) {
+            termo = resto.trim();
+          } else {
+            termo = resto.slice(0, idxIgual).trim();
+            let cauda = resto.slice(idxIgual + 1).trim();
+            cauda = cauda.replace(/\s*(·|Â·).*$/, "").trim();
+            const partes = cauda.split("‖").map(s => s.trim()).filter(Boolean);
+
+            if (partes.length === 0) {
+              categoria = "Geral";
+              definicao = "Termo registrado.";
+            } else if (partes.length === 1) {
+              const p = partes[0];
+              if (p.length <= 40 && !p.includes(" ") && !/[.!?]/.test(p)) {
+                categoria = p;
+                definicao = "Termo registrado.";
+              } else {
+                categoria = "Geral";
+                definicao = p;
+              }
+            } else {
+              categoria = partes[0];
+              definicao = partes.slice(1).join(" ‖ ");
+            }
+          }
+
+          if (!termo) { ignoradas++; continue; }
+
+          const chave = normalizarChave(termo);
+          if (chavesExistentes.has(chave)) { duplicadas++; continue; }
+          chavesExistentes.add(chave);
+
+          projetoLivro.dicionario.push({
+            id: 'term_txt_' + i + '_' + Date.now(),
+            termo: termo,
+            categoria: categoria,
+            definicao: "<p>" + definicao + "</p>"
+          });
+          importados++;
+          continue;
         }
 
-        projetoLivro.dicionario = termosFinais;
-        reconstruirIndices();
-        renderizarListaTermos();
+        if (linha.includes("|")) {
+          const partes = linha.split("|").map(s => s.trim());
+          termo = partes[0];
+          categoria = partes[1] || "Geral";
+          definicao = partes[2] || "Termo registrado.";
+        } else {
+          termo = linha;
+          categoria = "Vocabulário";
+          definicao = "Palavra validada.";
+        }
 
-        statusEl.innerText = `STATUS: ${projetoLivro.dicionario.length} TERMOS INDEXADOS!`;
-        alert(`Sucesso! Foram indexados ${projetoLivro.dicionario.length} termos equilibrados.`);
+        if (!termo) { ignoradas++; continue; }
 
-      } catch (err) {
-        statusEl.innerText = "STATUS: ERRO NO PROCESSAMENTO";
-        console.error(err);
-        alert("Ocorreu um erro ao processar o arquivo de texto.");
+        const chave = normalizarChave(termo);
+        if (chavesExistentes.has(chave)) { duplicadas++; continue; }
+        chavesExistentes.add(chave);
+
+        projetoLivro.dicionario.push({
+          id: 'term_txt_' + i + '_' + Date.now(),
+          termo: termo,
+          categoria: categoria,
+          definicao: "<p>" + definicao + "</p>"
+        });
+        importados++;
       }
+
+      reconstruirIndices();
+      renderizarListaTermos();
+      renderizarListaPersonagens();
+
+      alert(
+        `Importação concluída!\n\n` +
+        `Importados: ${importados}\n` +
+        `Duplicados (ignorados): ${duplicadas}\n` +
+        `Ignorados (formato desconhecido): ${ignoradas}\n\n` +
+        `Total no dicionário: ${projetoLivro.dicionario.length}\n` +
+        `Total de personagens: ${projetoLivro.personagens.length}`
+      );
+
+      document.getElementById("statusText").innerText =
+        `INDEXADOS: ${indicePersonagens.size} PERS. / ${indiceDicionario.size} TERMOS`;
     };
 
-    reader.readAsText(file);
+    reader.onerror = function () {
+      alert("Não foi possível ler o arquivo.");
+      document.getElementById("statusText").innerText = "ERRO DE LEITURA";
+    };
+
+    reader.readAsText(file, "UTF-8");
+    event.target.value = "";
   }
 
   async function carregarImagemPersonagem(event) {
@@ -972,24 +1071,3 @@
         renderizarListaPersonagens();
         alert("Versão carregada!");
       }
-    } catch(e) {}
-  }
-
-  function descartarVersaoAtual() {
-    const sha = document.getElementById("selectCommits").value;
-    if (!sha) return alert("Selecione uma versão.");
-    const descarte = JSON.parse(localStorage.getItem("commits_descartados") || "[]");
-    descarte.push(sha);
-    localStorage.setItem("commits_descartados", JSON.stringify(descarte));
-    listarCommitsGitHub(true);
-    alert("Versão ocultada.");
-  }
-
-  function atualizarContador() {
-    const texto = document.getElementById("editorContent").innerText;
-    document.getElementById("wordCount").innerText = `PALAVRAS: ${texto.trim() ? texto.trim().split(/\s+/).length : 0}`;
-  }
-</script>
-
-</body>
-</html>
