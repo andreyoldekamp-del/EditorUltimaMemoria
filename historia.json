@@ -3,7 +3,7 @@
     "titulo": "Última Memória",
     "autor": "Autor"
   },
-  "atualizadoEm": 1795544606360,
+  "atualizadoEm": 1795544655646,
   "capitulos": {
     "cap_1": {
       "titulo": "Capítulo 1 - Tempestade.",
@@ -70,6 +70,14 @@
       "caracteristicas": [],
       "imagemUrl": "https://raw.githubusercontent.com/andreyoldekamp-del/EditorUltimaMemoria/main/assets/char_1795544578837.jpg?v=1795544595094",
       "biografia_xhtml": "<h1 style=\"margin-top: 18px; margin-bottom: 12px;\"><span style=\"font-family: &quot;Segoe UI&quot;; font-size: xx-large;\">Jeames</span></h1><p>\n</p><p style=\"margin-top: 12px; margin-bottom: 12px;\"><span style=\" font-family:'Segoe UI'; font-size:12px;\">Irmão mais novo de Teddy.&nbsp;</span></p><p><span style=\" font-family:'Segoe UI'; font-size:12px;\">Irmão mais novo de Teddy.</span></p><p style=\"font-family: &quot;Segoe UI&quot;; font-size: 12px;\"><br></p><p><span style=\" font-family:'Segoe UI'; font-size:12px;\">17 anos, </span></p><p><span style=\" font-family:'Segoe UI'; font-size:12px;\">resmungão,</span></p><p><span style=\" font-family:'Segoe UI'; font-size:12px;\">desajeitado,</span></p><p><span style=\" font-family:'Segoe UI'; font-size:12px;\">resolvia as coisas na discussão.</span></p><p><span style=\" font-family:'Segoe UI'; font-size:12px;\">Não iniciava o dia bem,</span></p><p><span style=\" font-family:'Segoe UI'; font-size:12px;\">Não terminava o dia bem.</span></p><p><span style=\" font-family:'Segoe UI'; font-size:12px;\">Jeames gostava de provocá-lo sempre que tunha oportunidade, apesar disso, gostava muito dele.</span></p><p><span style=\" font-family:'Segoe UI'; font-size:12px;\">Daria avida por ele.</span></p><p style=\"margin-top: 12px; margin-bottom: 12px;\">\n\n\n\n\n\n\n\n\n\n</p><p style=\"font-family: &quot;Segoe UI&quot;; font-size: 12px;\"><br></p>"
+    },
+    {
+      "id": "char_1795544621284",
+      "nome": "Lima Papa, trinta e dois",
+      "papel": "Secundário",
+      "caracteristicas": [],
+      "imagemUrl": "https://raw.githubusercontent.com/andreyoldekamp-del/EditorUltimaMemoria/main/assets/char_1795544621284.jpg?v=1795544655646",
+      "biografia_xhtml": "<h1 style=\"margin-top: 18px; margin-bottom: 12px;\"><span style=\"font-family: &quot;Segoe UI&quot;; font-size: xx-large;\">Lima Papa, trinta e dois</span></h1><p>\n</p><p style=\"margin-top: 12px; margin-bottom: 12px;\"><span style=\" font-family:'Segoe UI'; font-size:12px;\">Nome da nave do Capitão Beacon, o Teddy do rancho alvorada&nbsp;</span></p>"
     }
   ],
   "dicionarioRef": "dicionario_global.json"
