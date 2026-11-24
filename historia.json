@@ -3,7 +3,7 @@
     "titulo": "Última Memória",
     "autor": "Autor"
   },
-  "atualizadoEm": 1795540361162,
+  "atualizadoEm": 1795540600711,
   "capitulos": {
     "cap_1": {
       "titulo": "Capítulo 1 - Tempestade.",
@@ -11,7 +11,7 @@
     },
     "cap_1795460701112": {
       "titulo": "Capítulo 2 - Sonhos Despertos.Apesar do tempo ter melhorado um pouco, não",
-      "conteudo_xhtml": "<p style=\"margin-bottom: 0px;\"><span style=\"font-family: Comfortaa; font-size: 18.6667px;\">Capítulo 2 — Sonhos Despertos.</span></p><p style=\"margin-bottom: 0px;\"><span style=\" font-family:'Comfortaa'; font-size:14pt;\">Apesar do tempo ter melhorado um pouco, não foi suficiente para ir à escola, assim, as idas do quarto à cozinha, da cozinha para o quarto foi a viagem mais longa que teve. </span></p><p style=\"margin-top: 12px; margin-bottom: 12px;\"><span style=\" font-family:'Comfortaa'; font-size:14pt;\">As lembranças da Suzane da Emily do Daniel do Beacon do Lewis do Jeames estavam tão vívidas na sua memória, que pareciam lembranças.</span></p><p style=\"margin-top: 12px; margin-bottom: 12px;\"><span style=\" font-family:'Comfortaa'; font-size:14pt;\">A pequena Emily palmilhando a areia, os pezinhos ainda inseguros, chutavam a água. </span></p><p style=\"margin-top: 12px; margin-bottom: 12px;\"><span style=\" font-family:'Comfortaa'; font-size:14pt;\">Seus olhinhos negros, brilhando de excitação encontravam os de Beacon. </span></p><p style=\"margin-top: 12px; margin-bottom: 12px;\"><span style=\" font-family:'Comfortaa'; font-size:14pt;\">A sensação da mãzinha quente e delicada entre os seus dedos, como podia sentir aquilo?</span></p><p id=\"cap_1795460701112_p1\">\n\n\n\n\n</p><p style=\"margin-top: 12px; margin-bottom: 12px;\"><span style=\" font-family:'Comfortaa'; font-size:14pt;\">Aos 17 anos pode-se sentir a emoção de conduzir a uma filha, se já tiver sido pai, mas ele sequer namorava, a Suzane tinha gosto de esposa, ele tinha relances dos seus olhares de admiração.</span></p>"
+      "conteudo_xhtml": "<p style=\"margin-bottom: 0px;\"><span style=\"font-family: Comfortaa; font-size: 18.6667px;\">Capítulo 2 — Sonhos Despertos.</span></p><p style=\"margin-bottom: 0px;\"><span style=\" font-family:'Comfortaa'; font-size:14pt;\">Apesar do tempo ter melhorado um pouco, não foi suficiente para ir à escola, assim, as idas do quarto à cozinha, da cozinha para o quarto foi a viagem mais longa que teve. </span></p><p style=\"margin-top: 12px; margin-bottom: 12px;\"><span style=\" font-family:'Comfortaa'; font-size:14pt;\">As lembranças da Suzane da Emily do Daniel do Beacon do Lewis do Jeames estavam tão vívidas na sua memória, que pareciam lembranças.</span></p><p style=\"margin-top: 12px; margin-bottom: 12px;\"><span style=\" font-family:'Comfortaa'; font-size:14pt;\">A pequena Emily palmilhando a areia, os pezinhos ainda inseguros, chutavam a água. </span></p><p style=\"margin-top: 12px; margin-bottom: 12px;\"><span style=\" font-family:'Comfortaa'; font-size:14pt;\">Seus olhinhos negros, brilhando de excitação encontravam os de Beacon. </span></p><p style=\"margin-top: 12px; margin-bottom: 12px;\"><span style=\" font-family:'Comfortaa'; font-size:14pt;\">A sensação da mãzinha quente e delicada entre os seus dedos, como podia sentir aquilo? Teddy&nbsp;</span></p><p id=\"cap_1795460701112_p1\">\n\n\n\n\n</p><p style=\"margin-top: 12px; margin-bottom: 12px;\"><span style=\" font-family:'Comfortaa'; font-size:14pt;\">Aos 17 anos pode-se sentir a emoção de conduzir a uma filha, se já tiver sido pai, mas ele sequer namorava, a Suzane tinha gosto de esposa, ele tinha relances dos seus olhares de admiração.</span></p>"
     }
   },
   "personagens": [
@@ -46,6 +46,14 @@
       "papel": "",
       "imagemUrl": "https://raw.githubusercontent.com/andreyoldekamp-del/EditorUltimaMemoria/main/assets/char_1795456809986_clip_image009.jpg",
       "caracteristicas": []
+    },
+    {
+      "id": "char_1795540550249",
+      "nome": "Teddy",
+      "papel": "Secundário",
+      "caracteristicas": [],
+      "imagemUrl": "https://raw.githubusercontent.com/andreyoldekamp-del/EditorUltimaMemoria/main/assets/char_1795540550249.jpg?v=1795540600711",
+      "biografia_xhtml": "<h1 style=\"margin-top: 18px; margin-bottom: 12px;\"><span style=\"font-family: &quot;Segoe UI&quot;; font-size: xx-large;\">Teddy</span></h1><p>\n</p><p style=\"margin-top: 12px; margin-bottom: 12px;\"><span style=\" font-family:'Segoe UI'; font-size:12px;\">Jovem de 17 anos, estudante, sonhador, amável, bom relacionamento com o Pai, e a mãe enfermeira. Tem sonhos lúcidos que parecem realidade, mas na verdade a vida que está é apenas uma projeção, ele está implantado nesse corpo por uma tecnologia do futuro, ele não deveria lembrar dos acontecimentos do futuro, mas uma falha genética em seu cérebro, faz com que ele tenha flashes e sonhos da sua vida real no futuro.</span></p>"
     }
   ],
   "dicionarioRef": "dicionario_global.json"
