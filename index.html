@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>GraphZO //NEON V11 - MOBILE & POPUP</title>
+  <title>GraphZO //V14</title>
   <style>
     :root {
       --bg-base: #030712;
@@ -233,7 +233,6 @@
       border-radius: 4px;
     }
 
-    /* RESPONSIVIDADE PARA CELULAR */
     @media (max-width: 768px) {
       .main-container {
         flex-direction: column;
@@ -245,17 +244,9 @@
         border-right: none;
         border-bottom: 1px solid var(--border-neon);
       }
-      .editor-area {
-        padding: 10px;
-      }
-      #editorContent {
-        padding: 14px;
-        min-height: 50vh;
-      }
-      .git-controls {
-        width: 100%;
-        margin-left: 0 !important;
-      }
+      .editor-area { padding: 10px; }
+      #editorContent { padding: 14px; min-height: 50vh; }
+      .git-controls { width: 100%; margin-left: 0 !important; }
     }
   </style>
 </head>
@@ -263,7 +254,7 @@
 
   <header>
     <div>
-      <h1>SYS_GRAPHZO // <span>NEON V11</span></h1>
+      <h1>SYS_GRAPHZO // <span>NEON V12</span></h1>
       <div id="lastSavedBadge" style="font-size: 10px; color: var(--success);">🕒 Pronto para edição</div>
     </div>
     <div style="display: flex; gap: 6px; flex-wrap: wrap;">
@@ -355,7 +346,7 @@
         <div style="margin-bottom: 16px; padding: 12px; background: var(--bg-panel); border: 1px dashed var(--accent-cyan); border-radius: 4px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px;">
           <div>
             <strong>Importar Base (.txt):</strong>
-            <div style="font-size: 10px; color: var(--text-muted);">Termo | Categoria | Descrição</div>
+            <div style="font-size: 10px; color: var(--text-muted);">Termo | Categoria | Descrição (Filtro 10k equilibrado)</div>
           </div>
           <label class="file-btn">
             📂 Carregar .txt
@@ -399,7 +390,7 @@
   let projetoLivro = {
     "metadados": { "titulo": "Última Memória", "autor": "Autor" },
     "capitulos": {
-      "cap_1": { "titulo": "Capítulo 1", "conteudo_xhtml": '<p id="cap_1_p1">Digite Teddy ou Rede e dê espaço...</p>' }
+      "cap_1": { "titulo": "Capítulo 1", "conteudo_xhtml": '<p id="cap_1_p1">CAPÍTULO 1<br>O Despertar<br><br>Digite Teddy ou uma palavra e dê espaço...</p>' }
     },
     "personagens": [
       { id: "char_teste", nome: "Teddy", papel: "Protagonista", biografia_xhtml: "<p>Jovem do Kentucky que questiona suas memórias.</p>" }
@@ -444,6 +435,50 @@
     document.getElementById("statusText").innerText = `INDEXADOS: ${indicePersonagens.size} PERS. / ${indiceDicionario.size} TERMOS`;
   }
 
+  // --- NOVA FUNÇÃO: Atualiza o nome do capítulo dinamicamente baseado no texto ---
+  function atualizarTituloCapituloDinamico() {
+    const editor = document.getElementById("editorContent");
+    const texto = editor.innerText || "";
+    const linhas = texto.split('\n');
+    
+    let novoTitulo = "Sem título";
+    
+    for (let i = 0; i < Math.min(linhas.length, 5); i++) {
+      const linha = linhas[i].trim();
+      // Procura por "CAPÍTULO" seguido de número ou algarismo romano
+      const match = linha.match(/CAPÍTULO\s+([A-Z0-9]+)\s*(.*)/i);
+      if (match) {
+        const num = match[1];
+        // Pega o que vem depois, removendo hífens, dois pontos ou traços opcionais no início
+        let resto = match[2].replace(/^[-–—:\s]+/, '').trim();
+        
+        if (resto) {
+          novoTitulo = `Capítulo ${num} - ${resto}`;
+        } else if (linhas[i + 1] && linhas[i + 1].trim()) {
+          // Se não tiver nada na mesma linha, pega a próxima linha
+          novoTitulo = `Capítulo ${num} - ${linhas[i + 1].trim()}`;
+        } else {
+          novoTitulo = `Capítulo ${num}`;
+        }
+        break;
+      }
+    }
+    
+    // Se não encontrar "CAPÍTULO X", usa a primeira linha não vazia como fallback
+    if (novoTitulo === "Sem título") {
+      const primeiraLinhaNaoVazia = linhas.find(l => l.trim() !== "");
+      if (primeiraLinhaNaoVazia) {
+        novoTitulo = primeiraLinhaNaoVazia.trim().substring(0, 40);
+      }
+    }
+
+    // Atualiza apenas se mudou para evitar re-renderizações desnecessárias da lista
+    if (projetoLivro.capitulos[capituloAtual] && projetoLivro.capitulos[capituloAtual].titulo !== novoTitulo) {
+      projetoLivro.capitulos[capituloAtual].titulo = novoTitulo;
+      renderizarListaCapitulos();
+    }
+  }
+
   window.addEventListener("DOMContentLoaded", async function() {
     if (!localStorage.getItem("gh_repo")) {
       localStorage.setItem("gh_repo", "andreyoldekamp-del/EditorUltimaMemoria");
@@ -453,13 +488,35 @@
     editor.addEventListener("input", processarEntradaTexto);
     editor.addEventListener("keyup", processarEntradaTexto);
 
-    // Evento de rolagem para pular automaticamente para o próximo capítulo
+    // --- NOVO: Auto-pular para o próximo capítulo ao rolar até o fim ---
     const editorArea = document.querySelector('.editor-area');
+    let scrollTimeout;
+    
     editorArea.addEventListener('scroll', () => {
-      if (editorArea.scrollTop + editorArea.clientHeight >= editorArea.scrollHeight - 20) {
-        avancarProximoCapitulo();
+      if (scrollTimeout) return;
+      
+      // Verifica se está a menos de 50px do final do conteúdo rolável
+      if (editorArea.scrollTop + editorArea.clientHeight >= editorArea.scrollHeight - 50) {
+        scrollTimeout = setTimeout(() => {
+          scrollTimeout = null;
+          
+          const capIds = Object.keys(projetoLivro.capitulos);
+          const currentIndex = capIds.indexOf(capituloAtual);
+          
+          // Se existir um próximo capítulo, pula para ele
+          if (currentIndex !== -1 && currentIndex < capIds.length - 1) {
+            const nextCapId = capIds[currentIndex + 1];
+            trocarCapitulo(nextCapId);
+            
+            // Rola suavemente para o topo do novo capítulo após a troca
+            setTimeout(() => {
+              editorArea.scrollTo({ top: 0, behavior: 'smooth' });
+            }, 50);
+          }
+        }, 800); // 800ms de delay para confirmar que o usuário parou no fim e não foi um scroll acidental
       }
     });
+    // -------------------------------------------------------------------
 
     reconstruirIndices();
     renderizarListaCapitulos();
@@ -471,42 +528,10 @@
     }
   });
 
-  function avancarProximoCapitulo() {
-    const chaves = Object.keys(projetoLivro.capitulos);
-    const indexAtual = chaves.indexOf(capituloAtual);
-    if (indexAtual !== -1 && indexAtual < chaves.length - 1) {
-      salvarCapituloAtualNaMemoria();
-      const proximoId = chaves[indexAtual + 1];
-      trocarCapitulo(proximoId);
-      document.querySelector('.editor-area').scrollTop = 0;
-    }
-  }
-
-  // ATUALIZAÇÃO DINÂMICA DO TÍTULO DO CAPÍTULO PELA PRIMEIRA LINHA
-  function atualizarTituloDinamico() {
-    const editor = document.getElementById("editorContent");
-    const texto = editor.innerText || "";
-    const primeiraLinha = texto.split(/\r?\n/)[0] || "";
-    
-    const match = primeiraLinha.match(/cap[íi]tulo\s+(\d+)(.*)/i);
-    if (match) {
-      const num = match[1];
-      let resto = match[2].replace(/^[:\s\-\–—]+/, "").trim();
-      if (resto) {
-        projetoLivro.capitulos[capituloAtual].titulo = `Capítulo ${num}: ${resto}`;
-      } else {
-        projetoLivro.capitulos[capituloAtual].titulo = `Capítulo ${num}`;
-      }
-    } else if (primeiraLinha.trim()) {
-      projetoLivro.capitulos[capituloAtual].titulo = primeiraLinha.trim().substring(0, 35);
-    }
-    renderizarListaCapitulos();
-  }
-
-  // DETECÇÃO COMPATÍVEL COM DESKTOP E TECLADOS DE CELULAR (ANDROID / IOS)
   function processarEntradaTexto() {
     salvarCapituloAtualNaMemoria();
-    atualizarTituloDinamico();
+    atualizarTituloCapituloDinamico(); // Atualiza o título dinamicamente enquanto digita
+    
     if (!document.getElementById("togglePopupAuto").checked) return;
 
     const sel = window.getSelection();
@@ -597,7 +622,7 @@
     if (!nome) return;
     salvarCapituloAtualNaMemoria();
     const id = 'cap_' + Date.now();
-    projetoLivro.capitulos[id] = { titulo: nome, conteudo_xhtml: `<p id="${id}_p1">Novo capítulo...</p>` };
+    projetoLivro.capitulos[id] = { titulo: nome, conteudo_xhtml: `<p id="${id}_p1">CAPÍTULO ${Object.keys(projetoLivro.capitulos).length}<br>${nome}<br><br>Novo capítulo...</p>` };
     capituloAtual = id;
     renderizarListaCapitulos();
     carregarCapituloNaTela(id);
@@ -622,6 +647,7 @@
     if (projetoLivro.capitulos[capId]) {
       document.getElementById("editorContent").innerHTML = projetoLivro.capitulos[capId].conteudo_xhtml;
       atualizarContador();
+      atualizarTituloCapituloDinamico(); // Garante que o título esteja correto ao carregar
     }
   }
 
@@ -763,156 +789,107 @@
     const file = event.target.files[0];
     if (!file) return;
 
-    document.getElementById("statusText").innerText = "PROCESSANDO TXT...";
+    const statusEl = document.getElementById("statusText");
+    statusEl.innerText = "STATUS: LENDO BASE DE DADOS...";
+
     const reader = new FileReader();
 
-    reader.onload = function (e) {
-      const texto = e.target.result;
-      const linhas = texto.split(/\r?\n/);
+    reader.onerror = function() {
+      statusEl.innerText = "STATUS: ERRO AO LER O ARQUIVO";
+      alert("Não foi possível ler o arquivo selecionado.");
+    };
 
-      let importados = 0;
-      let ignoradas = 0;
-      let duplicadas = 0;
+    reader.onload = function(e) {
+      try {
+        const conteudo = e.target.result;
+        const linhas = conteudo.split(/\r?\n/);
+        const termosBrutos = [];
 
-      const chavesExistentes = new Set();
-      projetoLivro.dicionario.forEach(t => {
-        if (t.termo) chavesExistentes.add(normalizarChave(t.termo));
-      });
-      projetoLivro.personagens.forEach(p => {
-        if (p.nome) chavesExistentes.add(normalizarChave(p.nome));
-      });
+        statusEl.innerText = "STATUS: PROCESSANDO LINHAS...";
 
-      for (let i = 0; i < linhas.length; i++) {
-        let linha = linhas[i]
-          .replace(/^[\uFEFF\u00A0\u200B\u200C\u200D]+/, "")
-          .trim();
+        for (let i = 0; i < linhas.length; i++) {
+          const linha = linhas[i].trim();
+          if (!linha) continue;
 
-        if (!linha) continue;
-        if (linha.startsWith("#") || linha.startsWith("//")) continue;
+          let termo = "", categoria = "Geral", definicao = "Termo registrado.";
 
-        let tipo = null;
-        let termo = null;
-        let categoria = "Geral";
-        let definicao = "Termo registrado.";
-
-        const mPrefixo = linha.match(/^\[([PD])\]\s*(.+)$/i);
-        if (mPrefixo) {
-          const tag = mPrefixo[1].toUpperCase();
-          const resto = mPrefixo[2].trim();
-
-          if (tag === "P") {
-            const mBio = resto.match(/^([^=]+?)\s*=\s*(.+)$/);
-            termo = (mBio ? mBio[1] : resto).trim();
-            if (!termo) { ignoradas++; continue; }
-
-            const chave = normalizarChave(termo);
-            if (chavesExistentes.has(chave)) { duplicadas++; continue; }
-            chavesExistentes.add(chave);
-
-            projetoLivro.personagens.push({
-              id: 'char_txt_' + i + '_' + Date.now(),
-              nome: termo,
-              papel: "Importado",
-              imagemUrl: "",
-              biografia_xhtml: mBio ? `<p>${mBio[2].trim()}</p>` : "<p>Personagem importado.</p>"
-            });
-            importados++;
-            continue;
-          }
-
-          const idxIgual = resto.indexOf("=");
-          if (idxIgual === -1) {
-            termo = resto.trim();
+          if (linha.includes('|')) {
+            const partes = linha.split('|').map(s => s.trim());
+            termo = partes[0];
+            if (partes[1]) categoria = partes[1];
+            if (partes[2]) definicao = partes[2];
+          } else if (linha.includes(':')) {
+            const idx = linha.indexOf(':');
+            termo = linha.substring(0, idx).trim();
+            definicao = linha.substring(idx + 1).trim();
+            categoria = "Dicionário";
           } else {
-            termo = resto.slice(0, idxIgual).trim();
-            let cauda = resto.slice(idxIgual + 1).trim();
-            cauda = cauda.replace(/\s*(·|Â·).*$/, "").trim();
-            const partes = cauda.split("‖").map(s => s.trim()).filter(Boolean);
-
-            if (partes.length === 0) {
-              categoria = "Geral";
-              definicao = "Termo registrado.";
-            } else if (partes.length === 1) {
-              const p = partes[0];
-              if (p.length <= 40 && !p.includes(" ") && !/[.!?]/.test(p)) {
-                categoria = p;
-                definicao = "Termo registrado.";
-              } else {
-                categoria = "Geral";
-                definicao = p;
-              }
-            } else {
-              categoria = partes[0];
-              definicao = partes.slice(1).join(" ‖ ");
-            }
+            termo = linha;
+            categoria = "Vocabulário";
           }
 
-          if (!termo) { ignoradas++; continue; }
+          if (termo.length > 0) {
+            termosBrutos.push({
+              id: `t_${i}_${Math.floor(Math.random() * 10000)}`,
+              termo,
+              categoria,
+              definicao
+            });
+          }
+        }
 
-          const chave = normalizarChave(termo);
-          if (chavesExistentes.has(chave)) { duplicadas++; continue; }
-          chavesExistentes.add(chave);
+        statusEl.innerText = "STATUS: APLICANDO FILTRO EQUILIBRADO (10K)...";
 
-          projetoLivro.dicionario.push({
-            id: 'term_txt_' + i + '_' + Date.now(),
-            termo: termo,
-            categoria: categoria,
-            definicao: "<p>" + definicao + "</p>"
+        const META_MAXIMA = 10000;
+        let termosFinais = termosBrutos;
+
+        if (termosBrutos.length > META_MAXIMA) {
+          const gruposPorLetra = {};
+          const alfabeto = "abcdefghijklmnopqrstuvwxyzáéíóúâêîôûãõç";
+
+          termosBrutos.forEach(item => {
+            let letra = item.termo.charAt(0).toLowerCase();
+            if (!alfabeto.includes(letra)) letra = '#';
+            
+            if (!gruposPorLetra[letra]) gruposPorLetra[letra] = [];
+            gruposPorLetra[letra].push(item);
           });
-          importados++;
-          continue;
+
+          const chavesLetras = Object.keys(gruposPorLetra);
+          const cotaPorLetra = Math.floor(META_MAXIMA / chavesLetras.length);
+          let termosEquilibrados = [];
+
+          chavesLetras.forEach(letra => {
+            const listaLetra = gruposPorLetra[letra];
+            listaLetra.sort(() => Math.random() - 0.5);
+            termosEquilibrados.push(...listaLetra.slice(0, cotaPorLetra));
+          });
+
+          if (termosEquilibrados.length < META_MAXIMA) {
+            const restantes = termosBrutos.filter(t => !termosEquilibrados.includes(t));
+            restantes.sort(() => Math.random() - 0.5);
+            const faltam = META_MAXIMA - termosEquilibrados.length;
+            termosEquilibrados.push(...restantes.slice(0, faltam));
+          }
+
+          termosFinais = termosEquilibrados;
         }
 
-        if (linha.includes("|")) {
-          const partes = linha.split("|").map(s => s.trim());
-          termo = partes[0];
-          categoria = partes[1] || "Geral";
-          definicao = partes[2] || "Termo registrado.";
-        } else {
-          termo = linha;
-          categoria = "Vocabulário";
-          definicao = "Palavra validada.";
-        }
+        projetoLivro.dicionario = termosFinais;
+        reconstruirIndices();
+        renderizarListaTermos();
 
-        if (!termo) { ignoradas++; continue; }
+        statusEl.innerText = `STATUS: ${projetoLivro.dicionario.length} TERMOS INDEXADOS!`;
+        alert(`Sucesso! Foram indexados ${projetoLivro.dicionario.length} termos equilibrados.`);
 
-        const chave = normalizarChave(termo);
-        if (chavesExistentes.has(chave)) { duplicadas++; continue; }
-        chavesExistentes.add(chave);
-
-        projetoLivro.dicionario.push({
-          id: 'term_txt_' + i + '_' + Date.now(),
-          termo: termo,
-          categoria: categoria,
-          definicao: "<p>" + definicao + "</p>"
-        });
-        importados++;
+      } catch (err) {
+        statusEl.innerText = "STATUS: ERRO NO PROCESSAMENTO";
+        console.error(err);
+        alert("Ocorreu um erro ao processar o arquivo de texto.");
       }
-
-      reconstruirIndices();
-      renderizarListaTermos();
-      renderizarListaPersonagens();
-
-      alert(
-        `Importação concluída!\n\n` +
-        `Importados: ${importados}\n` +
-        `Duplicados (ignorados): ${duplicadas}\n` +
-        `Ignorados (formato desconhecido): ${ignoradas}\n\n` +
-        `Total no dicionário: ${projetoLivro.dicionario.length}\n` +
-        `Total de personagens: ${projetoLivro.personagens.length}`
-      );
-
-      document.getElementById("statusText").innerText =
-        `INDEXADOS: ${indicePersonagens.size} PERS. / ${indiceDicionario.size} TERMOS`;
     };
 
-    reader.onerror = function () {
-      alert("Não foi possível ler o arquivo.");
-      document.getElementById("statusText").innerText = "ERRO DE LEITURA";
-    };
-
-    reader.readAsText(file, "UTF-8");
-    event.target.value = "";
+    reader.readAsText(file);
   }
 
   async function carregarImagemPersonagem(event) {
@@ -1008,11 +985,8 @@
     try {
       const res = await fetch(url, { headers: { "Authorization": `token ${token}` } });
       const data = await res.json();
-      if (res.ok && data.content) {
-        // Limpa espaços e quebras de linha do Base64 para evitar falha no atob()
-        const cleanContent = data.content.replace(/\s/g, '');
-        const carregado = JSON.parse(decodeURIComponent(escape(atob(cleanContent))));
-        
+      if (res.ok) {
+        const carregado = JSON.parse(decodeURIComponent(escape(atob(data.content))));
         projetoLivro.metadados = carregado.metadados || projetoLivro.metadados;
         projetoLivro.capitulos = carregado.capitulos || projetoLivro.capitulos;
         projetoLivro.personagens = carregado.personagens || [];
@@ -1023,9 +997,7 @@
         carregarCapituloNaTela(Object.keys(projetoLivro.capitulos)[0]);
         if(!silencioso) alert("Dados carregados!");
       }
-    } catch(e) {
-      if(!silencioso) alert("Erro ao carregar dados do GitHub.");
-    }
+    } catch(e) {}
   }
 
   async function listarCommitsGitHub(silencioso = false) {
@@ -1064,10 +1036,8 @@
     try {
       const res = await fetch(url, { headers: { "Authorization": `token ${token}` } });
       const data = await res.json();
-      if (res.ok && data.content) {
-        const cleanContent = data.content.replace(/\s/g, '');
-        const carregado = JSON.parse(decodeURIComponent(escape(atob(cleanContent))));
-        
+      if (res.ok) {
+        const carregado = JSON.parse(decodeURIComponent(escape(atob(data.content))));
         projetoLivro.capitulos = carregado.capitulos || projetoLivro.capitulos;
         projetoLivro.personagens = carregado.personagens || [];
         if (carregado.dicionario) projetoLivro.dicionario = carregado.dicionario;
@@ -1078,9 +1048,7 @@
         renderizarListaPersonagens();
         alert("Versão carregada!");
       }
-    } catch(e) {
-      alert("Erro ao carregar a versão selecionada.");
-    }
+    } catch(e) {}
   }
 
   function descartarVersaoAtual() {
