@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>GraphZO //TESTE 380K</title>
+<title>GraphZO //VALIDAR 380K</title>
 <style>
   :root {
     --bg-base: #030712;
@@ -189,7 +189,7 @@
   </div>
   <div style="display: flex; gap: 6px; flex-wrap: wrap;">
     <button onclick="configurar()">⚙️ Config</button>
-    <button id="btnCarregar" onclick="carregarDoGitHub()" disabled>📥 Carregar do GitHub</button>
+    <button id="btnCarregar" onclick="carregarDoGitHub()">📥 Carregar do GitHub</button>
   </div>
 </header>
 
@@ -199,7 +199,7 @@
 </div>
 
 <!-- ================= FASE 1: IMPORTAÇÃO ================= -->
-<div id="faseImport">
+<div id="faseImport" style="display:flex;flex-direction:column;flex:1;overflow:hidden;">
   <div class="toolbar">
     <label class="file-btn">
       📂 Selecionar .txt
@@ -235,21 +235,24 @@
 
 <script>
 /* =========================================================================
-   CONFIGURAÇÃO
+   CONFIGURAÇÃO — usa exatamente as mesmas chaves do seu programa:
+   gh_repo, gh_token  (o branch "main" é fixo, igual ao seu)
    ========================================================================= */
-const cfg = {
-  repo: localStorage.getItem("gh_repo") || "andreyoldekamp-del/EditorUltimaMemoria",
-  token: localStorage.getItem("gh_token") || "",
-  branch: localStorage.getItem("gh_branch") || "main",
-  arquivo: "dicionario.json"
-};
+const REPO_PADRAO = "andreyoldekamp-del/EditorUltimaMemoria";
+
+function getRepo() {
+  return localStorage.getItem("gh_repo") || REPO_PADRAO;
+}
+function getToken() {
+  return localStorage.getItem("gh_token") || "";
+}
 
 /* =========================================================================
    ESTADO
    ========================================================================= */
 let indice = new Map();
-let termosParsed = [];      // {termo, categoria, definicao}
-let personagensParsed = []; // {nome, bio}
+let termosParsed = [];
+let personagensParsed = [];
 let stats = { validos: 0, ignorados: 0, duplicados: 0, personagens: 0 };
 let ultimaChaveMostrada = "";
 let debounceTimer = null;
@@ -276,37 +279,29 @@ function atualizarStatus(msg, perf) {
 
 function atualizarCfgInfo() {
   const el = document.getElementById("cfgInfo");
-  const temToken = cfg.token ? "✓ token" : "✗ sem token";
-  el.textContent = `Repo: ${cfg.repo} · branch ${cfg.branch} · ${temToken}`;
-  document.getElementById("btnCarregar").disabled = !cfg.token && !cfg.repo;
+  const repo = getRepo();
+  const temToken = getToken() ? "✓ token" : "✗ sem token";
+  el.textContent = `Repo: ${repo} · main · ${temToken}`;
 }
 
 /* =========================================================================
-   CONFIGURAÇÃO
+   CONFIGURAÇÃO — mesmo padrão do seu programa (prompt + localStorage)
    ========================================================================= */
 function configurar() {
-  const repo = prompt("Repositório (usuario/repo):", cfg.repo);
-  if (repo === null) return;
-  const branch = prompt("Branch:", cfg.branch) || "main";
-  const token = prompt("Personal Access Token (ghp_...):", cfg.token);
-  if (token === null) return;
-
-  cfg.repo = repo.trim() || cfg.repo;
-  cfg.branch = branch.trim() || "main";
-  cfg.token = token.trim();
-
-  localStorage.setItem("gh_repo", cfg.repo);
-  localStorage.setItem("gh_branch", cfg.branch);
-  localStorage.setItem("gh_token", cfg.token);
-
-  atualizarCfgInfo();
-  alert("Configurações salvas.");
+  const repo = prompt("Repositório:", getRepo());
+  const token = prompt("Personal Access Token:", getToken() || "");
+  if (repo && token) {
+    localStorage.setItem("gh_repo", repo);
+    localStorage.setItem("gh_token", token);
+    atualizarCfgInfo();
+    alert("Configurações salvas!");
+  }
 }
 
 /* =========================================================================
    PARSER DO TXT
    ========================================================================= */
-function parseLinha(linhaOriginal, i) {
+function parseLinha(linhaOriginal) {
   let linha = String(linhaOriginal || "")
     .replace(/^[\uFEFF\u00A0\u200B\u200C\u200D]+/, "")
     .trim();
@@ -327,7 +322,6 @@ function parseLinha(linhaOriginal, i) {
       return { tipo: "P", nome, bio: mBio ? mBio[2].trim() : "Personagem importado." };
     }
 
-    // [D]
     const idxIgual = resto.indexOf("=");
     if (idxIgual === -1) {
       return { tipo: "D", termo: resto, categoria: "Geral", definicao: "Termo registrado." };
@@ -335,7 +329,6 @@ function parseLinha(linhaOriginal, i) {
     const termo = resto.slice(0, idxIgual).trim();
     if (!termo) return null;
     let cauda = resto.slice(idxIgual + 1).trim();
-    // remove sufixo "· ex"
     cauda = cauda.replace(/\s*(·|Â·).*$/, "").trim();
     const partes = cauda.split("‖").map(s => s.trim()).filter(Boolean);
     let categoria = "Geral";
@@ -354,7 +347,7 @@ function parseLinha(linhaOriginal, i) {
     return { tipo: "D", termo, categoria, definicao };
   }
 
-  // |
+  // termo | categoria | definição
   if (linha.includes("|")) {
     const p = linha.split("|").map(s => s.trim());
     if (!p[0]) return null;
@@ -390,14 +383,13 @@ document.getElementById("txtInput").addEventListener("change", async (event) => 
     personagensParsed = [];
     stats = { validos: 0, ignorados: 0, duplicados: 0, personagens: 0 };
 
-    // Processa em blocos para não travar a UI em arquivos grandes
     const CHUNK = 5000;
     for (let start = 0; start < linhas.length; start += CHUNK) {
       const fim = Math.min(start + CHUNK, linhas.length);
       for (let i = start; i < fim; i++) {
         const linha = linhas[i];
         if (!linha.trim()) continue;
-        const item = parseLinha(linha, i);
+        const item = parseLinha(linha);
         if (!item) { stats.ignorados++; continue; }
         if (item.tipo === "P") {
           const k = normalizarChave(item.nome);
@@ -415,7 +407,6 @@ document.getElementById("txtInput").addEventListener("change", async (event) => 
           stats.validos++;
         }
       }
-      // deixa a UI respirar
       if (fim < linhas.length) await new Promise(r => setTimeout(r, 0));
     }
 
@@ -449,14 +440,14 @@ function renderPreview(nomeArquivo, texto, linhas, dt) {
   for (let i = 0; i < linhas.length && count < 8; i++) {
     const l = linhas[i].trim();
     if (!l) continue;
-    const p = parseLinha(l, i);
+    const p = parseLinha(l);
     if (!p) continue;
     amostras.push({ bruto: l, parsed: p });
     count++;
   }
 
   let html = "";
-  html += `<span class="title">📄 Arquivo: ${nomeArquivo}</span>`;
+  html += `<span class="title">📄 Arquivo: ${escapar(nomeArquivo)}</span>`;
   html += `Tamanho: ${(texto.length / 1024 / 1024).toFixed(2)} MB · Linhas: ${linhas.length.toLocaleString("pt-BR")}<br>`;
   html += `<span class="ok">✔ ${stats.validos.toLocaleString("pt-BR")} verbetes</span> · `;
   html += `<span class="ok">✔ ${stats.personagens} personagens</span> · `;
@@ -469,10 +460,10 @@ function renderPreview(nomeArquivo, texto, linhas, dt) {
     const p = a.parsed;
     if (p.tipo === "P") {
       html += `<span class="ok">[${i}]</span> bruto: ${escapar(a.bruto)}<br>`;
-      html += `     → <b>PERSONAGEM</b> "${p.nome}" — ${escapar(p.bio.slice(0, 60))}<br>`;
+      html += `     → <b>PERSONAGEM</b> "${escapar(p.nome)}" — ${escapar(p.bio.slice(0, 60))}<br>`;
     } else {
       html += `<span class="ok">[${i}]</span> bruto: ${escapar(a.bruto)}<br>`;
-      html += `     → <b>VERBETE</b> "${p.termo}" | cat: "${p.categoria}" | def: "${escapar(p.definicao.slice(0, 60))}"<br>`;
+      html += `     → <b>VERBETE</b> "${escapar(p.termo)}" | cat: "${escapar(p.categoria)}" | def: "${escapar(p.definicao.slice(0, 60))}"<br>`;
     }
   });
 
@@ -490,21 +481,28 @@ function limparPreview() {
   stats = { validos: 0, ignorados: 0, duplicados: 0, personagens: 0 };
   document.getElementById("txtInput").value = "";
   document.getElementById("btnSubir").disabled = true;
-  document.getElementById("preview").innerHTML =
-    "Prévia limpa. Selecione outro .txt.";
+  document.getElementById("preview").innerHTML = "Prévia limpa. Selecione outro .txt.";
   atualizarStatus("Pronto.", "");
 }
 
 /* =========================================================================
    FASE 2 — Upload para GitHub
+   MOTOR IDÊNTICO AO SEU CÓDIGO QUE FUNCIONA:
+   - fetch simples, sem Accept extra
+   - Authorization: token ...
+   - Content-Type: application/json
+   - GET para pegar SHA, depois PUT
+   - btoa(unescape(encodeURIComponent(...)))
    ========================================================================= */
 async function subirParaGitHub() {
   if (termosParsed.length === 0 && personagensParsed.length === 0) {
     alert("Nada para subir. Selecione um .txt primeiro.");
     return;
   }
-  if (!cfg.token) {
-    alert("Configure o token do GitHub primeiro (⚙️ Config).");
+  const token = getToken();
+  const repo = getRepo();
+  if (!token) {
+    alert("Configure o Token primeiro!");
     configurar();
     return;
   }
@@ -514,23 +512,29 @@ async function subirParaGitHub() {
   btn.textContent = "⏳ Enviando...";
 
   try {
-    // Personagens vão para um arquivo separado, para não misturar com o índice
-    const conteudoDicionario = JSON.stringify(termosParsed);
-    const conteudoPersonagens = JSON.stringify(personagensParsed);
+    // ---- dicionario.json ----
+    atualizarStatus("Enviando dicionario.json...", "");
+    await salvarArquivoNoGitHub(
+      repo,
+      token,
+      "dicionario.json",
+      JSON.stringify(termosParsed),
+      `Dicionário: ${termosParsed.length} termos`
+    );
 
-    atualizarStatus("Convertendo para base64...", "");
-    const b64Dict = b64EncodeUnicode(conteudoDicionario);
-    const b64Pers = b64EncodeUnicode(conteudoPersonagens);
-
-    atualizarStatus("Enviando dicionário.json...", "");
-    await putArquivoGitHub(cfg.arquivo, b64Dict, `Dicionário: ${termosParsed.length} termos`);
-
+    // ---- personagens.json ----
     atualizarStatus("Enviando personagens.json...", "");
-    await putArquivoGitHub("personagens.json", b64Pers, `Personagens: ${personagensParsed.length}`);
+    await salvarArquivoNoGitHub(
+      repo,
+      token,
+      "personagens.json",
+      JSON.stringify(personagensParsed),
+      `Personagens: ${personagensParsed.length}`
+    );
 
     atualizarStatus(
       `<span class="ok">✔ dicionario.json e personagens.json enviados</span>`,
-      `Branch: ${cfg.branch}`
+      ""
     );
     btn.textContent = "✔ Enviado";
     setTimeout(() => {
@@ -547,62 +551,64 @@ async function subirParaGitHub() {
   } catch (err) {
     console.error(err);
     atualizarStatus(`<span class="err">Erro no upload: ${err.message}</span>`, "");
-    alert(`Falha ao subir para o GitHub:\n\n${err.message}\n\nVerifique o token (precisa de escopo "repo").`);
+    alert(`Falha ao subir:\n\n${err.message}`);
     btn.disabled = false;
     btn.textContent = "☁️ Subir para o GitHub";
   }
 }
 
-function b64EncodeUnicode(str) {
-  return btoa(unescape(encodeURIComponent(str)));
-}
+/**
+ * Salva/atualiza um arquivo no GitHub.
+ * Motor idêntico ao do seu programa que funciona.
+ */
+async function salvarArquivoNoGitHub(repo, token, nomeArquivo, conteudoTexto, mensagem) {
+  const url = `https://api.github.com/repos/${repo}/contents/${nomeArquivo}`;
 
-function b64DecodeUnicode(str) {
-  return decodeURIComponent(escape(atob(str)));
-}
-
-async function putArquivoGitHub(nome, conteudoBase64, mensagem) {
-  const url = `https://api.github.com/repos/${cfg.repo}/contents/${nome}`;
-  const headers = {
-    "Authorization": `token ${cfg.token}`,
-    "Content-Type": "application/json",
-    "Accept": "application/vnd.github+json"
-  };
-
-  // Verifica se já existe (para pegar SHA e sobrescrever)
-  let sha = null;
-  const getRes = await fetch(url, { headers });
+  // 1) GET para pegar SHA (se existir)
+  let sha = "";
+  const getRes = await fetch(url, {
+    headers: { "Authorization": `token ${token}` }
+  });
   if (getRes.ok) {
-    const data = await getRes.json();
-    sha = data.sha;
+    sha = (await getRes.json()).sha;
   }
 
-  const body = { message: mensagem, content: conteudoBase64, branch: cfg.branch };
-  if (sha) body.sha = sha;
+  // 2) Codifica exatamente como o seu código
+  const conteudoBase64 = btoa(unescape(encodeURIComponent(conteudoTexto)));
 
+  // 3) PUT
   const putRes = await fetch(url, {
     method: "PUT",
-    headers,
-    body: JSON.stringify(body)
+    headers: {
+      "Authorization": `token ${token}`,
+      "Content-Type": "application/json"
+    },
+    body: JSON.stringify({
+      message: mensagem,
+      content: conteudoBase64,
+      sha: sha || undefined
+    })
   });
 
   if (!putRes.ok) {
     const err = await putRes.json().catch(() => ({}));
-    throw new Error(err.message || `HTTP ${putRes.status}`);
+    throw new Error(`${nomeArquivo}: ${err.message || "HTTP " + putRes.status}`);
   }
 }
 
 /* =========================================================================
-   FASE 3 — Carregar do GitHub e detectar
+   FASE 3 — Carregar do GitHub (raw, igual ao seu puxarDoGitHub usa a API,
+   mas aqui uso raw.githubusercontent que é mais rápido para 30MB e é público)
    ========================================================================= */
 async function carregarDoGitHub() {
+  const repo = getRepo();
   const btn = document.getElementById("btnCarregar");
   btn.disabled = true;
   btn.textContent = "⏳ Baixando...";
   const t0 = performance.now();
 
   try {
-    const base = `https://raw.githubusercontent.com/${cfg.repo}/${cfg.branch}`;
+    const base = `https://raw.githubusercontent.com/${repo}/main`;
 
     atualizarStatus("Baixando dicionario.json...", "");
     const dictRes = await fetch(`${base}/dicionario.json`, { cache: "no-cache" });
@@ -625,7 +631,7 @@ async function carregarDoGitHub() {
       });
     }
 
-    // Tenta também carregar personagens (se existir)
+    // personagens.json (opcional)
     try {
       const persRes = await fetch(`${base}/personagens.json`, { cache: "no-cache" });
       if (persRes.ok) {
@@ -641,7 +647,7 @@ async function carregarDoGitHub() {
           });
         }
       }
-    } catch (_) { /* personagens.json é opcional */ }
+    } catch (_) { /* opcional */ }
 
     const dt = Math.round(performance.now() - t0);
     atualizarStatus(
@@ -649,7 +655,6 @@ async function carregarDoGitHub() {
       `Carregado em ${dt} ms`
     );
 
-    // Troca para a fase do editor
     document.getElementById("faseImport").classList.add("hidden");
     document.getElementById("faseEditor").classList.remove("hidden");
     document.getElementById("editorContent").focus();
@@ -658,10 +663,7 @@ async function carregarDoGitHub() {
     atualizarStatus(`<span class="err">Erro: ${err.message}</span>`, "");
     alert(
       `Falha ao carregar:\n\n${err.message}\n\n` +
-      `Verifique:\n` +
-      `• Repo/branch configurados (⚙️ Config)\n` +
-      `• dicionario.json existe na raiz do repo\n` +
-      `• Repo é público (raw.githubusercontent.com)`
+      `Verifique se dicionario.json existe na raiz do repo e se o repo é público.`
     );
   } finally {
     btn.disabled = false;
