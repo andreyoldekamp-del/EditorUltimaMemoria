@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>GraphZO // ÚLTIMA MEMÓRIA [NEON V12 - REFACTOR]</title>
+  <title>GraphZO // ÚLTIMA MEMÓRIA [NEON V13 - TESTE POPUP]</title>
   <style>
     :root {
       --bg-base: #030712;
@@ -254,8 +254,8 @@
 
   <header>
     <div>
-      <h1>SYS_GRAPHZO // <span>NEON V12</span></h1>
-      <div id="lastSavedBadge" style="font-size: 10px; color: var(--success);">🕒 Pronto para edição</div>
+      <h1>SYS_GRAPHZO // <span>NEON V13 [TESTE POPUP]</span></h1>
+      <div id="lastSavedBadge" style="font-size: 10px; color: var(--success);">🕒 Pronto para testes</div>
     </div>
     <div style="display: flex; gap: 6px; flex-wrap: wrap;">
       <button type="button" onclick="configurarGitHub()">⚙️ Config</button>
@@ -346,7 +346,7 @@
         <div style="margin-bottom: 16px; padding: 12px; background: var(--bg-panel); border: 1px dashed var(--accent-cyan); border-radius: 4px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px;">
           <div>
             <strong>Importar Base (.txt):</strong>
-            <div style="font-size: 10px; color: var(--text-muted);">Termo | Categoria | Descrição (Filtro 10k equilibrado)</div>
+            <div style="font-size: 10px; color: var(--text-muted);">Termo | Categoria | Descrição</div>
           </div>
           <label class="file-btn">
             📂 Carregar .txt
@@ -390,13 +390,19 @@
   let projetoLivro = {
     "metadados": { "titulo": "Última Memória", "autor": "Autor" },
     "capitulos": {
-      "cap_1": { "titulo": "Capítulo 1", "conteudo_xhtml": '<p id="cap_1_p1">Digite Teddy ou uma palavra e dê espaço...</p>' }
+      "cap_1": { "titulo": "Capítulo 1", "conteudo_xhtml": '<p id="cap_1_p1">Digite "vento", "casa" ou "Teddy" e dê espaço para testar o popup...</p>' }
     },
     "personagens": [
-      { id: "char_teste", nome: "Teddy", papel: "Protagonista", biografia_xhtml: "<p>Jovem do Kentucky que questiona suas memórias.</p>" }
+      { id: "char_1", nome: "Teddy", papel: "Protagonista", biografia_xhtml: "<p>Jovem morador do Kentucky que questiona suas memórias.</p>" },
+      { id: "char_2", nome: "Jeames", papel: "Irmão mais novo", biografia_xhtml: "<p>Adolescente de 17 anos que vive derrubando coisas no quarto.</p>" }
     ],
     "dicionario": [
-      { id: "term_1", termo: "Rede", categoria: "Tecnologia", definicao: "Sistema global de dados interligados." }
+      { id: "term_1", termo: "vento", categoria: "Clima", definicao: "Movimento natural do ar na atmosfera com grande força durante a tempestade." },
+      { id: "term_2", termo: "casa", categoria: "Local", definicao: "Residência da família no interior do Kentucky." },
+      { id: "term_3", termo: "chuva", categoria: "Clima", definicao: "Precipitação de gotas de água que golpeavam as janelas com violência." },
+      { id: "term_4", termo: "noite", categoria: "Tempo", definicao: "Período de escuridão anterior aos acontecimentos da manhã." },
+      { id: "term_5", termo: "tempo", categoria: "Meteorologia", definicao: "Condições atmosféricas instáveis com alerta de tornados na região." },
+      { id: "term_6", termo: "futuro", categoria: "Conceito", definicao: "Ideia distante e abstrata que chegaria um dia de cada vez." }
     ]
   };
 
@@ -406,10 +412,14 @@
   let capituloAtual = "cap_1";
   let characterSelecionadoId = null;
   let termoSelecionadoId = null;
-  let ultimaPalavraPopup = "";
+  let ultimaChaveProcessada = "";
 
   function normalizarChave(texto) {
+    if (!texto) return "";
     return texto
+      .toString()
+      .normalize("NFD")
+      .replace(/[\u0300-\u036f]/g, "") // Remove acentos para facilitar a detecção
       .replace(/[\u00A0\u200B]/g, " ")
       .replace(/[.,!?;:()"'«»—–-]/g, "")
       .trim()
@@ -441,8 +451,11 @@
     }
 
     const editor = document.getElementById("editorContent");
+    
+    // Escuta múltiplos eventos para garantir detecção em Desktop e Mobile
     editor.addEventListener("input", processarEntradaTexto);
     editor.addEventListener("keyup", processarEntradaTexto);
+    editor.addEventListener("blur", salvarCapituloAtualNaMemoria);
 
     reconstruirIndices();
     renderizarListaCapitulos();
@@ -473,21 +486,25 @@
 
     textoAntes = textoAntes.replace(/\u00A0/g, " ");
 
+    // Captura a última palavra antes de espaço ou pontuação
     const match = textoAntes.match(/([a-zA-ZÀ-ÿ0-9_-]+)[\s.,!?;:]+$/);
     if (!match) return;
 
-    const chave = normalizarChave(match[1]);
-    if (chave.length < 2 || chave === ultimaPalavraPopup) return;
+    const palavraBruta = match[1];
+    const chave = normalizarChave(palavraBruta);
 
+    if (chave.length < 2 || chave === ultimaChaveProcessada) return;
+    ultimaChaveProcessada = chave;
+
+    // 1. Verifica nos Personagens
     if (indicePersonagens.has(chave)) {
-      ultimaPalavraPopup = chave;
       const p = indicePersonagens.get(chave);
       mostrarPopup("PERSONAGEM", p.nome, `Papel: ${p.papel || 'Principal'}`, p.biografia_xhtml || "Sem biografia.");
       return;
     }
 
+    // 2. Verifica no Dicionário
     if (indiceDicionario.has(chave)) {
-      ultimaPalavraPopup = chave;
       const t = indiceDicionario.get(chave);
       mostrarPopup("DICIONÁRIO", t.termo, `Categoria: ${t.categoria || 'Geral'}`, t.definicao || "Sem definição.");
       return;
@@ -511,7 +528,7 @@
 
   function fecharPopup() {
     document.getElementById("popupDeteccao").style.display = "none";
-    ultimaPalavraPopup = "";
+    ultimaChaveProcessada = "";
   }
 
   function mudarAba(aba) {
@@ -708,122 +725,98 @@
     downloadAnchor.remove();
   }
 
-/**
- * Importa um arquivo .txt de dicionário, aplica um filtro equilibrado 
- * de até 10.000 termos (proporcional por letra inicial) e atualiza o sistema.
- */
-function importarBaseTxt(event) {
-  const file = event.target.files && event.target.files[0];
-  if (!file) return;
+  function importarBaseTxt(event) {
+    const file = event.target.files && event.target.files[0];
+    if (!file) return;
 
-  const statusEl = document.getElementById("statusText");
-  statusEl.innerText = "STATUS: LENDO ARQUIVO DE TEXTO...";
+    const statusEl = document.getElementById("statusText");
+    statusEl.innerText = "STATUS: LENDO ARQUIVO...";
 
-  const reader = new FileReader();
+    const reader = new FileReader();
+    reader.onload = function(e) {
+      try {
+        const conteudo = e.target.result;
+        const linhas = conteudo.split(/\r?\n/);
+        const termosBrutos = [];
 
-  reader.onerror = () => {
-    statusEl.innerText = "STATUS: ERRO NA LEITURA";
-    alert("Falha ao ler o arquivo selecionado.");
-  };
+        linhas.forEach((linhaOriginal, index) => {
+          const linha = linhaOriginal.trim();
+          if (!linha) return;
 
-  reader.onload = (e) => {
-    try {
-      statusEl.innerText = "STATUS: PROCESSANDO TERMOS...";
-      const conteudo = e.target.result;
-      const linhas = conteudo.split(/\r?\n/);
-      const termosBrutos = [];
+          let termo = "", categoria = "Geral", definicao = "Termo registrado.";
 
-      // 1. Parseamento e limpeza das linhas do arquivo
-      linhas.forEach((linhaOriginal, index) => {
-        const linha = linhaOriginal.trim();
-        if (!linha) return;
+          if (linha.includes("|")) {
+            const partes = linha.split("|").map(s => s.trim());
+            termo = partes[0] || "";
+            categoria = partes[1] || "Geral";
+            definicao = partes[2] || "Termo registrado.";
+          } else if (linha.includes(":")) {
+            const idx = linha.indexOf(":");
+            termo = linha.substring(0, idx).trim();
+            definicao = linha.substring(idx + 1).trim();
+            categoria = "Dicionário";
+          } else {
+            termo = linha;
+            categoria = "Vocabulário";
+          }
 
-        let termo = "";
-        let categoria = "Geral";
-        let definicao = "Termo registrado.";
+          if (termo.length > 0) {
+            termosBrutos.push({
+              id: `t_${index}_${Math.floor(Math.random() * 10000)}`,
+              termo,
+              categoria,
+              definicao
+            });
+          }
+        });
 
-        if (linha.includes("|")) {
-          const partes = linha.split("|").map(s => s.trim());
-          termo = partes[0] || "";
-          categoria = partes[1] || "Geral";
-          definicao = partes[2] || "Termo registrado.";
-        } else if (linha.includes(":")) {
-          const idx = linha.indexOf(":");
-          termo = linha.substring(0, idx).trim();
-          definicao = linha.substring(idx + 1).trim();
-          categoria = "Dicionário";
-        } else {
-          termo = linha;
-          categoria = "Vocabulário";
-        }
+        // Filtro de 10k equilibrado por letra
+        const META_MAXIMA = 10000;
+        let termosFinais = termosBrutos;
 
-        if (termo.length > 0) {
-          termosBrutos.push({
-            id: `t_${index}_${Math.floor(Math.random() * 10000)}`,
-            termo,
-            categoria,
-            definicao
+        if (termosBrutos.length > META_MAXIMA) {
+          const gruposPorLetra = {};
+          const alfabetoValido = "abcdefghijklmnopqrstuvwxyzáéíóúâêîôûãõç";
+
+          termosBrutos.forEach(item => {
+            let letra = item.termo.charAt(0).toLowerCase();
+            if (!alfabetoValido.includes(letra)) letra = '#';
+            if (!gruposPorLetra[letra]) gruposPorLetra[letra] = [];
+            gruposPorLetra[letra].push(item);
           });
-        }
-      });
 
-      statusEl.innerText = "STATUS: APLICANDO FILTRO EQUILIBRADO (10K)...";
+          const chavesLetras = Object.keys(gruposPorLetra);
+          const cotaPorLetra = Math.floor(META_MAXIMA / chavesLetras.length);
+          let termosEquilibrados = [];
 
-      const META_MAXIMA = 10000;
-      let termosFinais = termosBrutos;
+          chavesLetras.forEach(letra => {
+            const listaLetra = gruposPorLetra[letra];
+            listaLetra.sort(() => Math.random() - 0.5);
+            termosEquilibrados.push(...listaLetra.slice(0, cotaPorLetra));
+          });
 
-      // 2. Amostragem proporcional por letra inicial (se exceder a meta)
-      if (termosBrutos.length > META_MAXIMA) {
-        const gruposPorLetra = {};
-        const alfabetoValido = "abcdefghijklmnopqrstuvwxyzáéíóúâêîôûãõç";
+          if (termosEquilibrados.length < META_MAXIMA) {
+            const restantes = termosBrutos.filter(t => !termosEquilibrados.includes(t));
+            restantes.sort(() => Math.random() - 0.5);
+            const vagasFaltantes = META_MAXIMA - termosEquilibrados.length;
+            termosEquilibrados.push(...restantes.slice(0, vagasFaltantes));
+          }
 
-        termosBrutos.forEach(item => {
-          let letra = item.termo.charAt(0).toLowerCase();
-          if (!alfabetoValido.includes(letra)) letra = '#';
-          
-          if (!gruposPorLetra[letra]) gruposPorLetra[letra] = [];
-          gruposPorLetra[letra].push(item);
-        });
-
-        const chavesLetras = Object.keys(gruposPorLetra);
-        const cotaPorLetra = Math.floor(META_MAXIMA / chavesLetras.length);
-        let termosEquilibrados = [];
-
-        chavesLetras.forEach(letra => {
-          const listaLetra = gruposPorLetra[letra];
-          // Embaralha de forma aleatória mantendo a representatividade da letra
-          listaLetra.sort(() => Math.random() - 0.5);
-          termosEquilibrados.push(...listaLetra.slice(0, cotaPorLetra));
-        });
-
-        // Preenche eventuais vagas restantes para atingir exatamente a meta
-        if (termosEquilibrados.length < META_MAXIMA) {
-          const restantes = termosBrutos.filter(t => !termosEquilibrados.includes(t));
-          restantes.sort(() => Math.random() - 0.5);
-          const vagasFaltantes = META_MAXIMA - termosEquilibrados.length;
-          termosEquilibrados.push(...restantes.slice(0, vagasFaltantes));
+          termosFinais = termosEquilibrados;
         }
 
-        termosFinais = termosEquilibrados;
+        projetoLivro.dicionario = termosFinais;
+        reconstruirIndices();
+        renderizarListaTermos();
+
+        statusEl.innerText = `INDEXADOS: ${projetoLivro.dicionario.length} TERMOS`;
+        alert(`Sucesso! Indexados ${projetoLivro.dicionario.length} termos.`);
+      } catch (err) {
+        alert("Erro ao processar arquivo.");
       }
-
-      // 3. Atualização do estado global e da interface
-      projetoLivro.dicionario = termosFinais;
-      reconstruirIndices();
-      renderizarListaTermos();
-
-      statusEl.innerText = `STATUS: ${projetoLivro.dicionario.length} TERMOS INDEXADOS!`;
-      alert(`Sucesso! Foram indexados ${projetoLivro.dicionario.length} termos equilibrados.`);
-
-    } catch (erro) {
-      statusEl.innerText = "STATUS: ERRO NO PROCESSAMENTO";
-      console.error("Erro ao processar base.txt:", erro);
-      alert("Ocorreu um erro ao estruturar os dados do arquivo.");
-    }
-  };
-
-  reader.readAsText(file);
-}
+    };
+    reader.readAsText(file);
+  }
 
   async function carregarImagemPersonagem(event) {
     const file = event.target.files[0];
@@ -902,7 +895,7 @@ function importarBaseTxt(event) {
       const putRes = await fetch(url, {
         method: "PUT",
         headers: { "Authorization": `token ${token}`, "Content-Type": "application/json" },
-        body: JSON.stringify({ message: "Atualização GraphZO Mobile", content: contentBase64, sha: sha || undefined })
+        body: JSON.stringify({ message: "Atualização GraphZO", content: contentBase64, sha: sha || undefined })
       });
 
       if (putRes.ok) alert("Salvo no GitHub!");
@@ -923,7 +916,7 @@ function importarBaseTxt(event) {
         projetoLivro.metadados = carregado.metadados || projetoLivro.metadados;
         projetoLivro.capitulos = carregado.capitulos || projetoLivro.capitulos;
         projetoLivro.personagens = carregado.personagens || [];
-        if (carregado.dicionario) projetoLivro.dicionario = carregado.dicionario;
+        if (carregado.dicionario && carregado.dicionario.length > 5) projetoLivro.dicionario = carregado.dicionario;
         
         reconstruirIndices();
         renderizarListaCapitulos();
