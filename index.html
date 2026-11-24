@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>GraphZO // V14 - DICIONÁRIO GLOBAL]</title>
+<title>GraphZO // ÚLTIMA MEMÓRIA [NEON V18 - DICIONÁRIO GLOBAL OTIMIZADO]</title>
 <style>
   :root{
     --bg-base:#030712; --bg-panel:#0b0f19; --bg-card:#111827;
@@ -100,7 +100,7 @@
 
 <header>
   <div>
-    <h1>SYS_GRAPHZO // <span>NEON V13</span></h1>
+    <h1>SYS_GRAPHZO // <span>NEON V18</span></h1>
     <div id="lastSavedBadge" style="font-size:10px;color:var(--success)">🕒 Pronto para edição</div>
   </div>
   <div style="display:flex;gap:6px;flex-wrap:wrap">
@@ -198,7 +198,7 @@
       <div style="margin-bottom:16px;padding:12px;background:var(--bg-panel);border:1px dashed var(--accent-cyan);border-radius:4px;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px">
         <div>
           <strong>Base global (.txt)</strong>
-          <div style="font-size:10px;color:var(--text-muted)">Termo | Categoria | Descrição — independe da história</div>
+          <div style="font-size:10px;color:var(--text-muted)">Formato: termo = Categoria ‖ definição</div>
           <label style="font-size:11px;display:flex;align-items:center;gap:5px;margin-top:6px;cursor:pointer">
             <input type="checkbox" id="chkSubstituirBase"> substituir base (desmarcado = mesclar)
           </label>
@@ -249,19 +249,19 @@
 
 <script>
 /* ============================================================
-   GraphZO V13
+   GraphZO V18
    - Dicionário GLOBAL (arquivo próprio no Git + cache IndexedDB)
+   - Parser otimizado para 340k verbetes (formato: termo = Categoria ‖ def)
    - Popup automático ao digitar + clique duplo em qualquer palavra
    - Adição rápida de termo pelo popup
    - Título do capítulo derivado do texto (tempo real)
    - Auto-pulo para o próximo capítulo ao chegar no fim
    ============================================================ */
 
-const REPO_PADRAO = "andreyolkekamp-del/EditorUltimaMemoria";
+const REPO_PADRAO = "andreyoldekamp-del/EditorUltimaMemoria";
 const ARQ_HISTORIA = "historia.json";
 const ARQ_DICIONARIO = "dicionario_global.json";
-const LIMITE_TERMOS = 10000;
-const LIMITE_RENDER = 200;
+const LIMITE_RENDER = 500;
 
 /* ---------- ESTADO ---------- */
 let projetoLivro = {
@@ -345,7 +345,7 @@ function abrirDB(){
   if (dbPromise) return dbPromise;
   dbPromise = new Promise((resolve, reject)=>{
     if (!("indexedDB" in window)) return reject(new Error("sem IndexedDB"));
-    const req = indexedDB.open("graphzo_v13", 1);
+    const req = indexedDB.open("graphzo_v18", 1);
     req.onupgradeneeded = () => {
       const db = req.result;
       if (!db.objectStoreNames.contains("kv")) db.createObjectStore("kv");
@@ -430,13 +430,12 @@ const atualizarContadorDeb = debounce(atualizarContador, 300);
 
 /* ---------- BOOT ---------- */
 window.addEventListener("DOMContentLoaded", async ()=>{
-  if (!localStorage.getItem("gh_repo")) localStorage.setItem("gh_repo", "andreyoldekamp-del/EditorUltimaMemoria");
+  if (!localStorage.getItem("gh_repo")) localStorage.setItem("gh_repo", REPO_PADRAO);
 
   const editor = $("editorContent");
   editor.addEventListener("input", aoDigitar);
   editor.addEventListener("dblclick", lookupCliqueDuplo);
   editor.addEventListener("keyup", e=>{
-    // lookup também ao navegar com setas até o fim de uma palavra
     if (["ArrowRight","ArrowLeft","ArrowUp","ArrowDown"].includes(e.key)) detectarPopupAuto();
   });
   document.addEventListener("mousedown", e=>{
@@ -495,7 +494,6 @@ function detectarPopupAuto(){
   else if (node.innerText) antes = node.innerText;
   antes = antes.replace(/\u00A0/g," ").slice(-80);
 
-  // só dispara quando a palavra foi FECHADA por espaço/pontuação
   const m = antes.match(/([\wÀ-ÿ'’-]+(?:[ \t]+[\wÀ-ÿ'’-]+){0,2})[\s.,!?;:…]+$/u);
   if (!m) return;
 
@@ -642,7 +640,7 @@ function renderizarListaCapitulos(){
     item.className = "item-card" + (id === capituloAtual ? " active" : "");
     const box = document.createElement("div");
     const strong = document.createElement("strong");
-    strong.textContent = cap.titulo || "Sem título";   // textContent: título nunca quebra o HTML
+    strong.textContent = cap.titulo || "Sem título";
     box.appendChild(strong);
     item.appendChild(box);
     item.onclick = ()=> trocarCapitulo(id);
@@ -702,7 +700,7 @@ function carregarCapituloNaTela(capId){
   const cap = projetoLivro.capitulos[capId];
   if (!cap) return;
   capituloAtual = capId;
-  bloqueioAutoScroll = agora() + 1200;   // evita pulo em cadeia ao trocar
+  bloqueioAutoScroll = agora() + 1200;
   $("editorContent").innerHTML = cap.conteudo_xhtml || "";
   $("editorArea").scrollTop = 0;
   ultimaChavePopup = "";
@@ -720,8 +718,8 @@ function configurarAutoProximoCapitulo(){
     if (abaAtual !== "editor") return;
     if (!$("toggleAutoProximo").checked) return;
     if (agora() < bloqueioAutoScroll) return;
-    if (agora() - ultimaDigitacao < 1500) return;      // não troca enquanto escreve
-    if (area.scrollHeight <= area.clientHeight + 40) return; // conteúdo cabe na tela
+    if (agora() - ultimaDigitacao < 1500) return;
+    if (area.scrollHeight <= area.clientHeight + 40) return;
 
     const noFim = area.scrollTop + area.clientHeight >= area.scrollHeight - 24;
     if (!noFim){ clearTimeout(timer); timer = null; return; }
@@ -812,7 +810,9 @@ function marcarDicionarioAlterado(){
   atualizarStatusDic();
 }
 function atualizarStatusDic(){
-  $("dicInfo").textContent = `${dicionario.length} termos • ${dicPendente ? "alterações não enviadas" : "sincronizado"}`;
+  const pend = dicPendente ? " • alterações não enviadas" : "";
+  const kb = (JSON.stringify(dicionario).length / 1024).toFixed(0);
+  $("dicInfo").textContent = `${dicionario.length} verbetes • ~${kb} KB${pend}`;
 }
 function renderizarListaTermos(){
   const lista = $("listaTermos");
@@ -836,7 +836,7 @@ function renderizarListaTermos(){
   lista.appendChild(frag);
   $("dicInfo").textContent = filtro
     ? `${filtrados.length} encontrados • exibindo ${fatia.length}`
-    : `${dicionario.length} termos • exibindo ${fatia.length}${dicPendente ? " • pendente" : ""}`;
+    : `${dicionario.length} verbetes • exibindo ${fatia.length}${dicPendente ? " • pendente" : ""}`;
 }
 function criarNovoTermo(){
   const novo = { id:"term_"+agora(), termo:"Novo Termo", categoria:"Geral", definicao:"" };
@@ -886,7 +886,7 @@ function exportarDicionarioJson(){
   setTimeout(()=>{ URL.revokeObjectURL(a.href); a.remove(); }, 500);
 }
 
-/* ---------- IMPORTAÇÃO .TXT (assíncrona, sem travar a UI) ---------- */
+/* ---------- IMPORTAÇÃO .TXT (OTIMIZADA PARA 340k VERBETES) ---------- */
 async function importarBaseTxt(event){
   const file = event.target.files[0];
   if (!file) return;
@@ -894,103 +894,121 @@ async function importarBaseTxt(event){
   const substituir = $("chkSubstituirBase").checked;
   const status = $("statusText");
 
+  const YIELD_A_CADA = 3000;
+  const TAMANHO_MAX_TERM = 120;
+  const TAMANHO_MAX_DEF  = 4000;
+
+  function normalizarCategoria(cat){
+    const c = String(cat).trim().toLowerCase();
+    if (!c) return "Geral";
+    if (c.startsWith("adj"))         return "Adjetivo";
+    if (c.startsWith("adv"))         return "Advérbio";
+    if (c.startsWith("subst"))       return c.includes("feminino") ? "Substantivo feminino" : c.includes("masculino") ? "Substantivo masculino" : "Substantivo";
+    if (c.startsWith("forma de"))    return "Forma";
+    if (/^verbo/.test(c) || c === "v.") return "Verbo";
+    if (c.startsWith("pron"))        return "Pronome";
+    if (c.startsWith("prep"))        return "Preposição";
+    if (c.startsWith("conj"))        return "Conjunção";
+    if (c.startsWith("interj"))      return "Interjeição";
+    if (c.startsWith("art"))         return "Artigo";
+    if (c.startsWith("num"))         return "Numeral";
+    if (c.startsWith("loc"))         return "Locução";
+    if (c.startsWith("express"))     return "Expressão";
+    return cat.trim().slice(0, 40);
+  }
+
   try{
     status.textContent = "STATUS: LENDO ARQUIVO...";
     const conteudo = await file.text();
     const linhas = conteudo.split(/\r?\n/);
-    const vistos = new Set();
-    const brutos = [];
+    const totalLinhas = linhas.length;
+    status.textContent = `STATUS: ${totalLinhas} LINHAS. PARSEANDO...`;
 
+    const vistos = new Set();
     if (!substituir) dicionario.forEach(t => vistos.add(normalizarChave(t.termo)));
 
-    for (let i=0;i<linhas.length;i++){
-      const linha = linhas[i].trim();
-      if (linha){
-        let termo="", categoria="Geral", definicao="Termo registrado.";
-        if (linha.includes("|")){
-          const partes = linha.split("|").map(s=>s.trim());
-          termo = partes[0];
-          if (partes[1]) categoria = partes[1];
-          if (partes[2]) definicao = partes[2];
-        } else if (linha.includes(":")){
-          const idx = linha.indexOf(":");
-          termo = linha.substring(0,idx).trim();
-          definicao = linha.substring(idx+1).trim();
-          categoria = "Dicionário";
-        } else {
-          termo = linha; categoria = "Vocabulário";
-        }
-        const chave = normalizarChave(termo);
-        if (chave && chave.length <= 80 && !vistos.has(chave)){
-          vistos.add(chave);
-          brutos.push({
-            id:`t_${i}_${Math.floor(Math.random()*1e6)}`,
-            termo: termo.slice(0,120),
-            categoria: categoria.slice(0,60),
-            definicao: esc(definicao).slice(0,2000)   // texto puro escapado
-          });
-        }
+    const brutos = [];
+    let ignoradas = 0;
+    let idSeq = 0;
+
+    for (let i = 0; i < totalLinhas; i++){
+      const linha = linhas[i];
+      if (!linha || linha.length < 3) continue;
+
+      const idxSep = linha.indexOf(" = ");
+      if (idxSep <= 0){
+        ignoradas++;
+        continue;
       }
-      if (i % 5000 === 0){
-        status.textContent = `STATUS: LENDO ${i}/${linhas.length} LINHAS...`;
-        await new Promise(r=>setTimeout(r,0));
+
+      const termo = linha.substring(0, idxSep).trim();
+      if (!termo || termo.length > TAMANHO_MAX_TERM){ ignoradas++; continue; }
+
+      const resto = linha.substring(idxSep + 3);
+      const partes = resto.split(" ‖ ").map(s => s.trim()).filter(Boolean);
+      if (partes.length === 0){ ignoradas++; continue; }
+
+      const categoria = normalizarCategoria(partes[0]);
+      const definicao = partes.length > 1 ? partes.slice(1).join(" ‖ ") : partes[0];
+
+      const chave = normalizarChave(termo);
+      if (!chave || chave.length > 120 || vistos.has(chave)){
+        ignoradas++;
+        continue;
+      }
+      vistos.add(chave);
+
+      brutos.push({
+        id: "t_" + (++idSeq),
+        termo: termo.slice(0, TAMANHO_MAX_TERM),
+        categoria,
+        definicao: esc(definicao).slice(0, TAMANHO_MAX_DEF)
+      });
+
+      if ((i + 1) % YIELD_A_CADA === 0){
+        const pct = Math.round(((i + 1) / totalLinhas) * 100);
+        status.textContent = `STATUS: PARSEANDO ${pct}% (${brutos.length} verbetes válidos)...`;
+        await new Promise(r => setTimeout(r, 0));
       }
     }
 
-    status.textContent = "STATUS: EQUILIBRANDO BASE...";
-    await new Promise(r=>setTimeout(r,0));
+    status.textContent = `STATUS: ${brutos.length} VERBETES. INDEXANDO...`;
+    await new Promise(r => setTimeout(r, 0));
 
-    let finais = brutos;
-    if (brutos.length > LIMITE_TERMOS){
-      const grupos = new Map();
-      const alfabeto = "abcdefghijklmnopqrstuvwxyz";
-      brutos.forEach(item=>{
-        let letra = normalizarChave(item.termo).charAt(0);
-        if (!alfabeto.includes(letra)) letra = "#";
-        if (!grupos.has(letra)) grupos.set(letra, []);
-        grupos.get(letra).push(item);
-      });
-      const cota = Math.floor(LIMITE_TERMOS / grupos.size);
-      const escolhidos = [];
-      const idsEscolhidos = new Set();     // Set: evita o O(n²) do .includes
-      grupos.forEach(lista=>{
-        embaralhar(lista);
-        lista.slice(0, cota).forEach(t=>{ escolhidos.push(t); idsEscolhidos.add(t.id); });
-      });
-      if (escolhidos.length < LIMITE_TERMOS){
-        const resto = brutos.filter(t=>!idsEscolhidos.has(t.id));
-        embaralhar(resto);
-        escolhidos.push(...resto.slice(0, LIMITE_TERMOS - escolhidos.length));
-      }
-      finais = escolhidos;
-    }
-
-    dicionario = substituir ? finais : [...finais, ...dicionario];
+    dicionario = substituir ? brutos : [...brutos, ...dicionario];
     termoSelecionadoId = dicionario[0]?.id || null;
-    marcarDicionarioAlterado();
-    reconstruirIndices();
+
+    indiceDicionario.clear();
+    dicionario.forEach(t => {
+      const k = normalizarChave(t.termo);
+      if (k && !indiceDicionario.has(k)) indiceDicionario.set(k, t);
+    });
+
+    status.textContent = "STATUS: GRAVANDO CACHE LOCAL...";
+    await new Promise(r => setTimeout(r, 0));
+    await dbSet("dicionario", {
+      termos: dicionario,
+      atualizadoEm: dicAtualizadoEm = agora()
+    });
+
+    dicPendente = true;
+    atualizarStatusDic();
     renderizarListaTermos();
     if (termoSelecionadoId) selecionarTermo(termoSelecionadoId);
-    await dbSet("dicionario", { termos: dicionario, atualizadoEm: dicAtualizadoEm });
-    toast(`✅ ${finais.length} termos importados. Total: ${dicionario.length}.`);
+
+    toast(`✅ ${brutos.length} verbetes importados. Total: ${dicionario.length}. (${ignoradas} linhas ignoradas)`);
   }catch(err){
     console.error(err);
-    toast("❌ Erro ao processar o arquivo.");
+    toast("❌ Erro ao processar o arquivo: " + err.message);
   }finally{
     reconstruirIndices();
-  }
-}
-function embaralhar(a){
-  for (let i=a.length-1;i>0;i--){
-    const j = Math.floor(Math.random()*(i+1));
-    [a[i],a[j]] = [a[j],a[i]];
   }
 }
 
 /* ---------- GITHUB ---------- */
 function cfg(){
   return {
-    repo: localStorage.getItem("gh_repo") || "andreyolkekamp-del/EditorUltimaMemoria",
+    repo: localStorage.getItem("gh_repo") || REPO_PADRAO,
     token: localStorage.getItem("gh_token") || ""
   };
 }
@@ -1052,7 +1070,7 @@ async function salvarNoGitHub(){
       atualizadoEm: projetoAtualizadoEm || agora(),
       capitulos: projetoLivro.capitulos,
       personagens: projetoLivro.personagens,
-      dicionarioRef: ARQ_DICIONARIO      // dicionário NÃO vai mais dentro da história
+      dicionarioRef: ARQ_DICIONARIO
     };
     await ghGravar(ARQ_HISTORIA, payload, "GraphZO: história", remoto?.sha);
     histPendente = false;
@@ -1073,15 +1091,19 @@ async function salvarDicionarioGitHub(aviso = true){
   if (!token){ if (aviso) configurarGitHub(); return; }
   try{
     const remoto = await ghLer(ARQ_DICIONARIO);
-    await ghGravar(ARQ_DICIONARIO, {
+    const payload = {
       atualizadoEm: dicAtualizadoEm || agora(),
       total: dicionario.length,
       termos: dicionario
-    }, `GraphZO: dicionário (${dicionario.length} termos)`, remoto?.sha);
+    };
+    const jsonStr = JSON.stringify(payload, null, 2);
+    const tamanhoMB = (jsonStr.length / (1024*1024)).toFixed(2);
+    badge(`☁️ enviando dicionário (${tamanhoMB} MB)...`, "var(--warn)");
+    await ghGravar(ARQ_DICIONARIO, payload, `GraphZO: dicionário (${dicionario.length} verbetes)`, remoto?.sha);
     dicPendente = false;
     atualizarStatusDic();
     reconstruirIndices();
-    if (aviso) toast(`✅ Dicionário global salvo (${dicionario.length} termos).`);
+    if (aviso) toast(`✅ Dicionário global salvo (${dicionario.length} verbetes, ${tamanhoMB} MB).`);
   }catch(e){
     console.error(e);
     if (aviso) toast("❌ Erro ao salvar dicionário: " + e.message);
@@ -1089,7 +1111,6 @@ async function salvarDicionarioGitHub(aviso = true){
   }
 }
 
-/* Sincronização: o mais recente vence (nunca sobrescreve edição local mais nova) */
 async function sincronizarTudo(silencioso = false){
   const { token } = cfg();
   if (!token){ if (!silencioso) configurarGitHub(); return; }
@@ -1107,7 +1128,6 @@ async function sincronizarTudo(silencioso = false){
         projetoLivro.personagens = j.personagens || [];
         projetoAtualizadoEm = tsRemoto || agora();
         histPendente = false;
-        // migração de bases antigas: dicionário embutido na história
         if (Array.isArray(j.dicionario) && j.dicionario.length && !dicionario.length){
           dicionario = j.dicionario;
           marcarDicionarioAlterado();
@@ -1147,7 +1167,6 @@ async function sincronizarTudo(silencioso = false){
   if (!silencioso) toast(carregouAlgo ? "📥 Dados atualizados do GitHub." : "✅ Nada mais novo no remoto.");
 }
 
-/* Compatibilidade com chamadas antigas */
 async function puxarDoGitHub(silencioso = false){ return sincronizarTudo(silencioso); }
 
 async function listarCommitsGitHub(){
@@ -1205,7 +1224,7 @@ function descartarVersaoAtual(){
   toast("Versão ocultada da lista.");
 }
 
-/* ---------- FOTO DO PERSONAGEM (redimensionada antes do upload) ---------- */
+/* ---------- FOTO DO PERSONAGEM ---------- */
 async function carregarImagemPersonagem(event){
   const file = event.target.files[0];
   event.target.value = "";
