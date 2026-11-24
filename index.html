@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>GraphZO // MÍNIMO + DICIONÁRIO 10K</title>
+  <title>GraphZO // TESTE DIRETO</title>
   <style>
     :root {
       --bg-base: #030712;
@@ -32,23 +32,7 @@
       display: flex;
       justify-content: space-between;
       align-items: center;
-      flex-wrap: wrap;
-      gap: 10px;
     }
-
-    button, label.file-btn {
-      background: var(--bg-base);
-      color: var(--accent-cyan);
-      border: 1px solid var(--accent-cyan);
-      padding: 8px 14px;
-      border-radius: 4px;
-      cursor: pointer;
-      font-weight: bold;
-      font-size: 12px;
-      display: inline-block;
-    }
-
-    button:hover, label.file-btn:hover { background: var(--accent-cyan); color: var(--bg-base); }
 
     .editor-container {
       flex: 1;
@@ -98,21 +82,11 @@
 <body>
 
   <header>
-    <h1>GraphZO // MÍNIMO + 10K</h1>
-    <div style="display: flex; gap: 8px; flex-wrap: wrap;">
-      <label class="file-btn">
-        📂 Carregar Dicionário (.txt)
-        <input type="file" id="txtInput" accept=".txt" style="display: none;" onchange="carregarDicionarioTxt(event)">
-      </label>
-      <button onclick="configurarGitHub()">⚙️ Config</button>
-      <button onclick="puxarDoGitHub()">📥 Puxar GitHub</button>
-    </div>
+    <h1>GraphZO // TESTE DIRETO DE DETECÇÃO</h1>
   </header>
 
   <div class="editor-container">
-    <div id="statusInfo">
-      Status: Dicionário interno ativo (2 termos). Carregue seu .txt acima para testar os 10k.
-    </div>
+    <div id="statusInfo">Status: Carregando termos de teste...</div>
     <div id="editorContent" contenteditable="true" spellcheck="false"></div>
   </div>
 
@@ -120,53 +94,82 @@
   <div id="popupDeteccao">
     <div style="display: flex; justify-content: space-between; margin-bottom: 8px;">
       <span id="popupBadge" style="font-size: 10px; font-weight: bold; padding: 2px 6px; background: var(--accent-cyan); color: black;">TIPO</span>
-      <button onclick="fecharPopup()" style="padding: 0 6px; font-size: 10px;">X</button>
+      <button onclick="fecharPopup()" style="padding: 0 6px; font-size: 10px; cursor: pointer;">X</button>
     </div>
     <div id="popupPalavra" style="font-size: 16px; font-weight: bold; margin-bottom: 4px;">Palavra</div>
     <div id="popupSignificado" style="font-size: 12px; color: #d1d5db;">Significado aqui...</div>
   </div>
 
 <script>
+  // Listas unificadas para teste direto
   let baseDados = {
     personagens: [
-      { nome: "Teddy", papel: "Protagonista", bio: "Jovem do Kentucky." }
+      { nome: "Teddy", papel: "Protagonista", bio: "Jovem do Kentucky." },
+      { nome: "Jeames", papel: "Irmão", bio: "Irmão mais novo." },
+      { nome: "Suzane", papel: "Misteriosa", bio: "Personagem secundária." }
     ],
     dicionario: [
       { termo: "vento", categoria: "Clima", definicao: "Movimento natural do ar." },
-      { termo: "chuva", categoria: "Clima", definicao: "Precipitação de água." }
+      { termo: "casa", categoria: "Local", definicao: "Residência da família." },
+      { termo: "chuva", categoria: "Clima", definicao: "Precipitação de água." },
+      { termo: "noite", categoria: "Tempo", definicao: "Período de escuridão." },
+      { termo: "tempo", categoria: "Meteorologia", definicao: "Condições atmosféricas." },
+      { termo: "clima", categoria: "Meteorologia", definicao: "Padrão meteorológico." },
+      { termo: "futuro", categoria: "Conceito", definicao: "Tempo que ainda não chegou." }
     ]
   };
 
-  let indiceP = new Map();
-  let indiceD = new Map();
+  let indiceGeral = new Map();
 
   function normalizar(texto) {
+    if (!texto) return "";
     return texto
-      .replace(/\u00A0/g, " ")
-      .replace(/[.,!?;:()"']/g, "")
+      .toString()
+      .normalize("NFD")
+      .replace(/[\u0300-\u036f]/g, "")
+      .replace(/[\u00A0\u200B]/g, " ")
+      .replace(/[.,!?;:()"'«»—–-]/g, "")
       .trim()
       .toLowerCase();
   }
 
-  function reconstruirIndices() {
-    indiceP.clear();
-    indiceD.clear();
+  function construirIndiceUnico() {
+    indiceGeral.clear();
+
+    // Adiciona personagens
     baseDados.personagens.forEach(p => {
-      if (p.nome) indiceP.set(normalizar(p.nome), p);
+      let chave = normalizar(p.nome);
+      if (chave) {
+        indiceGeral.set(chave, {
+          tipo: "PERSONAGEM",
+          palavra: p.nome,
+          sub: `Papel: ${p.papel}`,
+          significado: p.bio
+        });
+      }
     });
+
+    // Adiciona dicionário
     baseDados.dicionario.forEach(d => {
-      if (d.termo) indiceD.set(normalizar(d.termo), d);
+      let chave = normalizar(d.termo);
+      if (chave) {
+        indiceGeral.set(chave, {
+          tipo: "DICIONÁRIO",
+          palavra: d.termo,
+          sub: `Categoria: ${d.categoria}`,
+          significado: d.definicao
+        });
+      }
     });
-    document.getElementById("statusInfo").innerText = `Status: ${indiceP.size} personagens e ${indiceD.size} palavras indexadas.`;
+
+    document.getElementById("statusInfo").innerText = `Status: ${indiceGeral.size} termos indexados prontos para teste!`;
   }
 
   window.onload = function() {
-    if (!localStorage.getItem("gh_repo")) {
-      localStorage.setItem("gh_repo", "andreyoldekamp-del/EditorUltimaMemoria");
-    }
-    reconstruirIndices();
-
+    construirIndiceUnico();
     const ed = document.getElementById("editorContent");
+    
+    // Ouve tanto a digitação quanto o espaço/pontuação
     ed.addEventListener("input", detectarPalavra);
   };
 
@@ -180,147 +183,37 @@
 
     const textoAteCursor = node.textContent.substring(0, range.startOffset).replace(/\u00A0/g, " ");
     
-    // Só dispara após digitar espaço ou pontuação no final da palavra
+    // Captura a última palavra antes de espaço ou pontuação
     const match = textoAteCursor.match(/([a-zA-ZÀ-ÿ0-9_-]+)[\s.,!?;:]+$/);
     if (!match) return;
 
-    const palavra = normalizar(match[1]);
-    if (palavra.length < 2) return;
+    const palavraBruta = match[1];
+    const chave = normalizar(palavraBruta);
 
-    if (indiceP.has(palavra)) {
-      const p = indiceP.get(palavra);
-      mostrarPopup("PERSONAGEM", p.nome, `${p.papel || 'Personagem'} - ${p.bio || p.biografia_xhtml || ''}`);
-      return;
+    if (chave.length < 2) return;
+
+    // Busca direta no índice único
+    if (indiceGeral.has(chave)) {
+      const item = indiceGeral.get(chave);
+      mostrarPopup(item.tipo, item.palavra, `${item.sub} — ${item.significado}`);
     }
-
-    if (indiceD.has(palavra)) {
-      const d = indiceD.get(palavra);
-      mostrarPopup("DICIONÁRIO", d.termo, `[${d.categoria || 'Geral'}] ${d.definicao}`);
-      return;
-    }
-  }
-
-  // CARREGA E FILTRA O DICIONÁRIO EM 10K EQUILIBRADOS POR LETRA (A-Z)
-  function carregarDicionarioTxt(event) {
-    const file = event.target.files[0];
-    if (!file) return;
-
-    document.getElementById("statusInfo").innerText = "Status: Lendo e filtrando arquivo...";
-    const reader = new FileReader();
-
-    reader.onload = function(e) {
-      const linhas = e.target.result.split(/\r?\n/);
-      const brutos = [];
-
-      for (let i = 0; i < linhas.length; i++) {
-        const linha = linhas[i].trim();
-        if (!linha) continue;
-
-        let termo = "", categoria = "Vocabulário", definicao = "Palavra validada no dicionário.";
-
-        if (linha.includes("|")) {
-          const partes = linha.split("|").map(s => s.trim());
-          termo = partes[0];
-          if (partes[1]) categoria = partes[1];
-          if (partes[2]) definicao = partes[2];
-        } else if (linha.includes(":")) {
-          const idx = linha.indexOf(":");
-          termo = linha.substring(0, idx).trim();
-          definicao = linha.substring(idx + 1).trim();
-          categoria = "Dicionário";
-        } else {
-          termo = linha;
-        }
-
-        if (termo.length > 0) {
-          brutos.push({ termo, categoria, definicao });
-        }
-      }
-
-      const META = 10000;
-      let finais = brutos;
-
-      if (brutos.length > META) {
-        const grupos = {};
-        const letrasValidas = "abcdefghijklmnopqrstuvwxyzáéíóúâêîôûãõç";
-
-        brutos.forEach(item => {
-          let letra = item.termo.charAt(0).toLowerCase();
-          if (!letrasValidas.includes(letra)) letra = "#";
-          if (!grupos[letra]) grupos[letra] = [];
-          grupos[letra].push(item);
-        });
-
-        const chaves = Object.keys(grupos);
-        const cota = Math.floor(META / chaves.length);
-        let equilibrados = [];
-
-        chaves.forEach(letra => {
-          const lista = grupos[letra];
-          lista.sort(() => Math.random() - 0.5);
-          equilibrados.push(...lista.slice(0, cota));
-        });
-
-        if (equilibrados.length < META) {
-          const restantes = brutos.filter(t => !equilibrados.includes(t));
-          restantes.sort(() => Math.random() - 0.5);
-          equilibrados.push(...restantes.slice(0, META - equilibrados.length));
-        }
-
-        finais = equilibrados;
-      }
-
-      baseDados.dicionario = finais;
-      reconstruirIndices();
-      alert(`Pronto! ${indiceD.size} palavras carregadas e equilibradas de A a Z.`);
-    };
-
-    reader.readAsText(file);
   }
 
   function mostrarPopup(tipo, termo, texto) {
     const pop = document.getElementById("popupDeteccao");
-    document.getElementById("popupBadge").innerText = tipo;
+    const badge = document.getElementById("popupBadge");
+    
+    badge.innerText = tipo;
+    badge.style.background = tipo === "PERSONAGEM" ? "var(--accent-purple)" : "var(--accent-cyan)";
+    badge.style.color = tipo === "PERSONAGEM" ? "white" : "black";
+
     document.getElementById("popupPalavra").innerText = termo;
-    document.getElementById("popupSignificado").innerHTML = texto;
+    document.getElementById("popupSignificado").innerText = texto;
     pop.style.display = "block";
   }
 
   function fecharPopup() {
     document.getElementById("popupDeteccao").style.display = "none";
-  }
-
-  function configurarGitHub() {
-    const repo = prompt("Repositório:", localStorage.getItem("gh_repo"));
-    const token = prompt("Token GitHub:", localStorage.getItem("gh_token") || "");
-    if (repo && token) {
-      localStorage.setItem("gh_repo", repo);
-      localStorage.setItem("gh_token", token);
-      alert("Configurado!");
-    }
-  }
-
-  async function puxarDoGitHub() {
-    const repo = localStorage.getItem("gh_repo");
-    const token = localStorage.getItem("gh_token");
-    if (!token) { alert("Configure o Token primeiro!"); return; }
-
-    const url = `https://api.github.com/repos/${repo}/contents/historia.json`;
-    try {
-      const res = await fetch(url, { headers: { "Authorization": `token ${token}` } });
-      const data = await res.json();
-      if (res.ok) {
-        const conteudo = JSON.parse(decodeURIComponent(escape(atob(data.content))));
-        if (conteudo.personagens) baseDados.personagens = conteudo.personagens;
-        if (conteudo.dicionario && conteudo.dicionario.length > 0) baseDados.dicionario = conteudo.dicionario;
-        reconstruirIndices();
-        alert("Dados puxados do GitHub com sucesso!");
-      } else {
-        alert("Erro ao puxar: " + data.message);
-      }
-    } catch(e) {
-      alert("Erro de conexão.");
-    }
   }
 </script>
 
