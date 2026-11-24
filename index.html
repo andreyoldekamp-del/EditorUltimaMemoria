@@ -219,6 +219,7 @@
       <div style="margin-top:12px;display:flex;justify-content:space-between;gap:8px;flex-wrap:wrap">
         <button type="button" onclick="exportarDicionarioJson()">💾 Exportar JSON</button>
         <button type="button" class="btn-save" onclick="salvarDicionarioGitHub(true)">☁️ Salvar Dicionário</button>
+		<button type="button" onclick="resetarDicionarioGitHub()">🧹 Resetar remoto</button>
         <button type="button" class="btn-danger" onclick="deletarTermoAtual()">🗑️ Excluir</button>
       </div>
     </div>
@@ -1030,7 +1031,33 @@ async function ghLer(caminho, ref){
   if (res.status === 404) return null;
   if (!res.ok) throw new Error(`GET ${caminho} → ${res.status}`);
   const data = await res.json();
-  return { sha: data.sha, json: JSON.parse(b64decode(data.content)) };
+
+  // Arquivo vazio no GitHub (upload falhou anteriormente)
+  if (!data.content || data.size === 0){
+    console.warn(`Arquivo ${caminho} está vazio no GitHub. Será sobrescrito no próximo save.`);
+    return { sha: data.sha, json: null, corrompido: true };
+  }
+
+  let texto;
+  try{
+    texto = b64decode(data.content);
+  }catch(e){
+    console.warn(`Falha ao decodificar base64 de ${caminho}:`, e.message);
+    return { sha: data.sha, json: null, corrompido: true };
+  }
+
+  // Arquivo truncado (limite de 100MB estourado ou upload interrompido)
+  if (!texto || texto.length < 2){
+    console.warn(`Conteúdo de ${caminho} está truncado/vazio.`);
+    return { sha: data.sha, json: null, corrompido: true };
+  }
+
+  try{
+    return { sha: data.sha, json: JSON.parse(texto), corrompido: false };
+  }catch(e){
+    console.warn(`JSON inválido em ${caminho} (tamanho: ${texto.length} chars). Erro:`, e.message);
+    return { sha: data.sha, json: null, corrompido: true, tamanho: texto.length };
+  }
 }
 async function ghGravar(caminho, objeto, mensagem, sha){
   const { repo, token } = cfg();
@@ -1086,85 +1113,83 @@ async function salvarNoGitHub(){
   }
 }
 
+async function resetarDicionarioGitHub(){
+  if (!confirm("Isso vai SOBRESCREVER o arquivo corrompido no GitHub com o seu dicionário local intacto. Continuar?")) return;
+  const { token } = cfg();
+  if (!token){ toast("Configure o token primeiro."); return; }
+  try{
+    await salvarDicionarioGitHub(true);
+    toast("🧹 Dicionário remoto resetado e corrigido com sucesso.");
+  }catch(e){
+    toast("❌ Falha ao resetar: " + e.message);
+  }
+}
+
 async function salvarDicionarioGitHub(aviso = true){
   const { token } = cfg();
   if (!token){ if (aviso) configurarGitHub(); return; }
   try{
-    const remoto = await ghLer(ARQ_DICIONARIO);
     const payload = {
       atualizadoEm: dicAtualizadoEm || agora(),
       total: dicionario.length,
       termos: dicionario
     };
     const jsonStr = JSON.stringify(payload, null, 2);
-    const tamanhoMB = (jsonStr.length / (1024*1024)).toFixed(2);
+    const tamanhoBytes = new Blob([jsonStr]).size;
+    const tamanhoMB = (tamanhoBytes / (1024*1024)).toFixed(2);
+
+    // Aviso de segurança contra o limite de 100MB do GitHub
+    if (tamanhoBytes > 95 * 1024 * 1024){
+      const msg = `O dicionário tem ${tamanhoMB} MB. O GitHub rejeita arquivos acima de 100 MB e pode corromper perto desse limite.\n\nDeseja tentar mesmo assim? (Recomendado: usar "Exportar JSON" e particionar manualmente)`;
+      if (!confirm(msg)) return;
+    }
+
     badge(`☁️ enviando dicionário (${tamanhoMB} MB)...`, "var(--warn)");
+    const remoto = await ghLer(ARQ_DICIONARIO);
     await ghGravar(ARQ_DICIONARIO, payload, `GraphZO: dicionário (${dicionario.length} verbetes)`, remoto?.sha);
+    
     dicPendente = false;
     atualizarStatusDic();
     reconstruirIndices();
-    if (aviso) toast(`✅ Dicionário global salvo (${dicionario.length} verbetes, ${tamanhoMB} MB).`);
+    if (aviso) toast(`✅ Dicionário salvo (${dicionario.length} verbetes, ${tamanhoMB} MB).`);
   }catch(e){
     console.error(e);
     if (aviso) toast("❌ Erro ao salvar dicionário: " + e.message);
     else throw e;
   }
 }
-
-async function sincronizarTudo(silencioso = false){
+async function salvarDicionarioGitHub(aviso = true){
   const { token } = cfg();
-  if (!token){ if (!silencioso) configurarGitHub(); return; }
-  badge("📥 sincronizando...", "var(--warn)");
-  let carregouAlgo = false;
-
+  if (!token){ if (aviso) configurarGitHub(); return; }
   try{
-    const remoto = await ghLer(ARQ_HISTORIA);
-    if (remoto && remoto.json){
-      const j = remoto.json;
-      const tsRemoto = j.atualizadoEm || 0;
-      if (!histPendente || tsRemoto > projetoAtualizadoEm){
-        projetoLivro.metadados  = j.metadados || projetoLivro.metadados;
-        projetoLivro.capitulos  = (j.capitulos && Object.keys(j.capitulos).length) ? j.capitulos : projetoLivro.capitulos;
-        projetoLivro.personagens = j.personagens || [];
-        projetoAtualizadoEm = tsRemoto || agora();
-        histPendente = false;
-        if (Array.isArray(j.dicionario) && j.dicionario.length && !dicionario.length){
-          dicionario = j.dicionario;
-          marcarDicionarioAlterado();
-        }
-        if (!projetoLivro.capitulos[capituloAtual]) capituloAtual = Object.keys(projetoLivro.capitulos)[0];
-        characterSelecionadoId = null;
-        renderizarListaCapitulos();
-        carregarCapituloNaTela(capituloAtual);
-        renderizarListaPersonagens();
-        carregouAlgo = true;
-      }
-    }
-  }catch(e){ console.warn("história:", e.message); }
+    const payload = {
+      atualizadoEm: dicAtualizadoEm || agora(),
+      total: dicionario.length,
+      termos: dicionario
+    };
+    const jsonStr = JSON.stringify(payload, null, 2);
+    const tamanhoBytes = new Blob([jsonStr]).size;
+    const tamanhoMB = (tamanhoBytes / (1024*1024)).toFixed(2);
 
-  try{
-    const remotoDic = await ghLer(ARQ_DICIONARIO);
-    if (remotoDic && remotoDic.json){
-      const j = remotoDic.json;
-      const termos = Array.isArray(j) ? j : (j.termos || []);
-      const tsRemoto = Array.isArray(j) ? 0 : (j.atualizadoEm || 0);
-      if (!dicPendente || tsRemoto > dicAtualizadoEm){
-        dicionario = termos;
-        dicAtualizadoEm = tsRemoto || agora();
-        dicPendente = false;
-        termoSelecionadoId = dicionario[0]?.id || null;
-        await dbSet("dicionario", { termos: dicionario, atualizadoEm: dicAtualizadoEm });
-        if (abaAtual === "dicionario") renderizarListaTermos();
-        carregouAlgo = true;
-      }
+    // Aviso de segurança contra o limite de 100MB do GitHub
+    if (tamanhoBytes > 95 * 1024 * 1024){
+      const msg = `O dicionário tem ${tamanhoMB} MB. O GitHub rejeita arquivos acima de 100 MB e pode corromper perto desse limite.\n\nDeseja tentar mesmo assim? (Recomendado: usar "Exportar JSON" e particionar manualmente)`;
+      if (!confirm(msg)) return;
     }
-  }catch(e){ console.warn("dicionário:", e.message); }
 
-  reconstruirIndices();
-  atualizarStatusDic();
-  await gravarCacheProjeto.flush?.();
-  badge(`☁️ sincronizado ${new Date().toLocaleTimeString([], {hour:"2-digit",minute:"2-digit"})}`, "var(--success)");
-  if (!silencioso) toast(carregouAlgo ? "📥 Dados atualizados do GitHub." : "✅ Nada mais novo no remoto.");
+    badge(`☁️ enviando dicionário (${tamanhoMB} MB)...`, "var(--warn)");
+    const remoto = await ghLer(ARQ_DICIONARIO);
+    await ghGravar(ARQ_DICIONARIO, payload, `GraphZO: dicionário (${dicionario.length} verbetes)`, remoto?.sha);
+    
+    dicPendente = false;
+    atualizarStatusDic();
+    reconstruirIndices();
+    if (aviso) toast(`✅ Dicionário salvo (${dicionario.length} verbetes, ${tamanhoMB} MB).`);
+  }catch(e){
+    console.error(e);
+    if (aviso) toast("❌ Erro ao salvar dicionário: " + e.message);
+    else throw e;
+  }
 }
 
 async function puxarDoGitHub(silencioso = false){ return sincronizarTudo(silencioso); }
