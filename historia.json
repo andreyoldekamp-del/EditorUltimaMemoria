@@ -3,7 +3,7 @@
     "titulo": "Última Memória",
     "autor": "Autor"
   },
-  "atualizadoEm": 1795544696869,
+  "atualizadoEm": 1795544797965,
   "capitulos": {
     "cap_1": {
       "titulo": "Capítulo 1 - Tempestade.",
@@ -86,6 +86,14 @@
       "caracteristicas": [],
       "imagemUrl": "https://raw.githubusercontent.com/andreyoldekamp-del/EditorUltimaMemoria/main/assets/char_1795544669644.jpg?v=1795544696869",
       "biografia_xhtml": "<h1 style=\"margin-top: 18px; margin-bottom: 12px;\"><span style=\"font-family: &quot;Segoe UI&quot;; font-size: xx-large;\">Sargento Kepler</span></h1><p>\n</p><p style=\"margin-top: 12px; margin-bottom: 12px;\"><span style=\" font-family:'Segoe UI'; font-size:12px;\">Sargento da divisão 678 Alfa Bravo Pelotão do Capitão Beacon</span></p>"
+    },
+    {
+      "id": "char_1795544736772",
+      "nome": "_Como se divertem",
+      "papel": "Secundário",
+      "caracteristicas": [],
+      "imagemUrl": "https://raw.githubusercontent.com/andreyoldekamp-del/EditorUltimaMemoria/main/assets/char_1795544736772.jpg?v=1795544797965",
+      "biografia_xhtml": "<h1 style=\"margin-top: 18px; margin-bottom: 12px;\"><span style=\"font-family: &quot;Segoe UI&quot;; font-size: xx-large;\">_Como se divertem</span></h1><p><span style=\" font-family:'Bodoni MT','serif'; font-size:12pt; color:#fabf8f;\">O que os jovens faziam: </span></p><p style=\"margin-top: 12px;\"><span style=\" font-family:'Bodoni MT','serif'; font-size:12pt; color:#fabf8f;\">·&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; Encontravam amigos em lanchonetes. </span></p><p style=\"margin-top: 12px;\"><span style=\" font-family:'Bodoni MT','serif'; font-size:12pt; color:#fabf8f;\">·&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; Iam a pequenas festas em casas de conhecidos. </span></p><p style=\"margin-top: 12px;\"><span style=\" font-family:'Bodoni MT','serif'; font-size:12pt; color:#fabf8f;\">·&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; Frequentavam cinemas de cidades próximas. </span></p><p style=\"margin-top: 12px;\"><span style=\" font-family:'Bodoni MT','serif'; font-size:12pt; color:#fabf8f;\">·&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; Assistiam a jogos de futebol americano. </span></p><p style=\"margin-top: 12px;\"><span style=\" font-family:'Bodoni MT','serif'; font-size:12pt; color:#fabf8f;\">·&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; Faziam churrascos nos quintais. </span></p><p style=\"margin-top: 12px;\"><span style=\" font-family:'Bodoni MT','serif'; font-size:12pt; color:#fabf8f;\">·&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; Iam pescar em lagos e rios. </span></p><p style=\"margin-top: 12px;\"><span style=\" font-family:'Bodoni MT','serif'; font-size:12pt; color:#fabf8f;\">·&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; Passeavam de carro sem destino específico. </span></p><p style=\"margin-top: 12px;\"><span style=\" font-family:'Bodoni MT','serif'; font-size:12pt; color:#fabf8f;\">·&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; Frequentavam igrejas, festas comunitárias e feiras agrícolas. </span></p><p style=\"margin-top: 12px;\"><span style=\" font-family:'Bodoni MT','serif'; font-size:12pt; color:#fabf8f;\">·&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; Jogavam videogame online. </span></p><p>\n\n\n\n\n\n\n\n\n\n\n</p><p><span style=\" font-family:'Bodoni MT','serif'; font-size:12pt; color:#fabf8f;\">O futebol americano escolar e universitário era bastante presente na cultura local.&nbsp;</span></p>"
     }
   ],
   "dicionarioRef": "dicionario_global.json"
