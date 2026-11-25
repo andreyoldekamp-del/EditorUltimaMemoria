@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>GraphZO // v23</title>
+<title>GraphZO // ÚLTIMA MEMÓRIA [NEON V18 - DICIONÁRIO GLOBAL OTIMIZADO]</title>
 <style>
   :root{
     --bg-base:#030712; --bg-panel:#0b0f19; --bg-card:#111827;
@@ -90,9 +90,8 @@
     width: 100%;max-height: 180px;object-fit: cover;border-radius: 4px;
     margin-bottom: 10px;border: 1px solid var(--border-neon);display: none;background: var(--bg-base);
     cursor: pointer;
-    transition: opacity 0.2s;
   }
-  .popup-imagem:hover { opacity: 0.8; }
+  .popup-imagem:hover { opacity: 0.85; }
   .badge-tipo{font-size:10px;padding:3px 8px;border-radius:3px;font-weight:bold}
   .badge-personagem{background:var(--accent-purple);color:#fff}
   .badge-dicionario{background:var(--accent-cyan);color:var(--bg-base)}
@@ -159,29 +158,37 @@
   }
   #modalImagem.ativo{display:flex}
   .modal-imagem-conteudo{
-    position:relative;max-width:90vw;max-height:90vh;
+    position:relative;max-width:95vw;max-height:95vh;
   }
   .modal-imagem-img{
-    max-width:90vw;max-height:90vh;object-fit:contain;border-radius:8px;
+    max-width:95vw;max-height:95vh;object-fit:contain;border-radius:8px;
     box-shadow:0 0 80px rgba(6,182,212,0.4);
+    display:block;
   }
   .modal-imagem-fechar{
-    position:absolute;top:-40px;right:0;background:var(--bg-panel);border:2px solid var(--accent-cyan);
-    color:var(--accent-cyan);width:36px;height:36px;border-radius:50%;
-    display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:16px;font-weight:bold;
+    position:absolute;top:-50px;right:0;background:var(--bg-panel);border:2px solid var(--accent-cyan);
+    color:var(--accent-cyan);width:40px;height:40px;border-radius:50%;
+    display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:18px;font-weight:bold;
   }
   .modal-imagem-fechar:hover{background:var(--accent-cyan);color:var(--bg-base)}
   /* ----------------------------------------------- */
 
-  /* --- IMAGEM DO PERSONAGEM CLICÁVEL --- */
-  .char-avatar-container{
+  /* --- AVATAR DO PERSONAGEM (dois cliques separados) --- */
+  .char-avatar-wrap{
+    display:flex;flex-direction:column;gap:4px;align-items:center;
+  }
+  .char-avatar-box{
     width:120px;height:120px;background:var(--bg-base);border:1px solid var(--accent-cyan);
     border-radius:4px;overflow:hidden;display:flex;align-items:center;justify-content:center;
-    flex-direction:column;position:relative;cursor:pointer;
+    position:relative;
   }
-  .char-avatar-container:hover{border-color:var(--accent-purple)}
-  .char-avatar-container img{
-    width:100%;height:100%;object-fit:cover;
+  .char-avatar-box.has-image{cursor:pointer}
+  .char-avatar-box.has-image:hover{border-color:var(--accent-purple)}
+  .char-avatar-box img{
+    width:100%;height:100%;object-fit:cover;display:block;
+  }
+  .char-avatar-box .no-photo{
+    font-size:10px;color:var(--text-muted);
   }
   /* ----------------------------------------------- */
 
@@ -201,7 +208,7 @@
 
 <header>
   <div>
-    <h1>SYS_GRAPHZO // <span>NEON V23</span></h1>
+    <h1>SYS_GRAPHZO // <span>NEON V18</span></h1>
     <div id="lastSavedBadge" style="font-size:10px;color:var(--success)">🕒 Pronto para edição</div>
   </div>
   <div style="display:flex;gap:6px;flex-wrap:wrap">
@@ -240,6 +247,7 @@
   </label>
 </div>
 
+<!-- ABA 1: EDITOR -->
 <div class="main-container" id="containerEditor">
   <aside class="sidebar">
     <div class="sidebar-header"><span>📑 CAPÍTULOS</span><span id="capCount" style="color:var(--text-muted)">0</span></div>
@@ -250,6 +258,7 @@
   </div>
 </div>
 
+<!-- ABA 2: PERSONAGENS -->
 <div class="main-container" id="painelPersonagens" style="display:none">
   <aside class="sidebar">
     <div class="sidebar-header">
@@ -261,11 +270,14 @@
   <div class="painel-corpo">
     <div class="cartao">
       <div style="display:flex;gap:16px;margin-bottom:16px;flex-wrap:wrap">
-        <div class="char-avatar-container" onclick="abrirModalImagem('charAvatarPreview')">
-          <img id="charAvatarPreview" src="" alt="" style="display:none">
-          <span id="charNoPhotoText" style="font-size:10px;color:var(--text-muted)">Sem foto</span>
+        <!-- AVATAR: clique na imagem amplia, botão 📷 abre explorer -->
+        <div class="char-avatar-wrap">
+          <div class="char-avatar-box" id="charAvatarBox">
+            <img id="charAvatarPreview" src="" alt="" style="display:none">
+            <span class="no-photo" id="charNoPhotoText">Sem foto</span>
+          </div>
           <input type="file" id="charImageInput" accept="image/*" style="display:none" onchange="carregarImagemPersonagem(event)">
-          <button type="button" onclick="event.stopPropagation();document.getElementById('charImageInput').click()" style="position:absolute;bottom:4px;font-size:10px;padding:4px 6px;min-height:26px">📷 Foto</button>
+          <button type="button" onclick="document.getElementById('charImageInput').click()" style="font-size:10px;padding:4px 8px;min-height:26px">📷 Escolher foto</button>
         </div>
         <div style="flex:1;min-width:200px;display:flex;flex-direction:column;gap:8px">
           <input type="text" id="charNome" class="campo" placeholder="Nome do Personagem" oninput="atualizarPersonagemAtual()">
@@ -280,6 +292,7 @@
   </div>
 </div>
 
+<!-- ABA 3: DICIONÁRIO -->
 <div class="main-container" id="painelDicionario" style="display:none">
   <aside class="sidebar">
     <div class="sidebar-header">
@@ -318,19 +331,20 @@
       <div style="margin-top:12px;display:flex;justify-content:space-between;gap:8px;flex-wrap:wrap">
         <button type="button" onclick="exportarDicionarioJson()">💾 Exportar JSON</button>
         <button type="button" class="btn-save" onclick="salvarDicionarioGitHub(true)">☁️ Salvar Dicionário</button>
-		<button type="button" onclick="resetarDicionarioGitHub()">🧹 Resetar remoto</button>
+        <button type="button" onclick="resetarDicionarioGitHub()">🧹 Resetar remoto</button>
         <button type="button" class="btn-danger" onclick="deletarTermoAtual()">🗑️ Excluir</button>
       </div>
     </div>
   </div>
 </div>
 
+<!-- POPUP -->
 <div id="popupDeteccao">
   <div class="popup-header" id="popupHeader">
     <span id="popupBadge" class="badge-tipo">TIPO</span>
     <button type="button" onclick="fecharPopup()" style="padding:2px 8px;min-height:26px;font-size:11px">✖</button>
   </div>
-  <img id="popupImagem" class="popup-imagem" src="" alt="Imagem do Personagem" onclick="abrirModalImagem('popupImagem')">
+  <img id="popupImagem" class="popup-imagem" src="" alt="Imagem do Personagem">
   <div id="popupPalavra" class="popup-palavra">Palavra</div>
   <div id="popupSub" class="popup-sub">Categoria / Papel</div>
   <div id="popupSignificado" class="popup-significado">Significado...</div>
@@ -340,6 +354,7 @@
   </div>
 </div>
 
+<!-- MODAL EASTER EGG (ATALHOS) -->
 <div id="modalAtalhos" onclick="if(event.target===this)fecharModalAtalhos()">
   <div class="modal-conteudo">
     <button type="button" class="modal-fechar" onclick="fecharModalAtalhos()">✖</button>
@@ -381,7 +396,7 @@
   </div>
 </div>
 
-<!-- MODAL DE VISUALIZAÇÃO DE IMAGEM -->
+<!-- MODAL DE VISUALIZAÇÃO DE IMAGEM AMPLIADA -->
 <div id="modalImagem" onclick="if(event.target===this)fecharModalImagem()">
   <div class="modal-imagem-conteudo">
     <button type="button" class="modal-imagem-fechar" onclick="fecharModalImagem()">✖</button>
@@ -397,6 +412,10 @@
 </div>
 
 <script>
+/* ============================================================
+   GraphZO V18
+   ============================================================ */
+
 const REPO_PADRAO = "andreyoldekamp-del/EditorUltimaMemoria";
 const ARQ_HISTORIA = "historia.json";
 const ARQ_DICIONARIO = "dicionario_global.json";
@@ -479,6 +498,7 @@ function badge(texto, cor){
   el.style.color = cor || "var(--success)";
 }
 
+/* ---------- CACHE LOCAL (IndexedDB) ---------- */
 let dbPromise = null;
 function abrirDB(){
   if (dbPromise) return dbPromise;
@@ -522,6 +542,7 @@ const gravarCacheDicionario = debounce(async ()=>{
   await dbSet("dicionario", { termos: dicionario, atualizadoEm: dicAtualizadoEm });
 }, 900);
 
+/* ---------- ÍNDICES ---------- */
 function reconstruirIndices(){
   indicePersonagens.clear();
   indiceDicionario.clear();
@@ -536,6 +557,7 @@ function reconstruirIndices(){
   $("statusText").textContent = `INDEXADOS: ${indicePersonagens.size} PERS. / ${indiceDicionario.size} TERMOS${dicPendente ? " • DIC. PENDENTE" : ""}`;
 }
 
+/* ---------- TÍTULO DINÂMICO ---------- */
 function extrairTitulo(texto){
   const linhas = String(texto).split("\n");
   const alvo = linhas.slice(0, 8);
@@ -565,6 +587,7 @@ function atualizarTituloCapituloDinamico(){
 const atualizarTituloDeb = debounce(atualizarTituloCapituloDinamico, 200);
 const atualizarContadorDeb = debounce(atualizarContador, 300);
 
+/* ---------- POPUP ARRASTÁVEL ---------- */
 let isDragging = false;
 let dragOffsetX = 0;
 let dragOffsetY = 0;
@@ -572,7 +595,7 @@ const popupEl = $("popupDeteccao");
 const popupHeader = $("popupHeader");
 
 function iniciarArrasto(e) {
-  if (e.target.closest('button')) return;
+  if (e.target.closest('button') || e.target.tagName === 'IMG') return;
   isDragging = true;
   const clientX = e.touches ? e.touches[0].clientX : e.clientX;
   const clientY = e.touches ? e.touches[0].clientY : e.clientY;
@@ -605,6 +628,7 @@ document.addEventListener("touchmove", moverArrasto, { passive: false });
 document.addEventListener("mouseup", pararArrasto);
 document.addEventListener("touchend", pararArrasto);
 
+/* ---------- MODAL EASTER EGG ---------- */
 function abrirModalAtalhos(){ $("modalAtalhos").classList.add("ativo"); }
 function fecharModalAtalhos(){ $("modalAtalhos").classList.remove("ativo"); }
 function dispararEasterEgg(){
@@ -613,19 +637,50 @@ function dispararEasterEgg(){
   setTimeout(abrirModalAtalhos, 400);
 }
 
-/* --- MODAL DE VISUALIZAÇÃO DE IMAGEM --- */
-function abrirModalImagem(imgId){
-  const img = $(imgId);
-  if (!img || !img.src || img.style.display === "none") return;
-  $("modalImagemImg").src = img.src;
+/* ---------- MODAL DE VISUALIZAÇÃO DE IMAGEM ---------- */
+function abrirModalImagem(src){
+  if (!src){
+    toast("⚠️ Nenhuma imagem para exibir");
+    return;
+  }
+  const modalImg = $("modalImagemImg");
+  modalImg.src = src;
   $("modalImagem").classList.add("ativo");
 }
 function fecharModalImagem(){
   $("modalImagem").classList.remove("ativo");
   $("modalImagemImg").src = "";
 }
-/* ----------------------------------------------- */
 
+/* ---------- EVENTO DE CLIQUE NO AVATAR DO PERSONAGEM ---------- */
+// Este setup acontece no boot — clique na imagem amplia, mas não interfere no botão "📷 Escolher foto"
+function setupAvatarClick(){
+  const box = $("charAvatarBox");
+  if (!box) return;
+  box.addEventListener("click", (e)=>{
+    // Se clicou no botão de escolher foto, não faz nada (o botão já trata)
+    if (e.target.closest("button")) return;
+    // Se tem imagem, abre modal
+    const img = $("charAvatarPreview");
+    if (img && img.style.display !== "none" && img.src){
+      abrirModalImagem(img.src);
+    }
+  });
+}
+
+/* ---------- EVENTO DE CLIQUE NA IMAGEM DO POPUP ---------- */
+function setupPopupImagemClick(){
+  const img = $("popupImagem");
+  if (!img) return;
+  img.addEventListener("click", (e)=>{
+    e.stopPropagation();
+    if (img.src && img.style.display !== "none"){
+      abrirModalImagem(img.src);
+    }
+  });
+}
+
+/* ---------- ATALHOS DE TECLADO ---------- */
 document.addEventListener("keydown", (e)=>{
   if (e.key === "Escape"){
     if ($("modalImagem").classList.contains("ativo")){ fecharModalImagem(); e.preventDefault(); return; }
@@ -673,6 +728,7 @@ document.addEventListener("keydown", (e)=>{
   }
 });
 
+/* ---------- BOOT ---------- */
 window.addEventListener("DOMContentLoaded", async ()=>{
   if (!localStorage.getItem("gh_repo")) localStorage.setItem("gh_repo", REPO_PADRAO);
 
@@ -687,6 +743,10 @@ window.addEventListener("DOMContentLoaded", async ()=>{
   });
 
   configurarAutoProximoCapitulo();
+
+  // Setup dos cliques nas imagens
+  setupAvatarClick();
+  setupPopupImagemClick();
 
   const cacheProj = await dbGet("projeto");
   if (cacheProj && cacheProj.dados && cacheProj.dados.capitulos){
@@ -715,6 +775,7 @@ window.addEventListener("DOMContentLoaded", async ()=>{
   }
 });
 
+/* ---------- DIGITAÇÃO / POPUP AUTOMÁTICO + EASTER EGG ---------- */
 function aoDigitar(){
   ultimaDigitacao = agora();
   salvarCapituloAtualNaMemoria();
@@ -863,6 +924,7 @@ function popupEditar(){
   else { fecharPopup(); mudarAba("dicionario"); $("buscaTermos").value=""; selecionarTermo(popupAlvo.id); }
 }
 
+/* ---------- ABAS ---------- */
 function mudarAba(aba){
   abaAtual = aba;
   $("containerEditor").style.display   = aba === "editor" ? "flex" : "none";
@@ -878,6 +940,7 @@ function mudarAba(aba){
   } else if (aba === "editor"){ atualizarContador(); }
 }
 
+/* ---------- CAPÍTULOS ---------- */
 function renderizarListaCapitulos(){
   const lista = $("chaptersList");
   lista.innerHTML = "";
@@ -955,6 +1018,7 @@ function carregarCapituloNaTela(capId){
   gravarCacheProjeto();
 }
 
+/* ---------- AUTO-PULO ---------- */
 function configurarAutoProximoCapitulo(){
   const area = $("editorArea");
   let timer = null;
@@ -984,6 +1048,7 @@ function configurarAutoProximoCapitulo(){
   }, { passive:true });
 }
 
+/* ---------- PERSONAGENS ---------- */
 function renderizarListaPersonagens(){
   const lista = $("listaPersonagens");
   lista.innerHTML = "";
@@ -1014,9 +1079,23 @@ function selecionarPersonagem(id){
   $("charPapel").value = p.papel || "";
   $("charTags").value = (p.caracteristicas || []).join(", ");
   $("charBiografia").innerHTML = p.biografia_xhtml || "";
-  const img = $("charAvatarPreview"), txt = $("charNoPhotoText");
-  if (p.imagemUrl){ img.src = p.imagemUrl; img.style.display="block"; txt.style.display="none"; }
-  else { img.removeAttribute("src"); img.style.display="none"; txt.style.display="block"; }
+
+  // Atualiza avatar
+  const img = $("charAvatarPreview");
+  const txt = $("charNoPhotoText");
+  const box = $("charAvatarBox");
+  if (p.imagemUrl){
+    img.src = p.imagemUrl;
+    img.style.display = "block";
+    txt.style.display = "none";
+    box.classList.add("has-image");
+  } else {
+    img.removeAttribute("src");
+    img.style.display = "none";
+    txt.style.display = "block";
+    box.classList.remove("has-image");
+  }
+
   renderizarListaPersonagens();
 }
 const refletirPersonagem = debounce(()=>{ reconstruirIndices(); renderizarListaPersonagens(); }, 350);
@@ -1041,6 +1120,7 @@ function deletarPersonagemAtual(){
   else { $("charNome").value=""; $("charPapel").value=""; $("charTags").value=""; $("charBiografia").innerHTML=""; }
 }
 
+/* ---------- DICIONÁRIO ---------- */
 function marcarDicionarioAlterado(){
   dicAtualizadoEm = agora();
   dicPendente = true;
@@ -1122,6 +1202,7 @@ function exportarDicionarioJson(){
   setTimeout(()=>{ URL.revokeObjectURL(a.href); a.remove(); }, 500);
 }
 
+/* ---------- IMPORTAÇÃO .TXT ---------- */
 async function importarBaseTxt(event){
   const file = event.target.files[0];
   if (!file) return;
@@ -1214,6 +1295,7 @@ async function importarBaseTxt(event){
   }
 }
 
+/* ---------- GITHUB ---------- */
 function cfg(){
   return {
     repo: localStorage.getItem("gh_repo") || REPO_PADRAO,
@@ -1337,29 +1419,60 @@ async function ghGravar(caminho, objeto, mensagem, shaInicial){
 /**
  * Grava arquivo binário (base64) no GitHub — usado para imagens
  */
-async function ghGravarBase64(caminho, base64, mensagem, sha){
+async function ghGravarBase64(caminho, base64, mensagem, shaInicial){
   const { repo, token } = cfg();
-  const body = { message: mensagem, content: base64 };
-  if (sha) body.sha = sha;
-  const res = await fetch(`https://api.github.com/repos/${repo}/contents/${caminho}`, {
-    method:"PUT",
-    headers:{ Authorization:`token ${token}`, "Content-Type":"application/json" },
-    body: JSON.stringify(body)
-  });
-  if (res.status === 409 || res.status === 422){
-    const atual = await ghLer(caminho);
-    if (atual && atual.sha){
-      body.sha = atual.sha;
-      const res2 = await fetch(`https://api.github.com/repos/${repo}/contents/${caminho}`, {
+  const url = `https://api.github.com/repos/${repo}/contents/${caminho}`;
+  const MAX_TENTATIVAS = 3;
+  let sha = shaInicial;
+  let ultimoErro = null;
+
+  for (let tentativa = 1; tentativa <= MAX_TENTATIVAS; tentativa++){
+    const body = { message: mensagem, content: base64 };
+    if (sha) body.sha = sha;
+
+    let res;
+    try{
+      res = await fetch(url, {
         method:"PUT",
-        headers:{ Authorization:`token ${token}`, "Content-Type":"application/json" },
+        headers:{ Authorization:`token ${token}`, "Content-Type":"application/json", Accept:"application/vnd.github+json" },
         body: JSON.stringify(body)
       });
-      if (!res2.ok) throw new Error("upload retry " + res2.status);
+    }catch(e){
+      ultimoErro = "rede: " + e.message;
+      const fresco = await ghLer(caminho);
+      sha = fresco?.sha || null;
+      continue;
+    }
+
+    if (res.ok || res.status === 200 || res.status === 201){
       return;
     }
+
+    if (res.status === 409 || res.status === 422){
+      ultimoErro = `SHA conflito (${res.status})`;
+      const fresco = await ghLer(caminho);
+      if (fresco && fresco.sha){
+        sha = fresco.sha;
+      } else {
+        sha = null;
+      }
+      continue;
+    }
+
+    if (res.status === 404){
+      sha = null;
+      continue;
+    }
+
+    if (res.status === 401 || res.status === 403){
+      throw new Error(`Token inválido/expirado (${res.status})`);
+    }
+
+    const erroTxt = await res.text().catch(()=>"");
+    throw new Error(`HTTP ${res.status}: ${erroTxt.slice(0,200)}`);
   }
-  if (!res.ok) throw new Error("upload " + res.status);
+
+  throw new Error(`Falha após ${MAX_TENTATIVAS} tentativas. Último erro: ${ultimoErro}`);
 }
 
 function marcarProjetoAlterado(){
@@ -1381,7 +1494,6 @@ async function salvarNoGitHub(){
     if (remoto && remoto.corrompido){
       const prosseguir = confirm(
         `⚠️ O arquivo "historia.json" no GitHub está corrompido (${remoto.motivo || "desconhecido"}).\n\n` +
-        `Isso geralmente acontece por upload interrompido anteriormente.\n\n` +
         `Deseja SOBRESCREVER com sua versão local intacta?`
       );
       if (!prosseguir){
@@ -1415,7 +1527,7 @@ async function forcarSalvamento(){
   const { token } = cfg();
   if (!token){ toast("Configure o token primeiro."); configurarGitHub(); return; }
 
-  if (!confirm("⚡ FORÇAR SALVAMENTO\n\nIsso vai sobrescrever os arquivos no GitHub com sua versão local, resolvendo conflitos de SHA.\n\nContinuar?")) return;
+  if (!confirm("⚡ FORÇAR SALVAMENTO\n\nIsso vai sobrescrever os arquivos no GitHub com sua versão local.\n\nContinuar?")) return;
 
   salvarCapituloAtualNaMemoria();
   atualizarTituloCapituloDinamico();
@@ -1445,7 +1557,7 @@ async function forcarSalvamento(){
     }
 
     badge(`⚡ forçado ${new Date().toLocaleTimeString([], {hour:"2-digit",minute:"2-digit"})}`, "var(--success)");
-    toast("⚡ Salvamento forçado com sucesso! Conflitos resolvidos.");
+    toast("⚡ Salvamento forçado com sucesso!");
     reconstruirIndices();
   }catch(e){
     console.error(e);
@@ -1460,7 +1572,7 @@ async function resetarDicionarioGitHub(){
   if (!token){ toast("Configure o token primeiro."); return; }
   try{
     await salvarDicionarioGitHub(true);
-    toast("🧹 Dicionário remoto resetado e corrigido com sucesso.");
+    toast("🧹 Dicionário remoto resetado com sucesso.");
   }catch(e){
     toast("❌ Falha ao resetar: " + e.message);
   }
@@ -1486,11 +1598,6 @@ async function salvarDicionarioGitHub(aviso = true){
 
     badge(`☁️ enviando dicionário (${tamanhoMB} MB)...`, "var(--warn)");
     const remoto = await ghLer(ARQ_DICIONARIO);
-    
-    if (remoto && remoto.corrompido && aviso){
-      console.warn(`Dicionário remoto corrompido (${remoto.motivo}). Será sobrescrito.`);
-    }
-
     await ghGravar(ARQ_DICIONARIO, payload, `GraphZO: dicionário (${dicionario.length} verbetes)`, remoto?.sha);
     
     dicPendente = false;
@@ -1603,6 +1710,7 @@ function descartarVersaoAtual(){
   toast("Versão ocultada da lista.");
 }
 
+/* ---------- FOTO DO PERSONAGEM ---------- */
 async function carregarImagemPersonagem(event){
   const file = event.target.files[0];
   event.target.value = "";
@@ -1616,18 +1724,22 @@ async function carregarImagemPersonagem(event){
     const base64 = dataUrl.split(",")[1];
     const caminho = `assets/${characterSelecionadoId}.jpg`;
     
-    // Verifica se já existe
+    // Verifica se já existe para obter o SHA
     const existente = await ghLer(caminho).catch(()=>null);
     
-    // Usa ghGravarBase64 para upload correto de imagem
+    // Upload da imagem
     await ghGravarBase64(caminho, base64, `Foto ${characterSelecionadoId}`, existente?.sha);
     
+    // Atualiza a URL no personagem
     const { repo } = cfg();
     const p = projetoLivro.personagens.find(x=>x.id===characterSelecionadoId);
+    if (!p) return;
     p.imagemUrl = `https://raw.githubusercontent.com/${repo}/main/${caminho}?v=${agora()}`;
     marcarProjetoAlterado();
+    
+    // Atualiza a tela
     selecionarPersonagem(characterSelecionadoId);
-    toast("📷 Foto salva com sucesso!");
+    toast("📷 Foto enviada ao GitHub!");
   }catch(e){ 
     console.error(e); 
     toast("❌ Erro ao enviar foto: " + e.message); 
@@ -1653,6 +1765,7 @@ function redimensionar(file, maxLado, qualidade){
   });
 }
 
+/* ---------- FORMATAÇÃO / CONTADOR ---------- */
 function formatar(cmd){
   $("editorContent").focus();
   document.execCommand(cmd, false, null);
@@ -1676,6 +1789,7 @@ function atualizarContador(){
   $("wordCount").textContent = `PALAVRAS: ${texto ? texto.split(/\s+/).length : 0}`;
 }
 
+/* ---------- SEGURANÇA ---------- */
 window.addEventListener("beforeunload", e=>{
   salvarCapituloAtualNaMemoria();
   if (histPendente || dicPendente){
