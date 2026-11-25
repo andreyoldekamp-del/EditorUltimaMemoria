@@ -3,7 +3,7 @@
     "titulo": "Última Memória",
     "autor": "Autor"
   },
-  "atualizadoEm": 1795613830913,
+  "atualizadoEm": 1795614008785,
   "capitulos": {
     "cap_1": {
       "titulo": "Capítulo 1 - Tempestade.",
@@ -118,6 +118,14 @@
       "caracteristicas": [],
       "imagemUrl": "https://raw.githubusercontent.com/andreyoldekamp-del/EditorUltimaMemoria/main/assets/char_1795612510193.jpg?v=1795613269929",
       "biografia_xhtml": "<p>Inicialmente, nenhum dos dois entende o que está acontecendo.</p><ul><li><p>Teddy sonha com a vida de Beacon.</p></li><li><p>Beacon começa a experimentar fragmentos da vida de Teddy.</p></li><li><p>Ambos acreditam que estão tendo sonhos extraordinariamente realistas.</p></li><li><p>As lembranças começam a permanecer depois que acordam.</p></li></ul><p>Um detalhe interessante: eles podem descobrir que os sonhos não são exatamente simultâneos.</p><p>Teddy pode experimentar uma lembrança de Beacon enquanto Beacon está acordado, mas só compreender o acontecimento horas depois.</p><p>Isso cria um mistério adicional.</p><h2><strong>3. Aprendendo a controlar a conexão</strong></h2><p>Aqui entra sua ideia da técnica de relaxamento.</p><p>Os dois descobrem que, em determinadas condições, conseguem estabelecer contato conscientemente.</p><p>Não seria necessariamente uma tecnologia instalada no cérebro de Teddy. Poderia ser uma capacidade que surge da própria conexão.</p><p>Uma espécie de estado de concentração profunda, no qual ambos conseguem compartilhar um ambiente mental.</p><p>Inicialmente, só conseguem trocar algumas palavras.</p><p>Depois, conseguem manter conversas inteiras.</p><p>E eventualmente podem compartilhar imagens, sensações e experiências.</p><p>Isso abre espaço para diálogos muito interessantes.</p><p>Imagine Beacon perguntando:</p><p>— Teddy, você tem certeza de que está vivendo em 2017?</p><p>— Tenho. Por quê?</p><p>— Porque acabei de ver uma coisa que ainda não deveria existir na sua época.</p>"
+    },
+    {
+      "id": "char_1795613856800",
+      "nome": "Beacon",
+      "papel": "Secundário",
+      "caracteristicas": [],
+      "imagemUrl": "https://raw.githubusercontent.com/andreyoldekamp-del/EditorUltimaMemoria/main/assets/char_1795613856800.jpg?v=1795613869903",
+      "biografia_xhtml": "<p>Marido da Linda Suzane, pai ho Jeames, Emily, piloto da nave Lima Papa 32, na guerra contra o Tirano Eldor, Conquistador de Amahana, planeta ha 50 minutos luz da terra.</p>"
     }
   ],
   "dicionarioRef": "dicionario_global.json"
