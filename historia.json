@@ -3,7 +3,7 @@
     "titulo": "Última Memória",
     "autor": "Autor"
   },
-  "atualizadoEm": 1795610519363,
+  "atualizadoEm": 1795611856354,
   "capitulos": {
     "cap_1": {
       "titulo": "Capítulo 1 - Tempestade.",
@@ -11,7 +11,7 @@
     },
     "cap_1795460701112": {
       "titulo": "Capítulo 2 - Sonhos Despertos. Teddy Apesar do tempo ter melhorado um pou",
-      "conteudo_xhtml": "<p style=\"margin-bottom: 0px;\"><span style=\"font-family: Comfortaa; font-size: 18.6667px;\">Capítulo 2 — Sonhos Despertos. Teddy&nbsp;</span></p><p style=\"margin-bottom: 0px;\"><span style=\" font-family:'Comfortaa'; font-size:14pt;\">Apesar do tempo ter melhorado um pouco, não foi suficiente para ir à escola, assim, as idas do quarto à cozinha, da cozinha para o quarto foi a viagem mais longa que teve. </span></p><p style=\"margin-top: 12px; margin-bottom: 12px;\"><span style=\" font-family:'Comfortaa'; font-size:14pt;\">As lembranças da Suzane da Emily do Daniel do Beacon do Lewis do Jeames estavam tão vívidas na sua memória, que pareciam lembranças.</span></p><p style=\"margin-top: 12px; margin-bottom: 12px;\"><span style=\" font-family:'Comfortaa'; font-size:14pt;\">A pequena Emily palmilhando a areia, os pezinhos ainda inseguros, chutavam a água. </span></p><p style=\"margin-top: 12px; margin-bottom: 12px;\"><span style=\" font-family:'Comfortaa'; font-size:14pt;\">Seus olhinhos negros, brilhando de excitação encontravam os de Beacon. </span></p><p style=\"margin-top: 12px; margin-bottom: 12px;\"><span style=\" font-family:'Comfortaa'; font-size:14pt;\">A sensação da mãzinha quente e delicada entre os seus dedos, como podia sentir aquilo? Teddy&nbsp;</span></p><p id=\"cap_1795460701112_p1\">\n\n\n\n\n</p><p style=\"margin-top: 12px; margin-bottom: 12px;\"><span style=\" font-family:'Comfortaa'; font-size:14pt;\">Aos 17 anos pode-se sentir a emoção de conduzir a uma filha, se já tiver sido pai, mas ele sequer namorava, a Suzane tinha gosto de esposa, ele tinha relances dos seus olhares de admiração.</span></p>"
+      "conteudo_xhtml": "<p style=\"margin-bottom: 0px;\"><span style=\"font-family: Comfortaa; font-size: 18.6667px;\">Capítulo 2 — Sonhos Despertos. Teddy&nbsp;</span></p><p style=\"margin-bottom: 0px;\"><span style=\" font-family:'Comfortaa'; font-size:14pt;\">Apesar do tempo ter melhorado um pouco, não foi suficiente para ir à escola, assim, as idas do quarto à cozinha, da cozinha para o quarto foi a viagem mais longa que teve. </span></p><p style=\"margin-top: 12px; margin-bottom: 12px;\"><span style=\" font-family:'Comfortaa'; font-size:14pt;\">As lembranças da Suzane da Emily do Daniel do Beacon do Lewis do Jeames estavam tão vívidas na sua memória, que pareciam lembranças.</span></p><p style=\"margin-top: 12px; margin-bottom: 12px;\"><span style=\" font-family:'Comfortaa'; font-size:14pt;\">A pequena Emily palmilhando a areia, os pezinhos ainda inseguros, chutavam a água. </span></p><p style=\"margin-top: 12px; margin-bottom: 12px;\"><span style=\" font-family:'Comfortaa'; font-size:14pt;\">Seus olhinhos negros, brilhando de excitação encontravam os de Beacon. </span></p><p style=\"margin-top: 12px; margin-bottom: 12px;\"><span style=\" font-family:'Comfortaa'; font-size:14pt;\">A sensação da mãzinha quente e delicada entre os seus dedos, como podia sentir aquilo? Teddy&nbsp;</span></p><p id=\"cap_1795460701112_p1\">\n\n\n\n\n</p><p style=\"margin-top: 12px; margin-bottom: 12px;\"><span style=\" font-family:'Comfortaa'; font-size:14pt;\">Aos 17 anos pode-se sentir a emoção de conduzir a uma filha, se já tiver sido pai, mas ele sequer namorava, a Suzane tinha gosto de esposa, ele tinha relances dos seus olhares de admiração.</span></p><p style=\"margin-top: 12px; margin-bottom: 12px;\"><span style=\" font-family:'Comfortaa'; font-size:14pt;\">A cama pareceu tão confortável naquele dia, as imagens vinham e iam, a batalha, a proximidade com a morte, a possibilidade de não voltar para os braços da&nbsp;</span><span style=\"font-family: Comfortaa; font-size: 18.6667px;\">Suzane</span></p><p style=\"margin-top: 12px; margin-bottom: 12px;\"><span style=\" font-family:'Comfortaa'; font-size:14pt;\"><br></span></p>"
     }
   },
   "personagens": [
@@ -102,6 +102,14 @@
       "caracteristicas": [],
       "imagemUrl": "",
       "biografia_xhtml": "<h1 style=\"margin-top: 18px; margin-bottom: 12px;\"><span style=\"font-family: &quot;Segoe UI&quot;; font-size: xx-large;\">Daniel</span></h1><p>\n</p><p style=\"margin-top: 12px; margin-bottom: 12px;\"><span style=\" font-family:'Segoe UI'; font-size:12px;\">Filho mais velho do Capitão Beacon, 4 anos, inteligente, ativo, questionador, brincalhão.</span></p>"
+    },
+    {
+      "id": "char_1795611570522",
+      "nome": "Suzane",
+      "papel": "Secundário",
+      "caracteristicas": [],
+      "imagemUrl": "https://raw.githubusercontent.com/andreyoldekamp-del/EditorUltimaMemoria/main/assets/char_1795611570522.jpg?v=1795611793553",
+      "biografia_xhtml": "<p>Linda esposa do Beacon, pessoa mais presente nas lembranças do Teddy.</p><p>Jovem, carinhos, compreensiva, leal, compreende bem a situação que o planeta está, na guerra que está envolvida, e a obrigação do marido de defender.&nbsp;</p>"
     }
   ],
   "dicionarioRef": "dicionario_global.json"
