@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>GraphZO // ÚLTIMA MEMÓRIA V20</title>
+<title>GraphZO // ÚLTIMA MEMÓRIA [NEON V18 - DICIONÁRIO GLOBAL OTIMIZADO]</title>
 <style>
   :root{
     --bg-base:#030712; --bg-panel:#0b0f19; --bg-card:#111827;
@@ -151,7 +151,7 @@
 
 <header>
   <div>
-    <h1>SYS_GRAPHZO // <span>NEON V20-FRAME</span></h1>
+    <h1>SYS_GRAPHZO // <span>NEON V18</span></h1>
     <div id="lastSavedBadge" style="font-size:10px;color:var(--success)">🕒 Pronto para edição</div>
   </div>
   <div style="display:flex;gap:6px;flex-wrap:wrap">
@@ -1321,7 +1321,8 @@ async function listarCommitsGitHub(){
 async function carregarVersaoSelecionada(){
   const sha = $("selectCommits").value;
   if (!sha) return;
-  if (!confirm("Carregar esta versão da história? O dicionário global NÃO será alterado.")) { $("selectCommits").value=""; return; }
+  
+  // Confirmação removida conforme solicitado
   try{
     const remoto = await ghLer(ARQ_HISTORIA, sha);
     if (!remoto) return toast("Versão não encontrada.");
