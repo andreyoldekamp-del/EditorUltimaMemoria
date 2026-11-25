@@ -3,7 +3,7 @@
     "titulo": "Última Memória",
     "autor": "Autor"
   },
-  "atualizadoEm": 1795614831496,
+  "atualizadoEm": 1795614870597,
   "capitulos": {
     "cap_1": {
       "titulo": "Capítulo 1 - Tempestade.",
@@ -136,7 +136,7 @@
         "inclemente"
       ],
       "imagemUrl": "https://raw.githubusercontent.com/andreyoldekamp-del/EditorUltimaMemoria/main/assets/char_1795614084256.jpg?v=1795614787467",
-      "biografia_xhtml": "<p>Conquistador de Amahana, planeta ha 50 minutos luz da terra.</p>"
+      "biografia_xhtml": "<p>Conquistador de Amahana, planeta ha 50 minutos luz da terra.&nbsp;</p><p>Ele declarou guerra à terra para desviar os erros que havia cometido. Faça uma imagem de Amahana, e do tirano Eldor.</p>"
     }
   ],
   "dicionarioRef": "dicionario_global.json"
