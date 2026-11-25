@@ -50,20 +50,20 @@
   
   /* --- SCROLLBAR OTIMIZADA PARA TOQUE (MOBILE) --- */
   .list-container::-webkit-scrollbar {
-    width: 20px; /* Área de toque bem larga para o dedo */
+    width: 20px;
   }
   .list-container::-webkit-scrollbar-track {
     background: transparent;
   }
   .list-container::-webkit-scrollbar-thumb {
-    background-color: rgba(255, 255, 255, 0.3); /* Semitransparente */
-    border-radius: 999px; /* Formato circular/pílula */
-    border: 5px solid transparent; /* Cria o efeito de círculo flutuante */
+    background-color: rgba(255, 255, 255, 0.3);
+    border-radius: 999px;
+    border: 5px solid transparent;
     background-clip: padding-box;
-    transition: none !important; /* Sem nenhuma animação */
+    transition: none !important;
   }
   .list-container::-webkit-scrollbar-thumb:active {
-    background-color: rgba(255, 255, 255, 0.6); /* Feedback visual ao tocar/arrastar */
+    background-color: rgba(255, 255, 255, 0.6);
   }
   /* ----------------------------------------------- */
 
@@ -104,7 +104,7 @@
   .popup-header{
     display:flex;justify-content:space-between;align-items:center;
     margin-bottom:8px;padding-bottom:6px;border-bottom:1px solid var(--border-neon);
-    cursor: move; /* Indica que é arrastável */
+    cursor: move;
     user-select: none;
     touch-action: none;
   }
@@ -115,7 +115,7 @@
     border-radius: 4px;
     margin-bottom: 10px;
     border: 1px solid var(--border-neon);
-    display: none; /* Oculto por padrão */
+    display: none;
     background: var(--bg-base);
   }
   /* ---------------------------------------------------- */
@@ -138,12 +138,65 @@
     position:fixed;top:12px;left:50%;transform:translateX(-50%);background:var(--bg-card);border:1px solid var(--accent-cyan);
     color:var(--text-main);padding:10px 16px;border-radius:6px;font-size:12px;z-index:10000;display:none;max-width:90vw;text-align:center;
   }
+
+  /* --- MODAL EASTER EGG (ATALHOS) --- */
+  #modalAtalhos{
+    position:fixed;inset:0;background:rgba(0,0,0,0.85);z-index:10001;
+    display:none;align-items:center;justify-content:center;padding:20px;
+    backdrop-filter: blur(4px);
+  }
+  #modalAtalhos.ativo{display:flex}
+  .modal-conteudo{
+    background:var(--bg-panel);border:2px solid var(--accent-purple);border-radius:12px;
+    max-width:620px;width:100%;max-height:85vh;overflow-y:auto;padding:24px;
+    box-shadow:0 0 60px rgba(168,85,247,0.4);
+    position:relative;
+  }
+  .modal-titulo{
+    font-size:20px;color:var(--accent-purple);letter-spacing:2px;text-align:center;margin-bottom:6px;
+    text-shadow:0 0 10px rgba(168,85,247,0.6);
+  }
+  .modal-subtitulo{
+    font-size:11px;color:var(--text-muted);text-align:center;margin-bottom:18px;letter-spacing:1px;
+  }
+  .atalho-categoria{
+    font-size:12px;color:var(--accent-cyan);font-weight:bold;margin:14px 0 8px;
+    padding-bottom:4px;border-bottom:1px dashed var(--border-neon);letter-spacing:1px;
+  }
+  .atalho-linha{
+    display:flex;justify-content:space-between;align-items:center;
+    padding:6px 8px;font-size:13px;border-radius:4px;margin-bottom:3px;
+  }
+  .atalho-linha:hover{background:var(--bg-card)}
+  .atalho-teclas{
+    display:flex;gap:4px;flex-wrap:wrap;justify-content:flex-end;
+  }
+  .tecla{
+    background:var(--bg-base);border:1px solid var(--accent-purple);color:var(--accent-purple);
+    padding:3px 8px;border-radius:4px;font-size:11px;font-weight:bold;
+    font-family:'Courier New',monospace;min-width:24px;text-align:center;
+    box-shadow:0 2px 0 rgba(168,85,247,0.3);
+  }
+  .modal-fechar{
+    position:absolute;top:10px;right:10px;background:transparent;border:1px solid var(--accent-purple);
+    color:var(--accent-purple);width:32px;height:32px;border-radius:50%;
+    display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:14px;font-weight:bold;
+  }
+  .modal-fechar:hover{background:var(--accent-purple);color:#fff}
+  .easter-hint{
+    font-size:10px;color:var(--text-muted);text-align:center;margin-top:16px;font-style:italic;
+  }
+  /* ----------------------------------------------- */
+
   @media(max-width:768px){
     .main-container{flex-direction:column;overflow-y:auto}
     aside.sidebar{width:100%;max-height:190px;border-right:none;border-bottom:1px solid var(--border-neon)}
     .editor-area{padding:10px}
     #editorContent{padding:14px;min-height:50vh}
     .git-controls{width:100%;margin-left:0!important}
+    .modal-conteudo{padding:18px}
+    .atalho-linha{flex-direction:column;align-items:flex-start;gap:6px}
+    .atalho-teclas{justify-content:flex-start}
   }
 </style>
 </head>
@@ -277,7 +330,7 @@
   </div>
 </div>
 
-<!-- POPUP (MODIFICADO PARA ARRASTAR E EXIBIR IMAGEM) -->
+<!-- POPUP -->
 <div id="popupDeteccao">
   <div class="popup-header" id="popupHeader">
     <span id="popupBadge" class="badge-tipo">TIPO</span>
@@ -290,6 +343,47 @@
   <div class="popup-acoes">
     <button type="button" id="btnPopupAdd" class="btn-purple" onclick="popupAdicionar()">➕ Adicionar ao dicionário</button>
     <button type="button" id="btnPopupEditar" onclick="popupEditar()">✏️ Editar</button>
+  </div>
+</div>
+
+<!-- MODAL EASTER EGG (ATALHOS) -->
+<div id="modalAtalhos" onclick="if(event.target===this)fecharModalAtalhos()">
+  <div class="modal-conteudo">
+    <button type="button" class="modal-fechar" onclick="fecharModalAtalhos()">✖</button>
+    <div class="modal-titulo">⚡ PROTOCOLO SECRETO ⚡</div>
+    <div class="modal-subtitulo">ATALHOS DO EDITOR DE ÚLTIMA MEMÓRIA</div>
+
+    <div class="atalho-categoria">💾 SALVAMENTO &amp; NUVEM</div>
+    <div class="atalho-linha"><span>Salvar tudo na nuvem</span><span class="atalho-teclas"><span class="tecla">Ctrl</span><span class="tecla">S</span></span></div>
+    <div class="atalho-linha"><span>Salvar só o dicionário</span><span class="atalho-teclas"><span class="tecla">Ctrl</span><span class="tecla">Shift</span><span class="tecla">S</span></span></div>
+    <div class="atalho-linha"><span>Puxar do GitHub</span><span class="atalho-teclas"><span class="tecla">Ctrl</span><span class="tecla">P</span></span></div>
+    <div class="atalho-linha"><span>Exportar dicionário JSON</span><span class="atalho-teclas"><span class="tecla">Ctrl</span><span class="tecla">E</span></span></div>
+
+    <div class="atalho-categoria">🧭 NAVEGAÇÃO ENTRE ABAS</div>
+    <div class="atalho-linha"><span>Aba Editor</span><span class="atalho-teclas"><span class="tecla">Ctrl</span><span class="tecla">1</span></span></div>
+    <div class="atalho-linha"><span>Aba Personagens</span><span class="atalho-teclas"><span class="tecla">Ctrl</span><span class="tecla">2</span></span></div>
+    <div class="atalho-linha"><span>Aba Dicionário</span><span class="atalho-teclas"><span class="tecla">Ctrl</span><span class="tecla">3</span></span></div>
+
+    <div class="atalho-categoria">✨ CRIAÇÃO RÁPIDA</div>
+    <div class="atalho-linha"><span>Novo capítulo</span><span class="atalho-teclas"><span class="tecla">Ctrl</span><span class="tecla">N</span></span></div>
+    <div class="atalho-linha"><span>Novo personagem</span><span class="atalho-teclas"><span class="tecla">Ctrl</span><span class="tecla">Shift</span><span class="tecla">N</span></span></div>
+    <div class="atalho-linha"><span>Novo termo</span><span class="atalho-teclas"><span class="tecla">Ctrl</span><span class="tecla">Shift</span><span class="tecla">D</span></span></div>
+    <div class="atalho-linha"><span>Inserir parágrafo ID</span><span class="atalho-teclas"><span class="tecla">Ctrl</span><span class="tecla">Enter</span></span></div>
+
+    <div class="atalho-categoria">🎨 FORMATAÇÃO DE TEXTO</div>
+    <div class="atalho-linha"><span>Negrito</span><span class="atalho-teclas"><span class="tecla">Ctrl</span><span class="tecla">B</span></span></div>
+    <div class="atalho-linha"><span>Itálico</span><span class="atalho-teclas"><span class="tecla">Ctrl</span><span class="tecla">I</span></span></div>
+    <div class="atalho-linha"><span>Sublinhado</span><span class="atalho-teclas"><span class="tecla">Ctrl</span><span class="tecla">U</span></span></div>
+
+    <div class="atalho-categoria">🔧 UTILITÁRIOS</div>
+    <div class="atalho-linha"><span>Fechar popup / modal</span><span class="atalho-teclas"><span class="tecla">Esc</span></span></div>
+    <div class="atalho-linha"><span>Focar busca de termos</span><span class="atalho-teclas"><span class="tecla">Ctrl</span><span class="tecla">F</span></span></div>
+    <div class="atalho-linha"><span>Mostrar esta tela</span><span class="atalho-teclas"><span class="tecla">Ctrl</span><span class="tecla">/</span></span></div>
+
+    <div class="atalho-categoria">🥚 EASTER EGGS</div>
+    <div class="atalho-linha"><span>Digite no editor</span><span class="atalho-teclas"><span class="tecla">e</span><span class="tecla">a</span><span class="tecla">s</span><span class="tecla">t</span><span class="tecla">e</span><span class="tecla">r</span><span class="tecla">e</span><span class="tecla">g</span><span class="tecla">g</span></span></div>
+
+    <div class="easter-hint">"Você encontrou o protocolo. Use-o com sabedoria."</div>
   </div>
 </div>
 
@@ -311,6 +405,7 @@
    - Auto-pulo para o próximo capítulo ao chegar no fim
    - POPUP ARRASTÁVEL E COM SUPORTE A IMAGEM DE PERSONAGEM
    - SCROLLBAR OTIMIZADA PARA TOQUE (MOBILE)
+   - ATALHOS DE TECLADO GLOBAIS + EASTER EGG
    ============================================================ */
 
 const REPO_PADRAO = "andreyoldekamp-del/EditorUltimaMemoria";
@@ -332,8 +427,8 @@ let projetoLivro = {
       biografia_xhtml:"<p>Jovem do Kentucky que questiona suas memórias.</p>" }
   ]
 };
-let dicionario = [];                 // GLOBAL, fora de projetoLivro
-let indicePersonagens = new Map();   // chave normalizada -> objeto
+let dicionario = [];
+let indicePersonagens = new Map();
 let indiceDicionario = new Map();
 
 let capituloAtual = "cap_1";
@@ -351,6 +446,10 @@ let popupAlvo = { palavra:"", tipo:null, id:null };
 
 let bloqueioAutoScroll = 0;
 let ultimaDigitacao = 0;
+
+/* ---------- ESTADO DO EASTER EGG ---------- */
+let bufferEasterEgg = "";
+const SEGREDO_EASTER_EGG = "easteregg";
 
 /* ---------- UTILITÁRIOS ---------- */
 const $ = id => document.getElementById(id);
@@ -371,7 +470,7 @@ function toast(msg, ms=2200){
 }
 function normalizarChave(texto){
   return String(texto ?? "")
-    .normalize("NFD").replace(/[\u0300-\u036f]/g, "")   // remove acentos
+    .normalize("NFD").replace(/[\u0300-\u036f]/g, "")
     .replace(/[\u00A0\u200B]/g, " ")
     .replace(/[.,!?;:()"'«»“”‘’—–\-]/g, "")
     .replace(/\s+/g, " ")
@@ -491,42 +590,30 @@ const popupEl = $("popupDeteccao");
 const popupHeader = $("popupHeader");
 
 function iniciarArrasto(e) {
-  // CORREÇÃO: Se o toque for no botão de fechar (ou qualquer botão), não iniciar arrasto
-  // Isso permite que o clique/toque no botão funcione normalmente no celular
   if (e.target.closest('button')) {
     return;
   }
-  
   isDragging = true;
   const clientX = e.touches ? e.touches[0].clientX : e.clientX;
   const clientY = e.touches ? e.touches[0].clientY : e.clientY;
   const rect = popupEl.getBoundingClientRect();
-  
   dragOffsetX = clientX - rect.left;
   dragOffsetY = clientY - rect.top;
-  
-  // Remove a transformação CSS inicial para permitir cálculo absoluto de top/left
   popupEl.style.transform = "none";
   if (e.cancelable) e.preventDefault();
 }
 
 function moverArrasto(e) {
   if (!isDragging) return;
-  e.preventDefault(); // Previne scroll da tela enquanto arrasta o popup
-  
+  e.preventDefault();
   const clientX = e.touches ? e.touches[0].clientX : e.clientX;
   const clientY = e.touches ? e.touches[0].clientY : e.clientY;
-  
   let novoX = clientX - dragOffsetX;
   let novoY = clientY - dragOffsetY;
-
-  // Limites da tela para não perder o popup
   const maxX = window.innerWidth - popupEl.offsetWidth;
   const maxY = window.innerHeight - popupEl.offsetHeight;
-  
   novoX = Math.max(0, Math.min(novoX, maxX));
   novoY = Math.max(0, Math.min(novoY, maxY));
-
   popupEl.style.left = novoX + "px";
   popupEl.style.top = novoY + "px";
 }
@@ -541,8 +628,149 @@ document.addEventListener("mousemove", moverArrasto);
 document.addEventListener("touchmove", moverArrasto, { passive: false });
 document.addEventListener("mouseup", pararArrasto);
 document.addEventListener("touchend", pararArrasto);
-/* ---------------------------------------------------- */
 
+/* ---------- MODAL EASTER EGG ---------- */
+function abrirModalAtalhos(){
+  $("modalAtalhos").classList.add("ativo");
+}
+function fecharModalAtalhos(){
+  $("modalAtalhos").classList.remove("ativo");
+}
+function dispararEasterEgg(){
+  toast("🥚 PROTOCOLO SECRETO DESBLOQUEADO!");
+  bufferEasterEgg = "";
+  // Pequeno delay para o toast aparecer antes do modal
+  setTimeout(abrirModalAtalhos, 400);
+}
+
+/* ---------- ATALHOS DE TECLADO GLOBAIS ---------- */
+document.addEventListener("keydown", (e)=>{
+  // ESC fecha popup e modal
+  if (e.key === "Escape"){
+    if ($("modalAtalhos").classList.contains("ativo")){
+      fecharModalAtalhos();
+      e.preventDefault();
+      return;
+    }
+    fecharPopup();
+    return;
+  }
+
+  // Ignora atalhos com Ctrl se estiver dentro de input/textarea/contenteditable (exceto os próprios atalhos)
+  const alvo = e.target;
+  const ehCampoEditavel = alvo && (
+    alvo.isContentEditable ||
+    alvo.tagName === "INPUT" ||
+    alvo.tagName === "TEXTAREA" ||
+    alvo.tagName === "SELECT"
+  );
+
+  const ctrl = e.ctrlKey || e.metaKey;
+  const shift = e.shiftKey;
+  const key = e.key.toLowerCase();
+
+  // Ctrl+S → Salvar tudo na nuvem
+  if (ctrl && !shift && key === "s"){
+    e.preventDefault();
+    salvarNoGitHub();
+    return;
+  }
+
+  // Ctrl+Shift+S → Salvar só o dicionário
+  if (ctrl && shift && key === "s"){
+    e.preventDefault();
+    salvarDicionarioGitHub(true);
+    return;
+  }
+
+  // Ctrl+P → Puxar do GitHub
+  if (ctrl && !shift && key === "p"){
+    e.preventDefault();
+    sincronizarTudo();
+    return;
+  }
+
+  // Ctrl+E → Exportar dicionário JSON
+  if (ctrl && !shift && key === "e"){
+    e.preventDefault();
+    exportarDicionarioJson();
+    return;
+  }
+
+  // Ctrl+1/2/3 → Mudar de aba
+  if (ctrl && !shift && (key === "1" || key === "2" || key === "3")){
+    e.preventDefault();
+    if (key === "1") mudarAba("editor");
+    else if (key === "2") mudarAba("personagens");
+    else if (key === "3") mudarAba("dicionario");
+    return;
+  }
+
+  // Ctrl+N → Novo capítulo (se não estiver em input)
+  if (ctrl && !shift && key === "n"){
+    // Só bloqueia se for em input de texto; em editor contenteditable, permite
+    if (ehCampoEditavel && alvo.tagName === "INPUT") return;
+    e.preventDefault();
+    mudarAba("editor");
+    criarNovoCapitulo();
+    return;
+  }
+
+  // Ctrl+Shift+N → Novo personagem
+  if (ctrl && shift && key === "n"){
+    e.preventDefault();
+    mudarAba("personagens");
+    criarNovoPersonagem();
+    return;
+  }
+
+  // Ctrl+Shift+D → Novo termo
+  if (ctrl && shift && key === "d"){
+    e.preventDefault();
+    mudarAba("dicionario");
+    criarNovoTermo();
+    return;
+  }
+
+  // Ctrl+F → Focar busca de termos (se na aba dicionário) ou mostrar dica
+  if (ctrl && !shift && key === "f"){
+    if (abaAtual === "dicionario"){
+      e.preventDefault();
+      $("buscaTermos").focus();
+      $("buscaTermos").select();
+    } else {
+      // Não bloqueia o comportamento nativo em outros contextos, mas mostra dica
+      toast("💡 Vá para a aba Dicionário (Ctrl+3) para usar a busca");
+    }
+    return;
+  }
+
+  // Ctrl+Enter → Inserir parágrafo com ID (apenas no editor)
+  if (ctrl && key === "enter"){
+    if (abaAtual === "editor"){
+      e.preventDefault();
+      inserirParagrafoID();
+    }
+    return;
+  }
+
+  // Ctrl+/ → Abre modal de atalhos
+  if (ctrl && (key === "/" || key === "?")){
+    e.preventDefault();
+    abrirModalAtalhos();
+    return;
+  }
+
+  // Ctrl+B / Ctrl+I / Ctrl+U → Formatação (comportamento nativo já funciona, mas garantimos)
+  if (ctrl && !shift && (key === "b" || key === "i" || key === "u")){
+    if (abaAtual === "editor"){
+      // Deixa o navegador fazer o comportamento nativo no contenteditable
+      // Apenas garante foco
+      $("editorContent").focus();
+    }
+    return;
+  }
+});
 
 /* ---------- BOOT ---------- */
 window.addEventListener("DOMContentLoaded", async ()=>{
@@ -557,11 +785,9 @@ window.addEventListener("DOMContentLoaded", async ()=>{
   document.addEventListener("mousedown", e=>{
     if (!$("popupDeteccao").contains(e.target) && e.target !== editor && !editor.contains(e.target)) fecharPopup();
   });
-  document.addEventListener("keydown", e=>{ if (e.key === "Escape") fecharPopup(); });
 
   configurarAutoProximoCapitulo();
 
-  // 1) cache local primeiro (abre instantâneo, offline)
   const cacheProj = await dbGet("projeto");
   if (cacheProj && cacheProj.dados && cacheProj.dados.capitulos){
     projetoLivro = cacheProj.dados;
@@ -583,20 +809,48 @@ window.addEventListener("DOMContentLoaded", async ()=>{
   renderizarListaCapitulos();
   carregarCapituloNaTela(capituloAtual);
 
-  // 2) sincronização com o Git (mais recente vence)
   if (localStorage.getItem("gh_token")){
     await sincronizarTudo(true);
     await listarCommitsGitHub(true);
   }
 });
 
-/* ---------- DIGITAÇÃO / POPUP AUTOMÁTICO ---------- */
+/* ---------- DIGITAÇÃO / POPUP AUTOMÁTICO + EASTER EGG ---------- */
 function aoDigitar(){
   ultimaDigitacao = agora();
   salvarCapituloAtualNaMemoria();
   atualizarTituloDeb();
   atualizarContadorDeb();
   detectarPopupAuto();
+  detectarEasterEgg();
+}
+
+function detectarEasterEgg(){
+  // Só funciona quando está na aba editor
+  if (abaAtual !== "editor") return;
+  const sel = window.getSelection();
+  if (!sel.rangeCount) return;
+  const range = sel.getRangeAt(0);
+  const node = range.startContainer;
+  let antes = "";
+  if (node.nodeType === Node.TEXT_NODE){
+    antes = node.textContent.substring(0, range.startOffset);
+  }
+  if (!antes) return;
+
+  // Pega as últimas N letras (tamanho do segredo) e normaliza
+  const tamanho = SEGREDO_EASTER_EGG.length;
+  const trecho = antes.slice(-tamanho).toLowerCase();
+  
+  // Verifica se o trecho atual é um prefixo válido do segredo OU já é o segredo completo
+  const segredo = SEGREDO_EASTER_EGG;
+  if (trecho === segredo){
+    dispararEasterEgg();
+    return;
+  }
+  
+  // Se o usuário está digitando algo que começa como o segredo, mantém o buffer
+  // (na prática, apenas verificamos a palavra completa ao terminar)
 }
 
 function detectarPopupAuto(){
@@ -617,6 +871,8 @@ function detectarPopupAuto(){
   for (let n = Math.min(3, palavras.length); n >= 1; n--){
     const candidato = normalizarChave(palavras.slice(-n).join(" "));
     if (candidato.length < 2 || candidato === ultimaChavePopup) continue;
+    // Evita disparar popup para a palavra do easter egg
+    if (candidato === SEGREDO_EASTER_EGG) continue;
     const achado = buscarNosIndices(candidato);
     if (achado){
       ultimaChavePopup = candidato;
@@ -657,8 +913,6 @@ function lookupCliqueDuplo(){
 function exibirEncontrado({ tipo, obj }){
   const badgeEl = $("popupBadge");
   const imgEl = $("popupImagem");
-  
-  // Resetar imagem por segurança
   imgEl.style.display = "none";
   imgEl.src = "";
 
@@ -672,8 +926,6 @@ function exibirEncontrado({ tipo, obj }){
     popupAlvo = { palavra: obj.nome || "", tipo, id: obj.id };
     $("btnPopupAdd").style.display = "none";
     $("btnPopupEditar").style.display = "inline-flex";
-    
-    // Exibir imagem se existir
     if (obj.imagemUrl) {
       imgEl.src = obj.imagemUrl;
       imgEl.style.display = "block";
@@ -695,7 +947,6 @@ function exibirEncontrado({ tipo, obj }){
 function exibirNaoEncontrado(palavra){
   const badgeEl = $("popupBadge");
   const imgEl = $("popupImagem");
-  
   imgEl.style.display = "none";
   imgEl.src = "";
 
@@ -713,7 +964,7 @@ function exibirNaoEncontrado(palavra){
 
 function fecharPopup(){
   $("popupDeteccao").style.display = "none";
-  $("popupImagem").style.display = "none"; // Garantir que a imagem suma ao fechar
+  $("popupImagem").style.display = "none";
   $("popupImagem").src = "";
   ultimaChavePopup = "";
 }
@@ -1021,7 +1272,7 @@ function exportarDicionarioJson(){
   setTimeout(()=>{ URL.revokeObjectURL(a.href); a.remove(); }, 500);
 }
 
-/* ---------- IMPORTAÇÃO .TXT (OTIMIZADA PARA 340k VERBETES) ---------- */
+/* ---------- IMPORTAÇÃO .TXT ---------- */
 async function importarBaseTxt(event){
   const file = event.target.files[0];
   if (!file) return;
@@ -1071,10 +1322,7 @@ async function importarBaseTxt(event){
       if (!linha || linha.length < 3) continue;
 
       const idxSep = linha.indexOf(" = ");
-      if (idxSep <= 0){
-        ignoradas++;
-        continue;
-      }
+      if (idxSep <= 0){ ignoradas++; continue; }
 
       const termo = linha.substring(0, idxSep).trim();
       if (!termo || termo.length > TAMANHO_MAX_TERM){ ignoradas++; continue; }
@@ -1087,10 +1335,7 @@ async function importarBaseTxt(event){
       const definicao = partes.length > 1 ? partes.slice(1).join(" ‖ ") : partes[0];
 
       const chave = normalizarChave(termo);
-      if (!chave || chave.length > 120 || vistos.has(chave)){
-        ignoradas++;
-        continue;
-      }
+      if (!chave || chave.length > 120 || vistos.has(chave)){ ignoradas++; continue; }
       vistos.add(chave);
 
       brutos.push({
@@ -1166,30 +1411,25 @@ async function ghLer(caminho, ref){
   if (!res.ok) throw new Error(`GET ${caminho} → ${res.status}`);
   const data = await res.json();
 
-  // Arquivo vazio no GitHub (upload falhou anteriormente)
   if (!data.content || data.size === 0){
-    console.warn(`Arquivo ${caminho} está vazio no GitHub. Será sobrescrito no próximo save.`);
+    console.warn(`Arquivo ${caminho} está vazio no GitHub.`);
     return { sha: data.sha, json: null, corrompido: true };
   }
 
   let texto;
-  try{
-    texto = b64decode(data.content);
-  }catch(e){
+  try{ texto = b64decode(data.content); }
+  catch(e){
     console.warn(`Falha ao decodificar base64 de ${caminho}:`, e.message);
     return { sha: data.sha, json: null, corrompido: true };
   }
 
-  // Arquivo truncado (limite de 100MB estourado ou upload interrompido)
   if (!texto || texto.length < 2){
-    console.warn(`Conteúdo de ${caminho} está truncado/vazio.`);
     return { sha: data.sha, json: null, corrompido: true };
   }
 
   try{
     return { sha: data.sha, json: JSON.parse(texto), corrompido: false };
   }catch(e){
-    console.warn(`JSON inválido em ${caminho} (tamanho: ${texto.length} chars). Erro:`, e.message);
     return { sha: data.sha, json: null, corrompido: true, tamanho: texto.length };
   }
 }
@@ -1272,9 +1512,8 @@ async function salvarDicionarioGitHub(aviso = true){
     const tamanhoBytes = new Blob([jsonStr]).size;
     const tamanhoMB = (tamanhoBytes / (1024*1024)).toFixed(2);
 
-    // Aviso de segurança contra o limite de 100MB do GitHub
     if (tamanhoBytes > 95 * 1024 * 1024){
-      const msg = `O dicionário tem ${tamanhoMB} MB. O GitHub rejeita arquivos acima de 100 MB e pode corromper perto desse limite.\n\nDeseja tentar mesmo assim? (Recomendado: usar "Exportar JSON" e particionar manualmente)`;
+      const msg = `O dicionário tem ${tamanhoMB} MB. O GitHub rejeita arquivos acima de 100 MB e pode corromper perto desse limite.\n\nDeseja tentar mesmo assim?`;
       if (!confirm(msg)) return;
     }
 
@@ -1293,7 +1532,50 @@ async function salvarDicionarioGitHub(aviso = true){
   }
 }
 
-async function puxarDoGitHub(silencioso = false){ return sincronizarTudo(silencioso); }
+async function sincronizarTudo(silencioso = false){
+  const { token } = cfg();
+  if (!token){ if (!silencioso) toast("Configure o token primeiro."); return; }
+  try{
+    const [remotoHist, remotoDic] = await Promise.all([
+      ghLer(ARQ_HISTORIA),
+      ghLer(ARQ_DICIONARIO)
+    ]);
+    let atualizacoes = 0;
+
+    if (remotoHist && !remotoHist.corrompido && remotoHist.json){
+      const j = remotoHist.json;
+      const remotoTempo = j.atualizadoEm || 0;
+      if (remotoTempo > projetoAtualizadoEm){
+        projetoLivro.metadados = j.metadados || projetoLivro.metadados;
+        projetoLivro.capitulos = j.capitulos || projetoLivro.capitulos;
+        projetoLivro.personagens = j.personagens || [];
+        projetoAtualizadoEm = remotoTempo;
+        atualizacoes++;
+      }
+    }
+    if (remotoDic && !remotoDic.corrompido && remotoDic.json && Array.isArray(remotoDic.json.termos)){
+      const remotoTempo = remotoDic.json.atualizadoEm || 0;
+      if (remotoTempo > dicAtualizadoEm){
+        dicionario = remotoDic.json.termos;
+        dicAtualizadoEm = remotoTempo;
+        atualizacoes++;
+      }
+    }
+
+    if (atualizacoes > 0){
+      marcarProjetoAlterado();
+      reconstruirIndices();
+      renderizarListaCapitulos();
+      carregarCapituloNaTela(capituloAtual);
+      if (!silencioso) toast(`📥 ${atualizacoes} arquivo(s) atualizado(s) da nuvem.`);
+    } else if (!silencioso){
+      toast("☁️ Nuvem sincronizada (nada novo).");
+    }
+  }catch(e){
+    console.error(e);
+    if (!silencioso) toast("❌ Erro ao sincronizar: " + e.message);
+  }
+}
 
 async function listarCommitsGitHub(){
   const { repo, token } = cfg();
@@ -1321,8 +1603,6 @@ async function listarCommitsGitHub(){
 async function carregarVersaoSelecionada(){
   const sha = $("selectCommits").value;
   if (!sha) return;
-  
-  // Confirmação removida conforme solicitado
   try{
     const remoto = await ghLer(ARQ_HISTORIA, sha);
     if (!remoto) return toast("Versão não encontrada.");
