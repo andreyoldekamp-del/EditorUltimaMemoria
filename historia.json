@@ -3,7 +3,7 @@
     "titulo": "Última Memória",
     "autor": "Autor"
   },
-  "atualizadoEm": 1795614137329,
+  "atualizadoEm": 1795614787467,
   "capitulos": {
     "cap_1": {
       "titulo": "Capítulo 1 - Tempestade.",
@@ -135,7 +135,7 @@
         "Cruel",
         "inclemente"
       ],
-      "imagemUrl": "",
+      "imagemUrl": "https://raw.githubusercontent.com/andreyoldekamp-del/EditorUltimaMemoria/main/assets/char_1795614084256.jpg?v=1795614787467",
       "biografia_xhtml": "<p>Conquistador de Amahana, planeta ha 50 minutos luz da terra.</p>"
     }
   ],
