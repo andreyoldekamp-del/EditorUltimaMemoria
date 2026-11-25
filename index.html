@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>GraphZO // V21</title>
+<title>GraphZO // ÚLTIMA MEMÓRIA [NEON V18 - DICIONÁRIO GLOBAL OTIMIZADO]</title>
 <style>
   :root{
     --bg-base:#030712; --bg-panel:#0b0f19; --bg-card:#111827;
@@ -89,7 +89,10 @@
   .popup-imagem {
     width: 100%;max-height: 180px;object-fit: cover;border-radius: 4px;
     margin-bottom: 10px;border: 1px solid var(--border-neon);display: none;background: var(--bg-base);
+    cursor: pointer;
+    transition: opacity 0.2s;
   }
+  .popup-imagem:hover { opacity: 0.8; }
   .badge-tipo{font-size:10px;padding:3px 8px;border-radius:3px;font-weight:bold}
   .badge-personagem{background:var(--accent-purple);color:#fff}
   .badge-dicionario{background:var(--accent-cyan);color:var(--bg-base)}
@@ -147,6 +150,41 @@
   }
   .modal-fechar:hover{background:var(--accent-purple);color:#fff}
   .easter-hint{font-size:10px;color:var(--text-muted);text-align:center;margin-top:16px;font-style:italic}
+
+  /* --- MODAL DE VISUALIZAÇÃO DE IMAGEM --- */
+  #modalImagem{
+    position:fixed;inset:0;background:rgba(0,0,0,0.95);z-index:10002;
+    display:none;align-items:center;justify-content:center;padding:20px;
+    backdrop-filter: blur(6px);
+  }
+  #modalImagem.ativo{display:flex}
+  .modal-imagem-conteudo{
+    position:relative;max-width:90vw;max-height:90vh;
+  }
+  .modal-imagem-img{
+    max-width:90vw;max-height:90vh;object-fit:contain;border-radius:8px;
+    box-shadow:0 0 80px rgba(6,182,212,0.4);
+  }
+  .modal-imagem-fechar{
+    position:absolute;top:-40px;right:0;background:var(--bg-panel);border:2px solid var(--accent-cyan);
+    color:var(--accent-cyan);width:36px;height:36px;border-radius:50%;
+    display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:16px;font-weight:bold;
+  }
+  .modal-imagem-fechar:hover{background:var(--accent-cyan);color:var(--bg-base)}
+  /* ----------------------------------------------- */
+
+  /* --- IMAGEM DO PERSONAGEM CLICÁVEL --- */
+  .char-avatar-container{
+    width:120px;height:120px;background:var(--bg-base);border:1px solid var(--accent-cyan);
+    border-radius:4px;overflow:hidden;display:flex;align-items:center;justify-content:center;
+    flex-direction:column;position:relative;cursor:pointer;
+  }
+  .char-avatar-container:hover{border-color:var(--accent-purple)}
+  .char-avatar-container img{
+    width:100%;height:100%;object-fit:cover;
+  }
+  /* ----------------------------------------------- */
+
   @media(max-width:768px){
     .main-container{flex-direction:column;overflow-y:auto}
     aside.sidebar{width:100%;max-height:190px;border-right:none;border-bottom:1px solid var(--border-neon)}
@@ -223,11 +261,11 @@
   <div class="painel-corpo">
     <div class="cartao">
       <div style="display:flex;gap:16px;margin-bottom:16px;flex-wrap:wrap">
-        <div style="width:120px;height:120px;background:var(--bg-base);border:1px solid var(--accent-cyan);border-radius:4px;overflow:hidden;display:flex;align-items:center;justify-content:center;flex-direction:column;position:relative">
-          <img id="charAvatarPreview" src="" alt="" style="width:100%;height:100%;object-fit:cover;display:none">
+        <div class="char-avatar-container" onclick="abrirModalImagem('charAvatarPreview')">
+          <img id="charAvatarPreview" src="" alt="" style="display:none">
           <span id="charNoPhotoText" style="font-size:10px;color:var(--text-muted)">Sem foto</span>
           <input type="file" id="charImageInput" accept="image/*" style="display:none" onchange="carregarImagemPersonagem(event)">
-          <button type="button" onclick="document.getElementById('charImageInput').click()" style="position:absolute;bottom:4px;font-size:10px;padding:4px 6px;min-height:26px">📷 Foto</button>
+          <button type="button" onclick="event.stopPropagation();document.getElementById('charImageInput').click()" style="position:absolute;bottom:4px;font-size:10px;padding:4px 6px;min-height:26px">📷 Foto</button>
         </div>
         <div style="flex:1;min-width:200px;display:flex;flex-direction:column;gap:8px">
           <input type="text" id="charNome" class="campo" placeholder="Nome do Personagem" oninput="atualizarPersonagemAtual()">
@@ -292,7 +330,7 @@
     <span id="popupBadge" class="badge-tipo">TIPO</span>
     <button type="button" onclick="fecharPopup()" style="padding:2px 8px;min-height:26px;font-size:11px">✖</button>
   </div>
-  <img id="popupImagem" class="popup-imagem" src="" alt="Imagem do Personagem">
+  <img id="popupImagem" class="popup-imagem" src="" alt="Imagem do Personagem" onclick="abrirModalImagem('popupImagem')">
   <div id="popupPalavra" class="popup-palavra">Palavra</div>
   <div id="popupSub" class="popup-sub">Categoria / Papel</div>
   <div id="popupSignificado" class="popup-significado">Significado...</div>
@@ -340,6 +378,14 @@
     <div class="atalho-linha"><span>Digite no editor</span><span class="atalho-teclas"><span class="tecla">e</span><span class="tecla">a</span><span class="tecla">s</span><span class="tecla">t</span><span class="tecla">e</span><span class="tecla">r</span><span class="tecla">e</span><span class="tecla">g</span><span class="tecla">g</span></span></div>
 
     <div class="easter-hint">"Você encontrou o protocolo. Use-o com sabedoria."</div>
+  </div>
+</div>
+
+<!-- MODAL DE VISUALIZAÇÃO DE IMAGEM -->
+<div id="modalImagem" onclick="if(event.target===this)fecharModalImagem()">
+  <div class="modal-imagem-conteudo">
+    <button type="button" class="modal-imagem-fechar" onclick="fecharModalImagem()">✖</button>
+    <img id="modalImagemImg" class="modal-imagem-img" src="" alt="Imagem ampliada">
   </div>
 </div>
 
@@ -412,7 +458,7 @@ function normalizarChave(texto){
   return String(texto ?? "")
     .normalize("NFD").replace(/[\u0300-\u036f]/g, "")
     .replace(/[\u00A0\u200B]/g, " ")
-    .replace(/[.,!?;:()"'«»“”‘’—–\-]/g, "")
+    .replace(/[.,!?;:()"'«»""''—–\-]/g, "")
     .replace(/\s+/g, " ")
     .trim().toLowerCase();
 }
@@ -567,8 +613,22 @@ function dispararEasterEgg(){
   setTimeout(abrirModalAtalhos, 400);
 }
 
+/* --- MODAL DE VISUALIZAÇÃO DE IMAGEM --- */
+function abrirModalImagem(imgId){
+  const img = $(imgId);
+  if (!img || !img.src || img.style.display === "none") return;
+  $("modalImagemImg").src = img.src;
+  $("modalImagem").classList.add("ativo");
+}
+function fecharModalImagem(){
+  $("modalImagem").classList.remove("ativo");
+  $("modalImagemImg").src = "";
+}
+/* ----------------------------------------------- */
+
 document.addEventListener("keydown", (e)=>{
   if (e.key === "Escape"){
+    if ($("modalImagem").classList.contains("ativo")){ fecharModalImagem(); e.preventDefault(); return; }
     if ($("modalAtalhos").classList.contains("ativo")){ fecharModalAtalhos(); e.preventDefault(); return; }
     fecharPopup();
     return;
@@ -583,7 +643,6 @@ document.addEventListener("keydown", (e)=>{
   if (ctrl && shift && key === "s"){ e.preventDefault(); salvarDicionarioGitHub(true); return; }
   if (ctrl && !shift && key === "p"){ e.preventDefault(); sincronizarTudo(); return; }
   if (ctrl && !shift && key === "e"){ e.preventDefault(); exportarDicionarioJson(); return; }
-  // Ctrl+Shift+F → Forçar salvamento (resolve conflitos de SHA)
   if (ctrl && shift && key === "f"){ e.preventDefault(); forcarSalvamento(); return; }
   if (ctrl && !shift && (key === "1" || key === "2" || key === "3")){
     e.preventDefault();
@@ -1155,9 +1214,6 @@ async function importarBaseTxt(event){
   }
 }
 
-/* ============================================================
-   GITHUB — VERSÃO ROBUSTA COM RETRY E FORÇA
-   ============================================================ */
 function cfg(){
   return {
     repo: localStorage.getItem("gh_repo") || REPO_PADRAO,
@@ -1175,10 +1231,6 @@ function configurarGitHub(){
   toast("⚙️ Configurações salvas.");
 }
 
-/**
- * Lê um arquivo do GitHub.
- * Retorna: { sha, json, corrompido, tamanho, motivo }
- */
 async function ghLer(caminho, ref){
   const { repo, token } = cfg();
   if (!token) return null;
@@ -1217,11 +1269,6 @@ async function ghLer(caminho, ref){
   }
 }
 
-/**
- * Grava um arquivo no GitHub com RETRY automático em caso de conflito de SHA.
- * Tenta até 3 vezes, sempre relendo o SHA mais recente antes de tentar novamente.
- * Se o arquivo não existir (404), cria; se existir, atualiza.
- */
 async function ghGravar(caminho, objeto, mensagem, shaInicial){
   const { repo, token } = cfg();
   const url = `https://api.github.com/repos/${repo}/contents/${caminho}`;
@@ -1244,19 +1291,16 @@ async function ghGravar(caminho, objeto, mensagem, shaInicial){
       });
     }catch(e){
       ultimoErro = "rede: " + e.message;
-      // Em erro de rede, tenta reler o SHA
       const fresco = await ghLer(caminho);
       sha = fresco?.sha || null;
       continue;
     }
 
-    // Sucesso
     if (res.ok || res.status === 200 || res.status === 201){
       const data = await res.json();
       return data.content?.sha || data.sha;
     }
 
-    // Conflito de SHA (409) ou entidade não processável (422) — reler SHA e tentar de novo
     if (res.status === 409 || res.status === 422){
       const erroTxt = await res.text().catch(()=>"");
       ultimoErro = `SHA conflito (${res.status}): ${erroTxt.slice(0,120)}`;
@@ -1264,35 +1308,58 @@ async function ghGravar(caminho, objeto, mensagem, shaInicial){
       if (fresco && fresco.sha){
         sha = fresco.sha;
       } else {
-        // Arquivo não existe mais ou está corrompido — tenta criar sem SHA
         sha = null;
       }
       continue;
     }
 
-    // 404 — arquivo não existe, tenta criar sem SHA
     if (res.status === 404){
       sha = null;
       continue;
     }
 
-    // 401/403 — problema de autenticação, não adianta tentar de novo
     if (res.status === 401 || res.status === 403){
       const erroTxt = await res.text().catch(()=>"");
       throw new Error(`Token inválido/expirado (${res.status}). Reconfigure em ⚙️ Config. ${erroTxt.slice(0,100)}`);
     }
 
-    // 413 — arquivo muito grande
     if (res.status === 413){
       throw new Error("Arquivo muito grande para a API do GitHub (>100MB). Use 'Exportar JSON' e particione manualmente.");
     }
 
-    // Outros erros
     const erroTxt = await res.text().catch(()=>"");
     throw new Error(`HTTP ${res.status}: ${erroTxt.slice(0,200)}`);
   }
 
   throw new Error(`Falha após ${MAX_TENTATIVAS} tentativas. Último erro: ${ultimoErro}`);
+}
+
+/**
+ * Grava arquivo binário (base64) no GitHub — usado para imagens
+ */
+async function ghGravarBase64(caminho, base64, mensagem, sha){
+  const { repo, token } = cfg();
+  const body = { message: mensagem, content: base64 };
+  if (sha) body.sha = sha;
+  const res = await fetch(`https://api.github.com/repos/${repo}/contents/${caminho}`, {
+    method:"PUT",
+    headers:{ Authorization:`token ${token}`, "Content-Type":"application/json" },
+    body: JSON.stringify(body)
+  });
+  if (res.status === 409 || res.status === 422){
+    const atual = await ghLer(caminho);
+    if (atual && atual.sha){
+      body.sha = atual.sha;
+      const res2 = await fetch(`https://api.github.com/repos/${repo}/contents/${caminho}`, {
+        method:"PUT",
+        headers:{ Authorization:`token ${token}`, "Content-Type":"application/json" },
+        body: JSON.stringify(body)
+      });
+      if (!res2.ok) throw new Error("upload retry " + res2.status);
+      return;
+    }
+  }
+  if (!res.ok) throw new Error("upload " + res.status);
 }
 
 function marcarProjetoAlterado(){
@@ -1311,7 +1378,6 @@ async function salvarNoGitHub(){
   try{
     const remoto = await ghLer(ARQ_HISTORIA);
     
-    // Se o arquivo remoto está corrompido, avisa e oferece sobrescrever
     if (remoto && remoto.corrompido){
       const prosseguir = confirm(
         `⚠️ O arquivo "historia.json" no GitHub está corrompido (${remoto.motivo || "desconhecido"}).\n\n` +
@@ -1345,10 +1411,6 @@ async function salvarNoGitHub(){
   }
 }
 
-/**
- * FORÇAR SALVAMENTO — resolve o erro "File could not be edited"
- * Sempre lê o SHA mais recente e sobrescreve, ignorando conflitos.
- */
 async function forcarSalvamento(){
   const { token } = cfg();
   if (!token){ toast("Configure o token primeiro."); configurarGitHub(); return; }
@@ -1360,7 +1422,6 @@ async function forcarSalvamento(){
   badge("⚡ forçando...", "var(--warn)");
 
   try{
-    // 1) Forçar história
     const remotoHist = await ghLer(ARQ_HISTORIA);
     const payloadHist = {
       metadados: projetoLivro.metadados,
@@ -1372,7 +1433,6 @@ async function forcarSalvamento(){
     await ghGravar(ARQ_HISTORIA, payloadHist, "GraphZO: história (forçado)", remotoHist?.sha);
     histPendente = false;
 
-    // 2) Forçar dicionário se pendente
     if (dicPendente || (remotoHist && remotoHist.corrompido)){
       const remotoDic = await ghLer(ARQ_DICIONARIO);
       const payloadDic = {
@@ -1427,7 +1487,6 @@ async function salvarDicionarioGitHub(aviso = true){
     badge(`☁️ enviando dicionário (${tamanhoMB} MB)...`, "var(--warn)");
     const remoto = await ghLer(ARQ_DICIONARIO);
     
-    // Se corrompido, avisa
     if (remoto && remoto.corrompido && aviso){
       console.warn(`Dicionário remoto corrompido (${remoto.motivo}). Será sobrescrito.`);
     }
@@ -1550,19 +1609,29 @@ async function carregarImagemPersonagem(event){
   if (!file || !characterSelecionadoId) return;
   const { token } = cfg();
   if (!token) return toast("Configure o token do GitHub.");
+
   try{
+    toast("📷 Processando imagem...");
     const dataUrl = await redimensionar(file, 320, 0.85);
     const base64 = dataUrl.split(",")[1];
     const caminho = `assets/${characterSelecionadoId}.jpg`;
+    
+    // Verifica se já existe
     const existente = await ghLer(caminho).catch(()=>null);
-    await ghGravar(caminho, { content: base64 }, `Foto ${characterSelecionadoId}`, existente?.sha);
+    
+    // Usa ghGravarBase64 para upload correto de imagem
+    await ghGravarBase64(caminho, base64, `Foto ${characterSelecionadoId}`, existente?.sha);
+    
     const { repo } = cfg();
     const p = projetoLivro.personagens.find(x=>x.id===characterSelecionadoId);
     p.imagemUrl = `https://raw.githubusercontent.com/${repo}/main/${caminho}?v=${agora()}`;
     marcarProjetoAlterado();
     selecionarPersonagem(characterSelecionadoId);
-    toast("📷 Foto salva.");
-  }catch(e){ console.error(e); toast("❌ Erro ao enviar foto: " + e.message); }
+    toast("📷 Foto salva com sucesso!");
+  }catch(e){ 
+    console.error(e); 
+    toast("❌ Erro ao enviar foto: " + e.message); 
+  }
 }
 
 function redimensionar(file, maxLado, qualidade){
