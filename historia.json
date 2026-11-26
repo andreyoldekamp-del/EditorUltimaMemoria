@@ -3,7 +3,7 @@
     "titulo": "Última Memória",
     "autor": "Autor"
   },
-  "atualizadoEm": 1795735065875,
+  "atualizadoEm": 1795735191312,
   "capitulos": {
     "cap_1": {
       "titulo": "Capítulo 1 - Tempestade.",
@@ -172,11 +172,27 @@
     },
     {
       "id": "char_1795735040583",
-      "nome": "Jeffrey",
+      "nome": "Jeffrey Hamingway",
       "papel": "Secundário",
       "caracteristicas": [],
       "imagemUrl": "",
       "biografia_xhtml": "<p>Pai de Teddy, 50 anos, 30 de casamento com Ruth</p>"
+    },
+    {
+      "id": "char_1795735077367",
+      "nome": "Ruth Hamingway",
+      "papel": "Secundário",
+      "caracteristicas": [],
+      "imagemUrl": "",
+      "biografia_xhtml": "<p>Mãe de Teddy</p>"
+    },
+    {
+      "id": "char_1795735139656",
+      "nome": "Loretta Hamingway",
+      "papel": "Secundário",
+      "caracteristicas": [],
+      "imagemUrl": "",
+      "biografia_xhtml": "<p>Irmão mais velha de Teddy, mora em nova York, é casada</p>"
     }
   ],
   "dicionarioRef": "dicionario_global.json"
