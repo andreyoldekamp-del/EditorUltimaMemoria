@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>GraphZO // Vers 24 </title>
+<title>GraphZO // V25 - SalvarH</title>
 <style>
   :root{
     --bg-base:#030712; --bg-panel:#0b0f19; --bg-card:#111827;
@@ -150,20 +150,16 @@
   .modal-fechar:hover{background:var(--accent-purple);color:#fff}
   .easter-hint{font-size:10px;color:var(--text-muted);text-align:center;margin-top:16px;font-style:italic}
 
-  /* --- MODAL DE VISUALIZAÇÃO DE IMAGEM --- */
   #modalImagem{
     position:fixed;inset:0;background:rgba(0,0,0,0.95);z-index:10002;
     display:none;align-items:center;justify-content:center;padding:20px;
     backdrop-filter: blur(6px);
   }
   #modalImagem.ativo{display:flex}
-  .modal-imagem-conteudo{
-    position:relative;max-width:95vw;max-height:95vh;
-  }
+  .modal-imagem-conteudo{ position:relative;max-width:95vw;max-height:95vh; }
   .modal-imagem-img{
     max-width:95vw;max-height:95vh;object-fit:contain;border-radius:8px;
-    box-shadow:0 0 80px rgba(6,182,212,0.4);
-    display:block;
+    box-shadow:0 0 80px rgba(6,182,212,0.4); display:block;
   }
   .modal-imagem-fechar{
     position:absolute;top:-50px;right:0;background:var(--bg-panel);border:2px solid var(--accent-cyan);
@@ -171,26 +167,16 @@
     display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:18px;font-weight:bold;
   }
   .modal-imagem-fechar:hover{background:var(--accent-cyan);color:var(--bg-base)}
-  /* ----------------------------------------------- */
 
-  /* --- AVATAR DO PERSONAGEM (dois cliques separados) --- */
-  .char-avatar-wrap{
-    display:flex;flex-direction:column;gap:4px;align-items:center;
-  }
+  .char-avatar-wrap{ display:flex;flex-direction:column;gap:4px;align-items:center; }
   .char-avatar-box{
     width:120px;height:120px;background:var(--bg-base);border:1px solid var(--accent-cyan);
-    border-radius:4px;overflow:hidden;display:flex;align-items:center;justify-content:center;
-    position:relative;
+    border-radius:4px;overflow:hidden;display:flex;align-items:center;justify-content:center; position:relative;
   }
   .char-avatar-box.has-image{cursor:pointer}
   .char-avatar-box.has-image:hover{border-color:var(--accent-purple)}
-  .char-avatar-box img{
-    width:100%;height:100%;object-fit:cover;display:block;
-  }
-  .char-avatar-box .no-photo{
-    font-size:10px;color:var(--text-muted);
-  }
-  /* ----------------------------------------------- */
+  .char-avatar-box img{ width:100%;height:100%;object-fit:cover;display:block; }
+  .char-avatar-box .no-photo{ font-size:10px;color:var(--text-muted); }
 
   @media(max-width:768px){
     .main-container{flex-direction:column;overflow-y:auto}
@@ -208,7 +194,7 @@
 
 <header>
   <div>
-    <h1>SYS_GRAPHZO // <span>NEON Vers 24</span></h1>
+    <h1>SYS_GRAPHZO // <span>NEON V25 - SalvarH</span></h1>
     <div id="lastSavedBadge" style="font-size:10px;color:var(--success)">🕒 Pronto para edição</div>
   </div>
   <div style="display:flex;gap:6px;flex-wrap:wrap">
@@ -270,7 +256,6 @@
   <div class="painel-corpo">
     <div class="cartao">
       <div style="display:flex;gap:16px;margin-bottom:16px;flex-wrap:wrap">
-        <!-- AVATAR: clique na imagem amplia, botão 📷 abre explorer -->
         <div class="char-avatar-wrap">
           <div class="char-avatar-box" id="charAvatarBox">
             <img id="charAvatarPreview" src="" alt="" style="display:none">
@@ -319,15 +304,12 @@
           <input type="file" id="txtBaseInput" accept=".txt,text/plain" style="display:none" onchange="importarBaseTxt(event)">
         </label>
       </div>
-
       <div style="display:flex;flex-direction:column;gap:8px">
         <input type="text" id="termoTitulo" class="campo" placeholder="Termo ou Palavra" oninput="atualizarTermoAtual()">
         <input type="text" id="termoCategoria" class="campo" placeholder="Categoria" oninput="atualizarTermoAtual()">
       </div>
-
       <label class="rotulo">DEFINIÇÃO:</label>
       <div id="termoDefinicao" contenteditable="true" class="area-edit" oninput="atualizarTermoAtual()" style="min-height:120px"></div>
-
       <div style="margin-top:12px;display:flex;justify-content:space-between;gap:8px;flex-wrap:wrap">
         <button type="button" onclick="exportarDicionarioJson()">💾 Exportar JSON</button>
         <button type="button" class="btn-save" onclick="salvarDicionarioGitHub(true)">☁️ Salvar Dicionário</button>
@@ -360,38 +342,32 @@
     <button type="button" class="modal-fechar" onclick="fecharModalAtalhos()">✖</button>
     <div class="modal-titulo">⚡ PROTOCOLO SECRETO ⚡</div>
     <div class="modal-subtitulo">ATALHOS DO EDITOR DE ÚLTIMA MEMÓRIA</div>
-
     <div class="atalho-categoria">💾 SALVAMENTO &amp; NUVEM</div>
     <div class="atalho-linha"><span>Salvar tudo na nuvem</span><span class="atalho-teclas"><span class="tecla">Ctrl</span><span class="tecla">S</span></span></div>
     <div class="atalho-linha"><span>Forçar salvamento (resolve conflitos)</span><span class="atalho-teclas"><span class="tecla">Ctrl</span><span class="tecla">Shift</span><span class="tecla">F</span></span></div>
     <div class="atalho-linha"><span>Salvar só o dicionário</span><span class="atalho-teclas"><span class="tecla">Ctrl</span><span class="tecla">Shift</span><span class="tecla">S</span></span></div>
     <div class="atalho-linha"><span>Puxar do GitHub</span><span class="atalho-teclas"><span class="tecla">Ctrl</span><span class="tecla">P</span></span></div>
     <div class="atalho-linha"><span>Exportar dicionário JSON</span><span class="atalho-teclas"><span class="tecla">Ctrl</span><span class="tecla">E</span></span></div>
-
     <div class="atalho-categoria">🧭 NAVEGAÇÃO ENTRE ABAS</div>
     <div class="atalho-linha"><span>Aba Editor</span><span class="atalho-teclas"><span class="tecla">Ctrl</span><span class="tecla">1</span></span></div>
     <div class="atalho-linha"><span>Aba Personagens</span><span class="atalho-teclas"><span class="tecla">Ctrl</span><span class="tecla">2</span></span></div>
     <div class="atalho-linha"><span>Aba Dicionário</span><span class="atalho-teclas"><span class="tecla">Ctrl</span><span class="tecla">3</span></span></div>
-
     <div class="atalho-categoria">✨ CRIAÇÃO RÁPIDA</div>
     <div class="atalho-linha"><span>Novo capítulo</span><span class="atalho-teclas"><span class="tecla">Ctrl</span><span class="tecla">N</span></span></div>
     <div class="atalho-linha"><span>Novo personagem</span><span class="atalho-teclas"><span class="tecla">Ctrl</span><span class="tecla">Shift</span><span class="tecla">N</span></span></div>
     <div class="atalho-linha"><span>Novo termo</span><span class="atalho-teclas"><span class="tecla">Ctrl</span><span class="tecla">Shift</span><span class="tecla">D</span></span></div>
     <div class="atalho-linha"><span>Inserir parágrafo ID</span><span class="atalho-teclas"><span class="tecla">Ctrl</span><span class="tecla">Enter</span></span></div>
-
     <div class="atalho-categoria">🎨 FORMATAÇÃO DE TEXTO</div>
     <div class="atalho-linha"><span>Negrito</span><span class="atalho-teclas"><span class="tecla">Ctrl</span><span class="tecla">B</span></span></div>
     <div class="atalho-linha"><span>Itálico</span><span class="atalho-teclas"><span class="tecla">Ctrl</span><span class="tecla">I</span></span></div>
     <div class="atalho-linha"><span>Sublinhado</span><span class="atalho-teclas"><span class="tecla">Ctrl</span><span class="tecla">U</span></span></div>
-
     <div class="atalho-categoria">🔧 UTILITÁRIOS</div>
     <div class="atalho-linha"><span>Fechar popup / modal</span><span class="atalho-teclas"><span class="tecla">Esc</span></span></div>
     <div class="atalho-linha"><span>Focar busca de termos</span><span class="atalho-teclas"><span class="tecla">Ctrl</span><span class="tecla">F</span></span></div>
     <div class="atalho-linha"><span>Mostrar esta tela</span><span class="atalho-teclas"><span class="tecla">Ctrl</span><span class="tecla">/</span></span></div>
-
     <div class="atalho-categoria">🥚 EASTER EGGS</div>
     <div class="atalho-linha"><span>Digite no editor</span><span class="atalho-teclas"><span class="tecla">e</span><span class="tecla">a</span><span class="tecla">s</span><span class="tecla">t</span><span class="tecla">e</span><span class="tecla">r</span><span class="tecla">e</span><span class="tecla">g</span><span class="tecla">g</span></span></div>
-
+    <div class="atalho-linha"><span>Digite no editor</span><span class="atalho-teclas"><span class="tecla">s</span><span class="tecla">a</span><span class="tecla">l</span><span class="tecla">v</span><span class="tecla">a</span><span class="tecla">r</span><span class="tecla"> </span><span class="tecla">h</span><span class="tecla">i</span><span class="tecla">s</span><span class="tecla">t</span><span class="tecla">ó</span><span class="tecla">r</span><span class="tecla">i</span><span class="tecla">a</span></span></div>
     <div class="easter-hint">"Você encontrou o protocolo. Use-o com sabedoria."</div>
   </div>
 </div>
@@ -413,7 +389,7 @@
 
 <script>
 /* ============================================================
-   GraphZO V18
+   GraphZO V24 - Com Easter Egg de Salvamento
    ============================================================ */
 
 const REPO_PADRAO = "andreyoldekamp-del/EditorUltimaMemoria";
@@ -456,6 +432,7 @@ let ultimaDigitacao = 0;
 
 let bufferEasterEgg = "";
 const SEGREDO_EASTER_EGG = "easteregg";
+const SEGREDO_SALVAR = "salvar história";
 
 const $ = id => document.getElementById(id);
 const agora = () => Date.now();
@@ -504,7 +481,7 @@ function abrirDB(){
   if (dbPromise) return dbPromise;
   dbPromise = new Promise((resolve, reject)=>{
     if (!("indexedDB" in window)) return reject(new Error("sem IndexedDB"));
-    const req = indexedDB.open("graphzo_v18", 1);
+    const req = indexedDB.open("graphzo_v24", 1);
     req.onupgradeneeded = () => {
       const db = req.result;
       if (!db.objectStoreNames.contains("kv")) db.createObjectStore("kv");
@@ -637,12 +614,41 @@ function dispararEasterEgg(){
   setTimeout(abrirModalAtalhos, 400);
 }
 
+/* ---------- EASTER EGG: SALVAR HISTÓRIA ---------- */
+function detectarEasterEggSalvar() {
+    if (abaAtual !== "editor") return;
+    const sel = window.getSelection();
+    if (!sel.rangeCount) return;
+    const range = sel.getRangeAt(0);
+    const node = range.startContainer;
+
+    if (node.nodeType === Node.TEXT_NODE) {
+        const textoAntes = node.textContent.substring(0, range.startOffset).toLowerCase();
+        
+        if (textoAntes.endsWith(SEGREDO_SALVAR)) {
+            // 1. Remover a frase do texto
+            const textoOriginal = node.textContent;
+            const inicio = textoOriginal.substring(0, range.startOffset - SEGREDO_SALVAR.length);
+            const fim = textoOriginal.substring(range.startOffset);
+            node.textContent = inicio + fim;
+
+            // 2. Reposicionar o cursor para onde a frase foi removida
+            const novoCursor = range.startOffset - SEGREDO_SALVAR.length;
+            range.setStart(node, novoCursor);
+            range.setEnd(node, novoCursor);
+            sel.removeAllRanges();
+            sel.addRange(range);
+
+            // 3. Disparar o salvamento
+            toast("🥚 Salvamento secreto ativado!");
+            salvarNoGitHub();
+        }
+    }
+}
+
 /* ---------- MODAL DE VISUALIZAÇÃO DE IMAGEM ---------- */
 function abrirModalImagem(src){
-  if (!src){
-    toast("⚠️ Nenhuma imagem para exibir");
-    return;
-  }
+  if (!src){ toast("⚠️ Nenhuma imagem para exibir"); return; }
   const modalImg = $("modalImagemImg");
   modalImg.src = src;
   $("modalImagem").classList.add("ativo");
@@ -652,31 +658,22 @@ function fecharModalImagem(){
   $("modalImagemImg").src = "";
 }
 
-/* ---------- EVENTO DE CLIQUE NO AVATAR DO PERSONAGEM ---------- */
-// Este setup acontece no boot — clique na imagem amplia, mas não interfere no botão "📷 Escolher foto"
 function setupAvatarClick(){
   const box = $("charAvatarBox");
   if (!box) return;
   box.addEventListener("click", (e)=>{
-    // Se clicou no botão de escolher foto, não faz nada (o botão já trata)
     if (e.target.closest("button")) return;
-    // Se tem imagem, abre modal
     const img = $("charAvatarPreview");
-    if (img && img.style.display !== "none" && img.src){
-      abrirModalImagem(img.src);
-    }
+    if (img && img.style.display !== "none" && img.src){ abrirModalImagem(img.src); }
   });
 }
 
-/* ---------- EVENTO DE CLIQUE NA IMAGEM DO POPUP ---------- */
 function setupPopupImagemClick(){
   const img = $("popupImagem");
   if (!img) return;
   img.addEventListener("click", (e)=>{
     e.stopPropagation();
-    if (img.src && img.style.display !== "none"){
-      abrirModalImagem(img.src);
-    }
+    if (img.src && img.style.display !== "none"){ abrirModalImagem(img.src); }
   });
 }
 
@@ -685,8 +682,7 @@ document.addEventListener("keydown", (e)=>{
   if (e.key === "Escape"){
     if ($("modalImagem").classList.contains("ativo")){ fecharModalImagem(); e.preventDefault(); return; }
     if ($("modalAtalhos").classList.contains("ativo")){ fecharModalAtalhos(); e.preventDefault(); return; }
-    fecharPopup();
-    return;
+    fecharPopup(); return;
   }
   const alvo = e.target;
   const ehCampoEditavel = alvo && (alvo.isContentEditable || alvo.tagName === "INPUT" || alvo.tagName === "TEXTAREA" || alvo.tagName === "SELECT");
@@ -717,15 +713,9 @@ document.addEventListener("keydown", (e)=>{
     else toast("💡 Vá para a aba Dicionário (Ctrl+3) para usar a busca");
     return;
   }
-  if (ctrl && key === "enter"){
-    if (abaAtual === "editor"){ e.preventDefault(); inserirParagrafoID(); }
-    return;
-  }
+  if (ctrl && key === "enter"){ if (abaAtual === "editor"){ e.preventDefault(); inserirParagrafoID(); } return; }
   if (ctrl && (key === "/" || key === "?")){ e.preventDefault(); abrirModalAtalhos(); return; }
-  if (ctrl && !shift && (key === "b" || key === "i" || key === "u")){
-    if (abaAtual === "editor") $("editorContent").focus();
-    return;
-  }
+  if (ctrl && !shift && (key === "b" || key === "i" || key === "u")){ if (abaAtual === "editor") $("editorContent").focus(); return; }
 });
 
 /* ---------- BOOT ---------- */
@@ -743,8 +733,6 @@ window.addEventListener("DOMContentLoaded", async ()=>{
   });
 
   configurarAutoProximoCapitulo();
-
-  // Setup dos cliques nas imagens
   setupAvatarClick();
   setupPopupImagemClick();
 
@@ -783,6 +771,7 @@ function aoDigitar(){
   atualizarContadorDeb();
   detectarPopupAuto();
   detectarEasterEgg();
+  detectarEasterEggSalvar(); // <-- NOVO: Verifica o Easter Egg de salvar
 }
 
 function detectarEasterEgg(){
@@ -817,7 +806,7 @@ function detectarPopupAuto(){
   for (let n = Math.min(3, palavras.length); n >= 1; n--){
     const candidato = normalizarChave(palavras.slice(-n).join(" "));
     if (candidato.length < 2 || candidato === ultimaChavePopup) continue;
-    if (candidato === SEGREDO_EASTER_EGG) continue;
+    if (candidato === SEGREDO_EASTER_EGG || candidato === SEGREDO_SALVAR) continue;
     const achado = buscarNosIndices(candidato);
     if (achado){ ultimaChavePopup = candidato; exibirEncontrado(achado); return; }
   }
@@ -1080,7 +1069,6 @@ function selecionarPersonagem(id){
   $("charTags").value = (p.caracteristicas || []).join(", ");
   $("charBiografia").innerHTML = p.biografia_xhtml || "";
 
-  // Atualiza avatar
   const img = $("charAvatarPreview");
   const txt = $("charNoPhotoText");
   const box = $("charAvatarBox");
@@ -1095,7 +1083,6 @@ function selecionarPersonagem(id){
     txt.style.display = "block";
     box.classList.remove("has-image");
   }
-
   renderizarListaPersonagens();
 }
 const refletirPersonagem = debounce(()=>{ reconstruirIndices(); renderizarListaPersonagens(); }, 350);
@@ -1416,9 +1403,6 @@ async function ghGravar(caminho, objeto, mensagem, shaInicial){
   throw new Error(`Falha após ${MAX_TENTATIVAS} tentativas. Último erro: ${ultimoErro}`);
 }
 
-/**
- * Grava arquivo binário (base64) no GitHub — usado para imagens
- */
 async function ghGravarBase64(caminho, base64, mensagem, shaInicial){
   const { repo, token } = cfg();
   const url = `https://api.github.com/repos/${repo}/contents/${caminho}`;
@@ -1724,20 +1708,15 @@ async function carregarImagemPersonagem(event){
     const base64 = dataUrl.split(",")[1];
     const caminho = `assets/${characterSelecionadoId}.jpg`;
     
-    // Verifica se já existe para obter o SHA
     const existente = await ghLer(caminho).catch(()=>null);
-    
-    // Upload da imagem
     await ghGravarBase64(caminho, base64, `Foto ${characterSelecionadoId}`, existente?.sha);
     
-    // Atualiza a URL no personagem
     const { repo } = cfg();
     const p = projetoLivro.personagens.find(x=>x.id===characterSelecionadoId);
     if (!p) return;
     p.imagemUrl = `https://raw.githubusercontent.com/${repo}/main/${caminho}?v=${agora()}`;
     marcarProjetoAlterado();
     
-    // Atualiza a tela
     selecionarPersonagem(characterSelecionadoId);
     toast("📷 Foto enviada ao GitHub!");
   }catch(e){ 
