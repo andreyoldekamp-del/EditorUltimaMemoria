@@ -701,9 +701,9 @@ function detectarEasterEggsTexto() {
 			toast("🥚 Salvando capítulo atual e abrindo novo capítulo...");
 			(async () => {
 				// 1) Salva o capítulo atual no GitHub (equivalente ao Ctrl+S)
-				await salvarNoGitHub();
-				// 2) Só depois de salvar, abre a tela de "+ Cap."
 				criarNovoCapitulo();
+				salvarNoGitHub();
+				// 2) Só depois de salvar, abre a tela de "+ Cap."
 			})();
 			return;
 		}
