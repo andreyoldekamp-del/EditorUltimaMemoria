@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>GraphZO // V3.1 - NovoCap</title>
+<title>GraphZO //V3.1 - EEgg-Lotta</title>
 <!-- Importação da fonte Comfortaa -->
 <link href="https://fonts.googleapis.com/css2?family=Comfortaa:wght@400;700&display=swap" rel="stylesheet">
 <style>
@@ -261,7 +261,7 @@
 
 <div class="top-wrapper" id="topWrapper">
   <div class="header-top-line">
-    <h1>SYS_GRAPHZO // <span>NEON V3.1 - NovoCap</span></h1>
+    <h1>SYS_GRAPHZO // <span>NEONV3.1 - EEgg-Lotta</span></h1>
     <div id="lastSavedBadge">🕒 Pronto para edição</div>
   </div>
 
@@ -296,6 +296,8 @@
       <label class="chk-inline">
         <input type="checkbox" id="toggleAutoProximo" checked> ⏭️ Auto-cap
       </label>
+      <button type="button" onclick="irParaInicioTexto()" title="Ir para o início do texto">⟱</button>
+      <button type="button" onclick="irParaFimTexto()" title="Ir para o fim do texto">⟰</button>
     </span>
   </div>
 </div>
@@ -694,12 +696,13 @@ function detectarEasterEggsTexto() {
 
     if (node.nodeType === Node.TEXT_NODE) {
         const textoAntes = node.textContent.substring(0, range.startOffset).replace(/\u00A0/g, " ").toLowerCase();
-
+        
         const cmdProximo = SEGREDO_PROXIMO_LISTA.find(s => textoAntes.endsWith(s));
         if (cmdProximo) {
             limparComandoTexto(node, range, sel, cmdProximo.length);
-            toast("🥚 Abrindo novo capítulo...");
+            toast("🥚 Novo capítulo criado e salvando na nuvem...");
             criarNovoCapitulo();
+            salvarNoGitHub();
             return;
         }
 
@@ -710,6 +713,7 @@ function detectarEasterEggsTexto() {
             salvarNoGitHub();
             return;
         }
+
     }
 }
 
@@ -760,6 +764,56 @@ function configurarCabecalhoRetratil() {
       ultimoScroll = scrollAtual;
     }, { passive: true });
   });
+}
+
+/* FUNÇÕES DE NAVEGAÇÃO RÁPIDA CORRIGIDAS */
+function irParaInicioTexto() {
+  const editorContent = $("editorContent");
+  const editorArea = $("editorArea");
+  if (!editorContent) return;
+
+  bloqueioAutoScroll = agora() + 1500;
+  editorContent.focus();
+
+  // Posiciona o cursor no início da primeira linha
+  const range = document.createRange();
+  const sel = window.getSelection();
+  const primeiroNo = editorContent.firstChild || editorContent;
+  
+  range.setStart(primeiroNo, 0);
+  range.collapse(true);
+  sel.removeAllRanges();
+  sel.addRange(range);
+
+  // Rola tanto a janela quanto o container do editor para o topo
+  window.scrollTo({ top: 0, behavior: "smooth" });
+  if (editorArea) editorArea.scrollTop = 0;
+  
+  // Garante que o cabeçalho superior reapareça
+  const topWrapper = $("topWrapper");
+  if (topWrapper) topWrapper.classList.remove("hidden");
+}
+
+function irParaFimTexto() {
+  const editorContent = $("editorContent");
+  const editorArea = $("editorArea");
+  if (!editorContent) return;
+
+  // Evita que o recurso "Auto-cap" pule para o próximo capítulo ao chegar no fim
+  bloqueioAutoScroll = agora() + 1500;
+  editorContent.focus();
+
+  // Posiciona o cursor no final da última linha
+  const range = document.createRange();
+  const sel = window.getSelection();
+  range.selectNodeContents(editorContent);
+  range.collapse(false);
+  sel.removeAllRanges();
+  sel.addRange(range);
+
+  // Rola a janela e o container do editor até o final do texto
+  window.scrollTo({ top: document.body.scrollHeight, behavior: "smooth" });
+  if (editorArea) editorArea.scrollTop = editorArea.scrollHeight;
 }
 
 document.addEventListener("keydown", (e)=>{
