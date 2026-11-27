@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>GraphZO // V3.0 - _East</title>
+<title>GraphZO //V3.0 - EEgg</title>
 <!-- Importação da fonte Comfortaa -->
 <link href="https://fonts.googleapis.com/css2?family=Comfortaa:wght@400;700&display=swap" rel="stylesheet">
 <style>
@@ -261,7 +261,7 @@
 
 <div class="top-wrapper" id="topWrapper">
   <div class="header-top-line">
-    <h1>SYS_GRAPHZO // <span>NEW V3.0 - _East</span></h1>
+    <h1>SYS_GRAPHZO // <span>NEONV3.0 - EEgg</span></h1>
     <div id="lastSavedBadge">🕒 Pronto para edição</div>
   </div>
 
@@ -486,8 +486,8 @@ let ultimaDigitacao = 0;
 
 let bufferEasterEgg = "";
 const SEGREDO_EASTER_EGG = "easteregg";
-const SEGREDO_SALVAR = "_salvar história";
-const SEGREDO_PROXIMO = "_próximo capítulo";
+const SEGREDO_SALVAR_LISTA = ["_salvar história", "_salvar historia"];
+const SEGREDO_PROXIMO_LISTA = ["_próximo capítulo", "_proximo capítulo", "_próximo capitulo", "_proximo capitulo"];
 
 const $ = id => document.getElementById(id);
 const agora = () => Date.now();
@@ -673,6 +673,18 @@ function dispararEasterEgg(){
   setTimeout(abrirModalAtalhos, 400);
 }
 
+function limparComandoTexto(node, range, sel, tamanhoComando) {
+    const textoOriginal = node.textContent;
+    const inicio = textoOriginal.substring(0, range.startOffset - tamanhoComando);
+    const fim = textoOriginal.substring(range.startOffset);
+    node.textContent = inicio + fim;
+    const novoCursor = range.startOffset - tamanhoComando;
+    range.setStart(node, novoCursor);
+    range.setEnd(node, novoCursor);
+    sel.removeAllRanges();
+    sel.addRange(range);
+}
+
 function detectarEasterEggsTexto() {
     if (abaAtual !== "editor") return;
     const sel = window.getSelection();
@@ -681,35 +693,21 @@ function detectarEasterEggsTexto() {
     const node = range.startContainer;
 
     if (node.nodeType === Node.TEXT_NODE) {
-        const textoAntes = node.textContent.substring(0, range.startOffset).toLowerCase();
+        const textoAntes = node.textContent.substring(0, range.startOffset).replace(/\u00A0/g, " ").toLowerCase();
         
-        if (textoAntes.endsWith(SEGREDO_SALVAR)) {
-            const textoOriginal = node.textContent;
-            const inicio = textoOriginal.substring(0, range.startOffset - SEGREDO_SALVAR.length);
-            const fim = textoOriginal.substring(range.startOffset);
-            node.textContent = inicio + fim;
-            const novoCursor = range.startOffset - SEGREDO_SALVAR.length;
-            range.setStart(node, novoCursor);
-            range.setEnd(node, novoCursor);
-            sel.removeAllRanges();
-            sel.addRange(range);
+        const cmdSalvar = SEGREDO_SALVAR_LISTA.find(s => textoAntes.endsWith(s));
+        if (cmdSalvar) {
+            limparComandoTexto(node, range, sel, cmdSalvar.length);
             toast("🥚 Salvamento secreto ativado!");
             salvarNoGitHub();
             return;
         }
 
-        if (textoAntes.endsWith(SEGREDO_PROXIMO)) {
-            const textoOriginal = node.textContent;
-            const inicio = textoOriginal.substring(0, range.startOffset - SEGREDO_PROXIMO.length);
-            const fim = textoOriginal.substring(range.startOffset);
-            node.textContent = inicio + fim;
-            const novoCursor = range.startOffset - SEGREDO_PROXIMO.length;
-            range.setStart(node, novoCursor);
-            range.setEnd(node, novoCursor);
-            sel.removeAllRanges();
-            sel.addRange(range);
+        const cmdProximo = SEGREDO_PROXIMO_LISTA.find(s => textoAntes.endsWith(s));
+        if (cmdProximo) {
+            limparComandoTexto(node, range, sel, cmdProximo.length);
             toast("🥚 Salvando e abrindo novo capítulo...");
-            salvarNoGitHub().then(() => {
+            salvarNoGitHub().finally(() => {
                 criarNovoCapitulo();
             });
             return;
@@ -852,7 +850,7 @@ window.addEventListener("DOMContentLoaded", async ()=>{
 });
 
 function aoDigitar(){
-  ultimaDigitacao = agoranos = agora();
+  ultimaDigitacao = agora();
   salvarCapituloAtualNaMemoria();
   atualizarTituloDeb();
   atualizarContadorDeb();
@@ -893,7 +891,7 @@ function detectarPopupAuto(){
   for (let n = Math.min(3, palavras.length); n >= 1; n--){
     const candidato = normalizarChave(palavras.slice(-n).join(" "));
     if (candidato.length < 2 || candidato === ultimaChavePopup) continue;
-    if (candidato === SEGREDO_EASTER_EGG || candidato === SEGREDO_SALVAR || candidato === SEGREDO_PROXIMO) continue;
+    if (candidato === SEGREDO_EASTER_EGG) continue;
     const achado = buscarNosIndices(candidato);
     if (achado){ ultimaChavePopup = candidato; exibirEncontrado(achado); return; }
   }
