@@ -3,7 +3,9 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>GraphZO // V27 - Roll-Line</title>
+<title>GraphZO //NEO V2.9 - LineNovCap</title>
+<!-- Importação da fonte Comfortaa -->
+<link href="https://fonts.googleapis.com/css2?family=Comfortaa:wght@400;700&display=swap" rel="stylesheet">
 <style>
   :root{
     --bg-base:#030712; --bg-panel:#0b0f19; --bg-card:#111827;
@@ -108,11 +110,10 @@
   .item-card strong{display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
   .item-card.active{border-color:var(--accent-cyan);background:#082f49}
   
-  /* Ocupa todo o espaço da tela sem tarjas vazias ou limite central */
   .editor-area{flex:1;display:flex;flex-direction:column;background:var(--bg-base);overflow-y:auto;padding:12px;scroll-behavior:auto;width:100%;}
   #editorContent{
     width:100%;flex:1;min-height:65vh;background:var(--bg-card);padding:18px;border-radius:4px;
-    border:1px solid var(--border-neon);outline:none;font-family:'Times New Roman',serif;font-size:16px;line-height:1.6;color:var(--text-main);
+    border:1px solid var(--border-neon);outline:none;font-family:'Comfortaa', cursive, sans-serif;font-size:14px;line-height:1.0;color:#ffffff;
   }
   #editorContent p{margin-bottom:1em}
   .status-bar{
@@ -147,7 +148,6 @@
   .popup-acoes button{font-size:11px;padding:6px 8px;min-height:30px}
   .painel-corpo{flex:1;padding:12px;overflow-y:auto;background:var(--bg-base);width:100%;}
   
-  /* Cartão expandido por completo */
   .cartao{width:100%;background:var(--bg-card);padding:16px;border-radius:4px;border:1px solid var(--border-neon)}
   
   .campo{padding:8px;background:var(--bg-base);color:#fff;border:1px solid var(--accent-cyan);width:100%}
@@ -230,7 +230,6 @@
     .header-top-line { margin-bottom: 3px; }
     h1 { font-size: 11px; }
     h1 span { display: none; }
-    /* No celular, coloca todos os botões em uma única linha compacta rolável horizontalmente para não comer altura vertical */
     .unified-controls {
       flex-wrap: nowrap;
       overflow-x: auto;
@@ -262,20 +261,17 @@
 
 <div class="top-wrapper" id="topWrapper">
   <div class="header-top-line">
-    <h1>SYS_GRAPHZO // <span>NEON V27 - Roll-Line</span></h1>
+    <h1>SYS_GRAPHZO // <span>NEO V2.9 - LineNovCap</span></h1>
     <div id="lastSavedBadge">🕒 Pronto para edição</div>
   </div>
 
-  <!-- CONTAINER ÚNICO PARA TODOS OS BOTÕES -->
   <div class="unified-controls">
-    <!-- Abas -->
     <button type="button" onclick="mudarAba('editor')">📂 Editor</button>
     <button type="button" onclick="mudarAba('personagens')">👤 Elenco</button>
     <button type="button" onclick="mudarAba('dicionario')">📖 Dicionário</button>
 
     <div class="ctrl-sep"></div>
 
-    <!-- Ações Nuvem / Git -->
     <button type="button" onclick="configurarGitHub()">⚙️ Config</button>
     <button type="button" onclick="sincronizarTudo()">📥 Puxar</button>
     <button type="button" class="btn-save" onclick="salvarNoGitHub()">☁️ Salvar</button>
@@ -286,7 +282,6 @@
     </select>
     <button type="button" class="btn-danger" onclick="descartarVersaoAtual()">🗑️</button>
 
-    <!-- Ferramentas do Editor (exibidas/ocultadas dinamicamente) -->
     <span id="toolbarEditor" style="display:inline-flex;align-items:center;gap:4px;">
       <div class="ctrl-sep"></div>
       <button type="button" onclick="formatar('bold')"><b>B</b></button>
@@ -305,7 +300,6 @@
   </div>
 </div>
 
-<!-- ABA 1: EDITOR -->
 <div class="main-container" id="containerEditor">
   <aside class="sidebar">
     <div class="sidebar-header"><span>📑 CAPÍTULOS</span><span id="capCount" style="color:var(--text-muted)">0</span></div>
@@ -316,7 +310,6 @@
   </div>
 </div>
 
-<!-- ABA 2: PERSONAGENS -->
 <div class="main-container" id="painelPersonagens" style="display:none">
   <aside class="sidebar">
     <div class="sidebar-header">
@@ -349,7 +342,6 @@
   </div>
 </div>
 
-<!-- ABA 3: DICIONÁRIO -->
 <div class="main-container" id="painelDicionario" style="display:none">
   <aside class="sidebar">
     <div class="sidebar-header">
@@ -392,7 +384,6 @@
   </div>
 </div>
 
-<!-- POPUP -->
 <div id="popupDeteccao">
   <div class="popup-header" id="popupHeader">
     <span id="popupBadge" class="badge-tipo">TIPO</span>
@@ -408,7 +399,6 @@
   </div>
 </div>
 
-<!-- MODAL EASTER EGG (ATALHOS) -->
 <div id="modalAtalhos" onclick="if(event.target===this)fecharModalAtalhos()">
   <div class="modal-conteudo">
     <button type="button" class="modal-fechar" onclick="fecharModalAtalhos()">✖</button>
@@ -437,14 +427,10 @@
     <div class="atalho-linha"><span>Fechar popup / modal</span><span class="atalho-teclas"><span class="tecla">Esc</span></span></div>
     <div class="atalho-linha"><span>Focar busca de termos</span><span class="atalho-teclas"><span class="tecla">Ctrl</span><span class="tecla">F</span></span></div>
     <div class="atalho-linha"><span>Mostrar esta tela</span><span class="atalho-teclas"><span class="tecla">Ctrl</span><span class="tecla">/</span></span></div>
-    <div class="atalho-categoria">🥚 EASTER EGGS</div>
-    <div class="atalho-linha"><span>Digite no editor</span><span class="atalho-teclas"><span class="tecla">e</span><span class="tecla">a</span><span class="tecla">s</span><span class="tecla">t</span><span class="tecla">e</span><span class="tecla">r</span><span class="tecla">e</span><span class="tecla">g</span><span class="tecla">g</span></span></div>
-    <div class="atalho-linha"><span>Digite no editor</span><span class="atalho-teclas"><span class="tecla">s</span><span class="tecla">a</span><span class="tecla">l</span><span class="tecla">v</span><span class="tecla">a</span><span class="tecla">r</span><span class="tecla"> </span><span class="tecla">h</span><span class="tecla">i</span><span class="tecla">s</span><span class="tecla">t</span><span class="tecla">ó</span><span class="tecla">r</span><span class="tecla">i</span><span class="tecla">a</span></span></div>
     <div class="easter-hint">"Você encontrou o protocolo. Use-o com sabedoria."</div>
   </div>
 </div>
 
-<!-- MODAL DE VISUALIZAÇÃO DE IMAGEM AMPLIADA -->
 <div id="modalImagem" onclick="if(event.target===this)fecharModalImagem()">
   <div class="modal-imagem-conteudo">
     <button type="button" class="modal-imagem-fechar" onclick="fecharModalImagem()">✖</button>
@@ -460,10 +446,6 @@
 </div>
 
 <script>
-/* ============================================================
-   GraphZO V24 - Com Easter Egg de Salvamento
-   ============================================================ */
-
 const REPO_PADRAO = "andreyoldekamp-del/EditorUltimaMemoria";
 const ARQ_HISTORIA = "historia.json";
 const ARQ_DICIONARIO = "dicionario_global.json";
@@ -474,7 +456,7 @@ let projetoLivro = {
   capitulos:{
     cap_1:{
       titulo:"Capítulo 1 - O Despertar",
-      conteudo_xhtml:'<p id="cap_1_p1">CAPÍTULO 1<br>O Despertar</p><p id="cap_1_p2">Digite Teddy ou uma palavra e dê espaço. Ou dê dois cliques em qualquer palavra.</p>'
+      conteudo_xhtml:'<p id="cap_1_p1" style="font-family:\'Comfortaa\',cursive,sans-serif;font-size:16px;color:#ebac54;font-weight:bold;">CAPÍTULO 1<br>O Despertar</p><p id="cap_1_p2" style="font-family:\'Comfortaa\',cursive,sans-serif;font-size:14px;color:#ffffff;line-height:1.0;margin-bottom:1em;">Digite Teddy ou uma palavra e dê espaço. Ou dê dois cliques em qualquer palavra.</p>'
     }
   },
   personagens:[
@@ -677,7 +659,6 @@ document.addEventListener("touchmove", moverArrasto, { passive: false });
 document.addEventListener("mouseup", pararArrasto);
 document.addEventListener("touchend", pararArrasto);
 
-/* ---------- MODAL EASTER EGG ---------- */
 function abrirModalAtalhos(){ $("modalAtalhos").classList.add("ativo"); }
 function fecharModalAtalhos(){ $("modalAtalhos").classList.remove("ativo"); }
 function dispararEasterEgg(){
@@ -686,7 +667,6 @@ function dispararEasterEgg(){
   setTimeout(abrirModalAtalhos, 400);
 }
 
-/* ---------- EASTER EGG: SALVAR HISTÓRIA ---------- */
 function detectarEasterEggSalvar() {
     if (abaAtual !== "editor") return;
     const sel = window.getSelection();
@@ -715,7 +695,6 @@ function detectarEasterEggSalvar() {
     }
 }
 
-/* ---------- MODAL DE VISUALIZAÇÃO DE IMAGEM ---------- */
 function abrirModalImagem(src){
   if (!src){ toast("⚠️ Nenhuma imagem para exibir"); return; }
   const modalImg = $("modalImagemImg");
@@ -746,7 +725,6 @@ function setupPopupImagemClick(){
   });
 }
 
-/* ---------- CONTROLE DO CABEÇALHO RETRÁTIL AO ROLAR ---------- */
 function configurarCabecalhoRetratil() {
   const areas = [$("editorArea"), $("containerEditor"), $("painelPersonagens"), $("painelDicionario")];
   const topWrapper = $("topWrapper");
@@ -766,7 +744,6 @@ function configurarCabecalhoRetratil() {
   });
 }
 
-/* ---------- ATALHOS DE TECLADO ---------- */
 document.addEventListener("keydown", (e)=>{
   if (e.key === "Escape"){
     if ($("modalImagem").classList.contains("ativo")){ fecharModalImagem(); e.preventDefault(); return; }
@@ -807,7 +784,6 @@ document.addEventListener("keydown", (e)=>{
   if (ctrl && !shift && (key === "b" || key === "i" || key === "u")){ if (abaAtual === "editor") $("editorContent").focus(); return; }
 });
 
-/* ---------- BOOT ---------- */
 window.addEventListener("DOMContentLoaded", async ()=>{
   if (!localStorage.getItem("gh_repo")) localStorage.setItem("gh_repo", REPO_PADRAO);
 
@@ -839,7 +815,7 @@ window.addEventListener("DOMContentLoaded", async ()=>{
   }
   if (!projetoLivro.personagens) projetoLivro.personagens = [];
   if (!projetoLivro.capitulos || !Object.keys(projetoLivro.capitulos).length){
-    projetoLivro.capitulos = { cap_1:{ titulo:"Capítulo 1", conteudo_xhtml:"<p>CAPÍTULO 1<br>Novo capítulo</p>" } };
+    projetoLivro.capitulos = { cap_1:{ titulo:"Capítulo 1", conteudo_xhtml:`<p id="cap_1_p1" style="font-family:'Comfortaa',cursive,sans-serif;font-size:16px;color:#ebac54;font-weight:bold;">CAPÍTULO 1</p><p id="cap_1_p2" style="font-family:'Comfortaa',cursive,sans-serif;font-size:14px;color:#ffffff;line-height:1.0;margin-bottom:1em;">Novo capítulo</p>` } };
   }
   if (!projetoLivro.capitulos[capituloAtual]) capituloAtual = Object.keys(projetoLivro.capitulos)[0];
 
@@ -853,7 +829,6 @@ window.addEventListener("DOMContentLoaded", async ()=>{
   }
 });
 
-/* ---------- DIGITAÇÃO / POPUP AUTOMÁTICO + EASTER EGG ---------- */
 function aoDigitar(){
   ultimaDigitacao = agora();
   salvarCapituloAtualNaMemoria();
@@ -1003,7 +978,6 @@ function popupEditar(){
   else { fecharPopup(); mudarAba("dicionario"); $("buscaTermos").value=""; selecionarTermo(popupAlvo.id); }
 }
 
-/* ---------- ABAS ---------- */
 function mudarAba(aba){
   abaAtual = aba;
   $("containerEditor").style.display   = aba === "editor" ? "flex" : "none";
@@ -1019,7 +993,6 @@ function mudarAba(aba){
   } else if (aba === "editor"){ atualizarContador(); }
 }
 
-/* ---------- CAPÍTULOS ---------- */
 function renderizarListaCapitulos(){
   const lista = $("chaptersList");
   lista.innerHTML = "";
@@ -1039,13 +1012,16 @@ function renderizarListaCapitulos(){
   });
 }
 
+// Função atualizada com os estilos solicitados para o novo capítulo:
 function criarNovoCapitulo(){
   salvarCapituloAtualNaMemoria();
   const n = Object.keys(projetoLivro.capitulos).length + 1;
   const id = "cap_" + agora();
   projetoLivro.capitulos[id] = {
     titulo: `Capítulo ${n}`,
-    conteudo_xhtml: `<p id="${id}_p1">CAPÍTULO ${n}</p><p id="${id}_p2">Nome do capítulo</p><p id="${id}_p3"><br></p>`
+    conteudo_xhtml: `<p id="${id}_p1" style="font-family:'Comfortaa',cursive,sans-serif;font-size:16px;color:#ebac54;font-weight:bold;">CAPÍTULO ${n}</p>` +
+                    `<p id="${id}_p2" style="font-family:'Comfortaa',cursive,sans-serif;font-size:14px;color:#ffffff;line-height:1.0;margin-bottom:1em;">Nome do capítulo</p>` +
+                    `<p id="${id}_p3" style="font-family:'Comfortaa',cursive,sans-serif;font-size:14px;color:#ffffff;line-height:1.0;margin-bottom:1em;"><br></p>`
   };
   marcarProjetoAlterado();
   capituloAtual = id;
@@ -1097,7 +1073,6 @@ function carregarCapituloNaTela(capId){
   gravarCacheProjeto();
 }
 
-/* ---------- AUTO-PULO ---------- */
 function configurarAutoProximoCapitulo(){
   const area = $("editorArea");
   let timer = null;
@@ -1127,7 +1102,6 @@ function configurarAutoProximoCapitulo(){
   }, { passive:true });
 }
 
-/* ---------- PERSONAGENS ---------- */
 function renderizarListaPersonagens(){
   const lista = $("listaPersonagens");
   lista.innerHTML = "";
@@ -1197,7 +1171,6 @@ function deletarPersonagemAtual(){
   else { $("charNome").value=""; $("charPapel").value=""; $("charTags").value=""; $("charBiografia").innerHTML=""; }
 }
 
-/* ---------- DICIONÁRIO ---------- */
 function marcarDicionarioAlterado(){
   dicAtualizadoEm = agora();
   dicPendente = true;
@@ -1279,7 +1252,6 @@ function exportarDicionarioJson(){
   setTimeout(()=>{ URL.revokeObjectURL(a.href); a.remove(); }, 500);
 }
 
-/* ---------- IMPORTAÇÃO .TXT ---------- */
 async function importarBaseTxt(event){
   const file = event.target.files[0];
   if (!file) return;
@@ -1372,7 +1344,6 @@ async function importarBaseTxt(event){
   }
 }
 
-/* ---------- GITHUB ---------- */
 function cfg(){
   return {
     repo: localStorage.getItem("gh_repo") || REPO_PADRAO,
@@ -1450,7 +1421,7 @@ async function ghGravar(caminho, objeto, mensagem, shaInicial){
       });
     }catch(e){
       ultimoErro = "rede: " + e.message;
-      const fresco = await ghLer(caminho);
+      const fresco = await ghLer(caminno);
       sha = fresco?.sha || null;
       continue;
     }
@@ -1484,62 +1455,6 @@ async function ghGravar(caminho, objeto, mensagem, shaInicial){
 
     if (res.status === 413){
       throw new Error("Arquivo muito grande para a API do GitHub (>100MB). Use 'Exportar JSON' e particione manualmente.");
-    }
-
-    const erroTxt = await res.text().catch(()=>"");
-    throw new Error(`HTTP ${res.status}: ${erroTxt.slice(0,200)}`);
-  }
-
-  throw new Error(`Falha após ${MAX_TENTATIVAS} tentativas. Último erro: ${ultimoErro}`);
-}
-
-async function ghGravarBase64(caminho, base64, mensagem, shaInicial){
-  const { repo, token } = cfg();
-  const url = `https://api.github.com/repos/${repo}/contents/${caminho}`;
-  const MAX_TENTATIVAS = 3;
-  let sha = shaInicial;
-  let ultimoErro = null;
-
-  for (let tentativa = 1; tentativa <= MAX_TENTATIVAS; tentativa++){
-    const body = { message: mensagem, content: base64 };
-    if (sha) body.sha = sha;
-
-    let res;
-    try{
-      res = await fetch(url, {
-        method:"PUT",
-        headers:{ Authorization:`token ${token}`, "Content-Type":"application/json", Accept:"application/vnd.github+json" },
-        body: JSON.stringify(body)
-      });
-    }catch(e){
-      ultimoErro = "rede: " + e.message;
-      const fresco = await ghLer(caminho);
-      sha = fresco?.sha || null;
-      continue;
-    }
-
-    if (res.ok || res.status === 200 || res.status === 201){
-      return;
-    }
-
-    if (res.status === 409 || res.status === 422){
-      ultimoErro = `SHA conflito (${res.status})`;
-      const fresco = await ghLer(caminho);
-      if (fresco && fresco.sha){
-        sha = fresco.sha;
-      } else {
-        sha = null;
-      }
-      continue;
-    }
-
-    if (res.status === 404){
-      sha = null;
-      continue;
-    }
-
-    if (res.status === 401 || res.status === 403){
-      throw new Error(`Token inválido/expirado (${res.status})`);
     }
 
     const erroTxt = await res.text().catch(()=>"");
@@ -1596,283 +1511,6 @@ async function salvarNoGitHub(){
     toast("❌ Erro: " + e.message);
   }
 }
-
-async function forcarSalvamento(){
-  const { token } = cfg();
-  if (!token){ toast("Configure o token primeiro."); configurarGitHub(); return; }
-
-  if (!confirm("⚡ FORÇAR SALVAMENTO\n\nIsso vai sobrescrever os arquivos no GitHub com sua versão local.\n\nContinuar?")) return;
-
-  salvarCapituloAtualNaMemoria();
-  atualizarTituloCapituloDinamico();
-  badge("⚡ forçando...", "var(--warn)");
-
-  try{
-    const remotoHist = await ghLer(ARQ_HISTORIA);
-    const payloadHist = {
-      metadados: projetoLivro.metadados,
-      atualizadoEm: projetoAtualizadoEm || agora(),
-      capitulos: projetoLivro.capitulos,
-      personagens: projetoLivro.personagens,
-      dicionarioRef: ARQ_DICIONARIO
-    };
-    await ghGravar(ARQ_HISTORIA, payloadHist, "GraphZO: história (forçado)", remotoHist?.sha);
-    histPendente = false;
-
-    if (dicPendente || (remotoHist && remotoHist.corrompido)){
-      const remotoDic = await ghLer(ARQ_DICIONARIO);
-      const payloadDic = {
-        atualizadoEm: dicAtualizadoEm || agora(),
-        total: dicionario.length,
-        termos: dicionario
-      };
-      await ghGravar(ARQ_DICIONARIO, payloadDic, `GraphZO: dicionário (forçado)`, remotoDic?.sha);
-      dicPendente = false;
-    }
-
-    badge(`⚡ forçado ${new Date().toLocaleTimeString([], {hour:"2-digit",minute:"2-digit"})}`, "var(--success)");
-    toast("⚡ Salvamento forçado com sucesso!");
-    reconstruirIndices();
-  }catch(e){
-    console.error(e);
-    badge("⚠️ falha ao forçar", "var(--danger)");
-    toast("❌ Erro ao forçar: " + e.message);
-  }
-}
-
-async function resetarDicionarioGitHub(){
-  if (!confirm("Isso vai SOBRESCREVER o arquivo corrompido no GitHub com o seu dicionário local intacto. Continuar?")) return;
-  const { token } = cfg();
-  if (!token){ toast("Configure o token primeiro."); return; }
-  try{
-    await salvarDicionarioGitHub(true);
-    toast("🧹 Dicionário remoto resetado com sucesso.");
-  }catch(e){
-    toast("❌ Falha ao resetar: " + e.message);
-  }
-}
-
-async function salvarDicionarioGitHub(aviso = true){
-  const { token } = cfg();
-  if (!token){ if (aviso) configurarGitHub(); return; }
-  try{
-    const payload = {
-      atualizadoEm: dicAtualizadoEm || agora(),
-      total: dicionario.length,
-      termos: dicionario
-    };
-    const jsonStr = JSON.stringify(payload, null, 2);
-    const tamanhoBytes = new Blob([jsonStr]).size;
-    const tamanhoMB = (tamanhoBytes / (1024*1024)).toFixed(2);
-
-    if (tamanhoBytes > 95 * 1024 * 1024){
-      const msg = `O dicionário tem ${tamanhoMB} MB. O GitHub rejeita arquivos acima de 100 MB.\n\nDeseja tentar mesmo assim?`;
-      if (!confirm(msg)) return;
-    }
-
-    badge(`☁️ enviando dicionário (${tamanhoMB} MB)...`, "var(--warn)");
-    const remoto = await ghLer(ARQ_DICIONARIO);
-    await ghGravar(ARQ_DICIONARIO, payload, `GraphZO: dicionário (${dicionario.length} verbetes)`, remoto?.sha);
-    
-    dicPendente = false;
-    atualizarStatusDic();
-    reconstruirIndices();
-    if (aviso) toast(`✅ Dicionário salvo (${dicionario.length} verbetes, ${tamanhoMB} MB).`);
-  }catch(e){
-    console.error(e);
-    if (aviso) toast("❌ Erro ao salvar dicionário: " + e.message);
-    else throw e;
-  }
-}
-
-async function sincronizarTudo(silencioso = false){
-  const { token } = cfg();
-  if (!token){ if (!silencioso) toast("Configure o token primeiro."); return; }
-  try{
-    const [remotoHist, remotoDic] = await Promise.all([
-      ghLer(ARQ_HISTORIA),
-      ghLer(ARQ_DICIONARIO)
-    ]);
-    let atualizacoes = 0;
-
-    if (remotoHist && !remotoHist.corrompido && remotoHist.json){
-      const j = remotoHist.json;
-      const remotoTempo = j.atualizadoEm || 0;
-      if (remotoTempo > projetoAtualizadoEm){
-        projetoLivro.metadados = j.metadados || projetoLivro.metadados;
-        projetoLivro.capitulos = j.capitulos || projetoLivro.capitulos;
-        projetoLivro.personagens = j.personagens || [];
-        projetoAtualizadoEm = remotoTempo;
-        atualizacoes++;
-      }
-    }
-    if (remotoDic && !remotoDic.corrompido && remotoDic.json && Array.isArray(remotoDic.json.termos)){
-      const remotoTempo = remotoDic.json.atualizadoEm || 0;
-      if (remotoTempo > dicAtualizadoEm){
-        dicionario = remotoDic.json.termos;
-        dicAtualizadoEm = remotoTempo;
-        atualizacoes++;
-      }
-    }
-
-    if (atualizacoes > 0){
-      marcarProjetoAlterado();
-      reconstruirIndices();
-      renderizarListaCapitulos();
-      carregarCapituloNaTela(capituloAtual);
-      if (!silencioso) toast(`📥 ${atualizacoes} arquivo(s) atualizado(s) da nuvem.`);
-    } else if (!silencioso){
-      toast("☁️ Nuvem sincronizada (nada novo).");
-    }
-  }catch(e){
-    console.error(e);
-    if (!silencioso) toast("❌ Erro ao sincronizar: " + e.message);
-  }
-}
-
-async function listarCommitsGitHub(){
-  const { repo, token } = cfg();
-  if (!token) return;
-  const descartados = JSON.parse(localStorage.getItem("commits_descartados") || "[]");
-  try{
-    const res = await fetch(`https://api.github.com/repos/${repo}/commits?path=${ARQ_HISTORIA}&per_page=30`, {
-      headers:{ Authorization:`token ${token}`, Accept:"application/vnd.github+json" }
-    });
-    const commits = await res.json();
-    if (!res.ok || !Array.isArray(commits)) return;
-    const sel = $("selectCommits");
-    sel.innerHTML = '<option value="">-- Versões --</option>';
-    commits.forEach(c=>{
-      if (descartados.includes(c.sha)) return;
-      const opt = document.createElement("option");
-      opt.value = c.sha;
-      const dt = new Date(c.commit.author.date);
-      opt.textContent = `[${dt.toLocaleDateString()} ${dt.toLocaleTimeString([], {hour:"2-digit",minute:"2-digit"})}] ${c.commit.message.substring(0,18)}`;
-      sel.appendChild(opt);
-    });
-  }catch(e){ console.warn(e); }
-}
-
-async function carregarVersaoSelecionada(){
-  const sha = $("selectCommits").value;
-  if (!sha) return;
-  try{
-    const remoto = await ghLer(ARQ_HISTORIA, sha);
-    if (!remoto) return toast("Versão não encontrada.");
-    const j = remoto.json;
-    projetoLivro.metadados = j.metadados || projetoLivro.metadados;
-    projetoLivro.capitulos = (j.capitulos && Object.keys(j.capitulos).length) ? j.capitulos : projetoLivro.capitulos;
-    projetoLivro.personagens = j.personagens || [];
-    characterSelecionadoId = null;
-    capituloAtual = Object.keys(projetoLivro.capitulos)[0];
-    marcarProjetoAlterado();
-    reconstruirIndices();
-    renderizarListaCapitulos();
-    carregarCapituloNaTela(capituloAtual);
-    renderizarListaPersonagens();
-    toast("📜 Versão carregada (salve para tornar definitiva).");
-  }catch(e){ toast("❌ Erro ao carregar versão."); }
-}
-
-function descartarVersaoAtual(){
-  const sha = $("selectCommits").value;
-  if (!sha) return toast("Selecione uma versão.");
-  const lista = JSON.parse(localStorage.getItem("commits_descartados") || "[]");
-  lista.push(sha);
-  localStorage.setItem("commits_descartados", JSON.stringify(lista));
-  listarCommitsGitHub();
-  toast("Versão ocultada da lista.");
-}
-
-/* ---------- FOTO DO PERSONAGEM ---------- */
-async function carregarImagemPersonagem(event){
-  const file = event.target.files[0];
-  event.target.value = "";
-  if (!file || !characterSelecionadoId) return;
-  const { token } = cfg();
-  if (!token) return toast("Configure o token do GitHub.");
-
-  try{
-    toast("📷 Processando imagem...");
-    const dataUrl = await redimensionar(file, 320, 0.85);
-    const base64 = dataUrl.split(",")[1];
-    const caminho = `assets/${characterSelecionadoId}.jpg`;
-    
-    const existente = await ghLer(caminho).catch(()=>null);
-    await ghGravarBase64(caminho, base64, `Foto ${characterSelecionadoId}`, existente?.sha);
-    
-    const { repo } = cfg();
-    const p = projetoLivro.personagens.find(x=>x.id===characterSelecionadoId);
-    if (!p) return;
-    p.imagemUrl = `https://raw.githubusercontent.com/${repo}/main/${caminho}?v=${agora()}`;
-    marcarProjetoAlterado();
-    
-    selecionarPersonagem(characterSelecionadoId);
-    toast("📷 Foto enviada ao GitHub!");
-  }catch(e){ 
-    console.error(e); 
-    toast("❌ Erro ao enviar foto: " + e.message); 
-  }
-}
-
-function redimensionar(file, maxLado, qualidade){
-  return new Promise((resolve, reject)=>{
-    const img = new Image();
-    const fr = new FileReader();
-    fr.onload = () => { img.src = fr.result; };
-    fr.onerror = reject;
-    img.onload = () => {
-      const escala = Math.min(1, maxLado / Math.max(img.width, img.height));
-      const c = document.createElement("canvas");
-      c.width = Math.round(img.width * escala);
-      c.height = Math.round(img.height * escala);
-      c.getContext("2d").drawImage(img, 0, 0, c.width, c.height);
-      resolve(c.toDataURL("image/jpeg", qualidade));
-    };
-    img.onerror = reject;
-    fr.readAsDataURL(file);
-  });
-}
-
-/* ---------- FORMATAÇÃO / CONTADOR ---------- */
-function formatar(cmd){
-  $("editorContent").focus();
-  document.execCommand(cmd, false, null);
-  salvarCapituloAtualNaMemoria();
-  atualizarTituloDeb();
-}
-function inserirParagrafoID(){
-  const ed = $("editorContent");
-  const p = document.createElement("p");
-  p.id = `${capituloAtual}_p_${agora()}`;
-  p.innerHTML = "<br>";
-  ed.appendChild(p);
-  salvarCapituloAtualNaMemoria();
-  const r = document.createRange(); r.selectNodeContents(p); r.collapse(true);
-  const s = window.getSelection(); s.removeAllRanges(); s.addRange(r);
-  ed.focus();
-  p.scrollIntoView({ block:"center", behavior:"smooth" });
-}
-function atualizarContador(){
-  const texto = ($("editorContent").innerText || "").trim();
-  $("wordCount").textContent = `PALAVRAS: ${texto ? texto.split(/\s+/).length : 0}`;
-}
-
-/* ---------- SEGURANÇA ---------- */
-window.addEventListener("beforeunload", e=>{
-  salvarCapituloAtualNaMemoria();
-  if (histPendente || dicPendente){
-    dbSet("projeto", { dados: projetoLivro, atualizadoEm: projetoAtualizadoEm, capituloAtual });
-    dbSet("dicionario", { termos: dicionario, atualizadoEm: dicAtualizadoEm });
-  }
-});
-document.addEventListener("visibilitychange", ()=>{
-  if (document.visibilityState === "hidden"){
-    salvarCapituloAtualNaMemoria();
-    dbSet("projeto", { dados: projetoLivro, atualizadoEm: projetoAtualizadoEm, capituloAtual });
-    if (dicPendente) dbSet("dicionario", { termos: dicionario, atualizadoEm: dicAtualizadoEm });
-  }
-});
 </script>
 </body>
 </html>
