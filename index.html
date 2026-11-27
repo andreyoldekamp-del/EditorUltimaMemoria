@@ -695,6 +695,19 @@ function detectarEasterEggsTexto() {
     if (node.nodeType === Node.TEXT_NODE) {
         const textoAntes = node.textContent.substring(0, range.startOffset).replace(/\u00A0/g, " ").toLowerCase();
         
+		const cmdProximo = SEGREDO_PROXIMO_LISTA.find(s => textoAntes.endsWith(s));
+		if (cmdProximo) {
+			limparComandoTexto(node, range, sel, cmdProximo.length);
+			toast("🥚 Salvando capítulo atual e abrindo novo capítulo...");
+			(async () => {
+				// 1) Salva o capítulo atual no GitHub (equivalente ao Ctrl+S)
+				await salvarNoGitHub();
+				// 2) Só depois de salvar, abre a tela de "+ Cap."
+				criarNovoCapitulo();
+			})();
+			return;
+		}
+
         const cmdSalvar = SEGREDO_SALVAR_LISTA.find(s => textoAntes.endsWith(s));
         if (cmdSalvar) {
             limparComandoTexto(node, range, sel, cmdSalvar.length);
@@ -703,14 +716,6 @@ function detectarEasterEggsTexto() {
             return;
         }
 
-        const cmdProximo = SEGREDO_PROXIMO_LISTA.find(s => textoAntes.endsWith(s));
-        if (cmdProximo) {
-            limparComandoTexto(node, range, sel, cmdProximo.length);
-            toast("🥚 Novo capítulo criado e salvando na nuvem...");
-            criarNovoCapitulo();
-            salvarNoGitHub();
-            return;
-        }
     }
 }
 
