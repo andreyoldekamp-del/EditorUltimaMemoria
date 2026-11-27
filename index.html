@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>GraphZO //NEO V2.9 - LineNovCap</title>
+<title>GraphZO //NES V2.9 - LineCap</title>
 <!-- Importação da fonte Comfortaa -->
 <link href="https://fonts.googleapis.com/css2?family=Comfortaa:wght@400;700&display=swap" rel="stylesheet">
 <style>
@@ -261,7 +261,7 @@
 
 <div class="top-wrapper" id="topWrapper">
   <div class="header-top-line">
-    <h1>SYS_GRAPHZO // <span>NEO V2.9 - LineNovCap</span></h1>
+    <h1>SYS_GRAPHZO // <span>NES V2.9 - LineCap</span></h1>
     <div id="lastSavedBadge">🕒 Pronto para edição</div>
   </div>
 
@@ -588,7 +588,7 @@ function reconstruirIndices(){
   $("statusText").textContent = `INDEXADOS: ${indicePersonagens.size} PERS. / ${indiceDicionario.size} TERMOS${dicPendente ? " • DIC. PENDENTE" : ""}`;
 }
 
-/* ---------- TÍTULO DINÂMICO ---------- */
+/* ---------- TÍTULO DINÂMICO E CONTADOR ---------- */
 function extrairTitulo(texto){
   const linhas = String(texto).split("\n");
   const alvo = linhas.slice(0, 8);
@@ -614,6 +614,11 @@ function atualizarTituloCapituloDinamico(){
     cap.titulo = novo;
     renderizarListaCapitulos();
   }
+}
+function atualizarContador(){
+  const texto = $("editorContent").innerText || "";
+  const palavras = texto.trim() ? texto.trim().split(/\s+/).length : 0;
+  $("wordCount").textContent = `PALAVRAS: ${palavras}`;
 }
 const atualizarTituloDeb = debounce(atualizarTituloCapituloDinamico, 200);
 const atualizarContadorDeb = debounce(atualizarContador, 300);
@@ -676,19 +681,16 @@ function detectarEasterEggSalvar() {
 
     if (node.nodeType === Node.TEXT_NODE) {
         const textoAntes = node.textContent.substring(0, range.startOffset).toLowerCase();
-        
         if (textoAntes.endsWith(SEGREDO_SALVAR)) {
             const textoOriginal = node.textContent;
             const inicio = textoOriginal.substring(0, range.startOffset - SEGREDO_SALVAR.length);
             const fim = textoOriginal.substring(range.startOffset);
             node.textContent = inicio + fim;
-
             const novoCursor = range.startOffset - SEGREDO_SALVAR.length;
             range.setStart(node, novoCursor);
             range.setEnd(node, novoCursor);
             sel.removeAllRanges();
             sel.addRange(range);
-
             toast("🥚 Salvamento secreto ativado!");
             salvarNoGitHub();
         }
@@ -1012,7 +1014,6 @@ function renderizarListaCapitulos(){
   });
 }
 
-// Função atualizada com os estilos solicitados para o novo capítulo:
 function criarNovoCapitulo(){
   salvarCapituloAtualNaMemoria();
   const n = Object.keys(projetoLivro.capitulos).length + 1;
@@ -1102,6 +1103,34 @@ function configurarAutoProximoCapitulo(){
   }, { passive:true });
 }
 
+function formatar(cmd){
+  document.execCommand(cmd, false, null);
+  $("editorContent").focus();
+}
+
+function inserirParagrafoID(){
+  const sel = window.getSelection();
+  if (!sel.rangeCount) return;
+  const pId = capituloAtual + "_p" + agora();
+  const p = document.createElement("p");
+  p.id = pId;
+  p.style.fontFamily = "'Comfortaa', cursive, sans-serif";
+  p.style.fontSize = "14px";
+  p.style.color = "#ffffff";
+  p.style.lineHeight = "1.0";
+  p.style.marginBottom = "1em";
+  p.innerHTML = "<br>";
+  
+  const range = sel.getRangeAt(0);
+  range.insertNode(p);
+  range.setStart(p, 0);
+  range.collapse(true);
+  sel.removeAllRanges();
+  sel.addRange(range);
+  $("editorContent").focus();
+  aoDigitar();
+}
+
 function renderizarListaPersonagens(){
   const lista = $("listaPersonagens");
   lista.innerHTML = "";
@@ -1169,6 +1198,20 @@ function deletarPersonagemAtual(){
   renderizarListaPersonagens();
   if (characterSelecionadoId) selecionarPersonagem(characterSelecionadoId);
   else { $("charNome").value=""; $("charPapel").value=""; $("charTags").value=""; $("charBiografia").innerHTML=""; }
+}
+
+function carregarImagemPersonagem(event){
+  const file = event.target.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = function(e){
+    const p = projetoLivro.personagens.find(x=>x.id===characterSelecionadoId);
+    if (!p) return;
+    p.imagemUrl = e.target.result;
+    marcarProjetoAlterado();
+    selecionarPersonagem(p.id);
+  };
+  reader.readAsDataURL(file);
 }
 
 function marcarDicionarioAlterado(){
@@ -1379,7 +1422,6 @@ async function ghLer(caminho, ref){
     return { sha: null, json: null, corrompido: true, motivo: `HTTP ${res.status}` };
   }
   const data = await res.json();
-
   if (!data.content || data.size === 0){
     return { sha: data.sha, json: null, corrompido: true, motivo: "arquivo vazio" };
   }
@@ -1421,7 +1463,7 @@ async function ghGravar(caminho, objeto, mensagem, shaInicial){
       });
     }catch(e){
       ultimoErro = "rede: " + e.message;
-      const fresco = await ghLer(caminno);
+      const fresco = await ghLer(caminho);
       sha = fresco?.sha || null;
       continue;
     }
@@ -1462,6 +1504,178 @@ async function ghGravar(caminho, objeto, mensagem, shaInicial){
   }
 
   throw new Error(`Falha após ${MAX_TENTATIVAS} tentativas. Último erro: ${ultimoErro}`);
+}
+
+async function salvarDicionarioGitHub(comFeedback = true){
+  const { token } = cfg();
+  if (!token){ if (comFeedback){ toast("Configure o token primeiro."); configurarGitHub(); } return; }
+  if (comFeedback) badge("☁️ enviando dicionário...", "var(--warn)");
+  try{
+    const remoto = await ghLer(ARQ_DICIONARIO);
+    const payload = {
+      atualizadoEm: dicAtualizadoEm || agora(),
+      total: dicionario.length,
+      termos: dicionario
+    };
+    await ghGravar(ARQ_DICIONARIO, payload, "GraphZO: dicionário global", remoto?.sha);
+    dicPendente = false;
+    atualizarStatusDic();
+    if (comFeedback){
+      badge(`☁️ dicionário salvo ${new Date().toLocaleTimeString([], {hour:"2-digit",minute:"2-digit"})}`, "var(--success)");
+      toast("✅ Dicionário salvo com sucesso!");
+    }
+  }catch(e){
+    console.error(e);
+    if (comFeedback){
+      badge("⚠️ falha ao salvar dicionário", "var(--danger)");
+      toast("❌ Erro ao salvar dicionário: " + e.message);
+    }
+  }
+}
+
+async function sincronizarTudo(silencioso = false){
+  const { token } = cfg();
+  if (!token){ if (!silencioso){ toast("Configure o token primeiro."); configurarGitHub(); } return; }
+  if (!silencioso) badge("📥 puxando...", "var(--warn)");
+
+  try{
+    const resHist = await ghLer(ARQ_HISTORIA);
+    if (resHist && !resHist.corrompido && resHist.json){
+      const rem = resHist.json;
+      if (rem.capitulos && Object.keys(rem.capitulos).length){
+        projetoLivro = rem;
+        projetoAtualizadoEm = rem.atualizadoEm || agora();
+        if (!projetoLivro.personagens) projetoLivro.personagens = [];
+        if (!projetoLivro.capitulos[capituloAtual]) capituloAtual = Object.keys(projetoLivro.capitulos)[0];
+        renderizarListaCapitulos();
+        carregarCapituloNaTela(capituloAtual);
+      }
+    }
+
+    const resDic = await ghLer(ARQ_DICIONARIO);
+    if (resDic && !resDic.corrompido && resDic.json){
+      const remDic = resDic.json;
+      if (Array.isArray(remDic.termos)){
+        dicionario = remDic.termos;
+        dicAtualizadoEm = remDic.atualizadoEm || agora();
+        dicPendente = false;
+        atualizarStatusDic();
+        renderizarListaTermos();
+      }
+    }
+
+    reconstruirIndices();
+    await dbSet("projeto", { dados: projetoLivro, atualizadoEm: projetoAtualizadoEm, capituloAtual });
+    await dbSet("dicionario", { termos: dicionario, atualizadoEm: dicAtualizadoEm });
+
+    if (!silencioso){
+      badge(`📥 sincronizado ${new Date().toLocaleTimeString([], {hour:"2-digit",minute:"2-digit"})}`, "var(--success)");
+      toast("✅ Sincronizado com o GitHub!");
+    }
+  }catch(e){
+    console.error(e);
+    if (!silencioso){
+      badge("⚠️ falha ao puxar", "var(--danger)");
+      toast("❌ Erro ao sincronizar: " + e.message);
+    }
+  }
+}
+
+async function listarCommitsGitHub(silencioso = false){
+  const { repo, token } = cfg();
+  if (!token){ if (!silencioso) toast("Configure o token para ver as versões."); return; }
+  const sel = $("selectCommits");
+  try{
+    const url = `https://api.github.com/repos/${repo}/commits?path=${ARQ_HISTORIA}&per_page=20`;
+    const res = await fetch(url, { headers:{ Authorization:`token ${token}`, Accept:"application/vnd.github+json" } });
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    const commits = await res.json();
+    sel.innerHTML = '<option value="">-- Versões --</option>';
+    commits.forEach(c => {
+      const data = new Date(c.commit.author.date).toLocaleString([], {dateStyle:"short", timeStyle:"short"});
+      const msg = c.commit.message.slice(0,30);
+      const opt = document.createElement("option");
+      opt.value = c.sha;
+      opt.textContent = `${data} - ${msg}`;
+      sel.appendChild(opt);
+    });
+    if (!silencioso) toast(`📜 ${commits.length} versões encontradas.`);
+  }catch(e){
+    console.error(e);
+    if (!silencioso) toast("❌ Erro ao listar versões: " + e.message);
+  }
+}
+
+async function carregarVersaoSelecionada(){
+  const sel = $("selectCommits");
+  const sha = sel.value;
+  if (!sha) return;
+  if (!confirm("⚠️ Deseja carregar esta versão anterior?\nAs alterações locais não salvas podem ser substituídas.")) {
+    sel.value = "";
+    return;
+  }
+  badge("📥 carregando versão...", "var(--warn)");
+  try{
+    const res = await ghLer(ARQ_HISTORIA, sha);
+    if (res && !res.corrompido && res.json){
+      projetoLivro = res.json;
+      if (!projetoLivro.capitulos[capituloAtual]) capituloAtual = Object.keys(projetoLivro.capitulos)[0];
+      renderizarListaCapitulos();
+      carregarCapituloNaTela(capituloAtual);
+      reconstruirIndices();
+      badge("✅ versão carregada", "var(--success)");
+      toast("✅ Versão carregada com sucesso!");
+    } else {
+      throw new Error(res?.motivo || "Versão inválida");
+    }
+  }catch(e){
+    console.error(e);
+    badge("⚠️ erro ao carregar versão", "var(--danger)");
+    toast("❌ Erro: " + e.message);
+  }
+  sel.value = "";
+}
+
+async function descartarVersaoAtual(){
+  if (!confirm("🗑️ Deseja descartar a versão atual e voltar para a última versão remota estável?")) return;
+  await sincronizarTudo();
+}
+
+async function forcarSalvamento(){
+  const { token } = cfg();
+  if (!token){ toast("Configure o token primeiro."); configurarGitHub(); return; }
+  if (!confirm("⚡ FORÇAR SALVAMENTO\n\nIsso vai sobrescrever os arquivos no GitHub com sua versão local.\n\nContinuar?")) return;
+
+  salvarCapituloAtualNaMemoria();
+  atualizarTituloCapituloDinamico();
+  badge("⚡ forçando...", "var(--warn)");
+
+  try{
+    const remotoHist = await ghLer(ARQ_HISTORIA);
+    const payloadHist = {
+      metadados: projetoLivro.metadados,
+      atualizadoEm: projetoAtualizadoEm || agora(),
+      capitulos: projetoLivro.capitulos,
+      personagens: projetoLivro.personagens,
+      dicionarioRef: ARQ_DICIONARIO
+    };
+    await ghGravar(ARQ_HISTORIA, payloadHist, "GraphZO: história (forçado)", remotoHist?.sha);
+    histPendente = false;
+    await salvarDicionarioGitHub(false);
+    badge(`⚡ salvo (forçado) ${new Date().toLocaleTimeString([], {hour:"2-digit",minute:"2-digit"})}`, "var(--success)");
+    toast("⚡ Salvamento forçado concluído!");
+    reconstruirIndices();
+    await listarCommitsGitHub(true);
+  }catch(e){
+    console.error(e);
+    badge("⚠️ falha ao forçar salvamento", "var(--danger)");
+    toast("❌ Erro: " + e.message);
+  }
+}
+
+async function resetarDicionarioGitHub(){
+  if (!confirm("🧹 Deseja resetar o dicionário remoto para o estado atual local?")) return;
+  await salvarDicionarioGitHub(true);
 }
 
 function marcarProjetoAlterado(){
@@ -1505,6 +1719,7 @@ async function salvarNoGitHub(){
     badge(`☁️ salvo ${new Date().toLocaleTimeString([], {hour:"2-digit",minute:"2-digit"})}`, "var(--success)");
     toast(msg);
     reconstruirIndices();
+    await listarCommitsGitHub(true);
   }catch(e){
     console.error(e);
     badge("⚠️ falha ao salvar (cache local intacto)", "var(--danger)");
