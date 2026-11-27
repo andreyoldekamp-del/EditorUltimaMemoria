@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>GraphZO //V3.0 - EEgg</title>
+<title>GraphZO // V2.9 - Viernes</title>
 <!-- Importação da fonte Comfortaa -->
 <link href="https://fonts.googleapis.com/css2?family=Comfortaa:wght@400;700&display=swap" rel="stylesheet">
 <style>
@@ -261,7 +261,7 @@
 
 <div class="top-wrapper" id="topWrapper">
   <div class="header-top-line">
-    <h1>SYS_GRAPHZO // <span>NEONV3.0 - EEgg</span></h1>
+    <h1>SYS_GRAPHZO // <span>NEON V2.9 - Viernes</span></h1>
     <div id="lastSavedBadge">🕒 Pronto para edição</div>
   </div>
 
@@ -706,10 +706,9 @@ function detectarEasterEggsTexto() {
         const cmdProximo = SEGREDO_PROXIMO_LISTA.find(s => textoAntes.endsWith(s));
         if (cmdProximo) {
             limparComandoTexto(node, range, sel, cmdProximo.length);
-            toast("🥚 Salvando e abrindo novo capítulo...");
-            salvarNoGitHub().finally(() => {
-                criarNovoCapitulo();
-            });
+            toast("🥚 Novo capítulo criado e salvando na nuvem...");
+            criarNovoCapitulo();
+            salvarNoGitHub();
             return;
         }
     }
