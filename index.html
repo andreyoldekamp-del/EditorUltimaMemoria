@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>GraphZO //NES V2.9 - LineCap</title>
+<title>GraphZO //New V2.9 - Capt</title>
 <!-- Importação da fonte Comfortaa -->
 <link href="https://fonts.googleapis.com/css2?family=Comfortaa:wght@400;700&display=swap" rel="stylesheet">
 <style>
@@ -261,7 +261,7 @@
 
 <div class="top-wrapper" id="topWrapper">
   <div class="header-top-line">
-    <h1>SYS_GRAPHZO // <span>NES V2.9 - LineCap</span></h1>
+    <h1>SYS_GRAPHZO // <span>New V2.9 - Capt</span></h1>
     <div id="lastSavedBadge">🕒 Pronto para edição</div>
   </div>
 
@@ -817,7 +817,7 @@ window.addEventListener("DOMContentLoaded", async ()=>{
   }
   if (!projetoLivro.personagens) projetoLivro.personagens = [];
   if (!projetoLivro.capitulos || !Object.keys(projetoLivro.capitulos).length){
-    projetoLivro.capitulos = { cap_1:{ titulo:"Capítulo 1", conteudo_xhtml:`<p id="cap_1_p1" style="font-family:'Comfortaa',cursive,sans-serif;font-size:16px;color:#ebac54;font-weight:bold;">CAPÍTULO 1</p><p id="cap_1_p2" style="font-family:'Comfortaa',cursive,sans-serif;font-size:14px;color:#ffffff;line-height:1.0;margin-bottom:1em;">Novo capítulo</p>` } };
+    projetoLivro.capitulos = { cap_1:{ titulo:"Capítulo 1", conteudo_xhtml:`<p id="cap_1_p1" style="font-family:'Comfortaa',cursive,sans-serif;font-size:16px;color:#ebac54;font-weight:bold;">Capítulo 1</p><p id="cap_1_p2" style="font-family:'Comfortaa',cursive,sans-serif;font-size:14px;color:#ffffff;line-height:1.0;margin-bottom:1em;">Novo capítulo</p>` } };
   }
   if (!projetoLivro.capitulos[capituloAtual]) capituloAtual = Object.keys(projetoLivro.capitulos)[0];
 
@@ -1020,7 +1020,7 @@ function criarNovoCapitulo(){
   const id = "cap_" + agora();
   projetoLivro.capitulos[id] = {
     titulo: `Capítulo ${n}`,
-    conteudo_xhtml: `<p id="${id}_p1" style="font-family:'Comfortaa',cursive,sans-serif;font-size:16px;color:#ebac54;font-weight:bold;">CAPÍTULO ${n}</p>` +
+    conteudo_xhtml: `<p id="${id}_p1" style="font-family:'Comfortaa',cursive,sans-serif;font-size:16px;color:#ebac54;font-weight:bold;">Capítulo ${n}</p>` +
                     `<p id="${id}_p2" style="font-family:'Comfortaa',cursive,sans-serif;font-size:14px;color:#ffffff;line-height:1.0;margin-bottom:1em;">Nome do capítulo</p>` +
                     `<p id="${id}_p3" style="font-family:'Comfortaa',cursive,sans-serif;font-size:14px;color:#ffffff;line-height:1.0;margin-bottom:1em;"><br></p>`
   };
