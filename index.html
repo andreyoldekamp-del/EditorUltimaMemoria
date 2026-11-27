@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>GraphZO // V26 - RollUp</title>
+<title>GraphZO // V25 - SalvarH</title>
 <style>
   :root{
     --bg-base:#030712; --bg-panel:#0b0f19; --bg-card:#111827;
@@ -17,41 +17,71 @@
     min-height:100vh;min-height:100dvh;display:flex;flex-direction:column;overflow-x:hidden;
   }
   
-  /* Container superior fixo/retrátil */
+  /* Container superior único e compacto */
   .top-wrapper {
     position: sticky;
     top: 0;
     z-index: 20;
-    transition: transform 0.3s ease;
+    background: var(--bg-panel);
+    border-bottom: 2px solid var(--accent-cyan);
+    padding: 6px 10px;
+    transition: transform 0.25s ease;
   }
   .top-wrapper.hidden {
     transform: translateY(-100%);
   }
 
-  header{
-    background:var(--bg-panel);border-bottom:2px solid var(--accent-cyan);padding:10px 16px;
-    display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px;position:relative;z-index:20;
+  .header-top-line {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 5px;
+    gap: 8px;
   }
-  h1{font-size:15px;color:var(--accent-cyan);letter-spacing:1px}
-  h1 span{color:var(--text-muted);font-size:11px}
-  .nav-bar{
-    background:var(--bg-card);padding:8px 16px;border-bottom:1px solid var(--border-neon);
-    display:flex;gap:8px;align-items:center;flex-wrap:wrap;position:relative;z-index:19;
+  h1{font-size:13px;color:var(--accent-cyan);letter-spacing:0.5px;white-space:nowrap}
+  h1 span{color:var(--text-muted);font-size:10px}
+  #lastSavedBadge{font-size:10px;color:var(--success);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+
+  /* Container único para todos os botões e controles */
+  .unified-controls {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    flex-wrap: wrap;
+    width: 100%;
   }
-  .toolbar{
-    display:flex;gap:6px;background:var(--bg-panel);padding:8px 16px;border-bottom:1px solid var(--border-neon);
-    align-items:center;flex-wrap:wrap;position:relative;z-index:18;
+
+  .ctrl-sep {
+    width: 1px;
+    height: 18px;
+    background: var(--border-neon);
+    margin: 0 2px;
+    flex-shrink: 0;
   }
+
+  .unified-controls button,
+  .unified-controls select {
+    background:var(--bg-base);color:var(--accent-cyan);border:1px solid var(--accent-cyan);
+    padding:4px 7px;border-radius:4px;cursor:pointer;font-size:11px;font-weight:bold;
+    touch-action:manipulation;user-select:none;display:inline-flex;align-items:center;justify-content:center;
+    min-height:26px;white-space:nowrap;
+  }
+  .unified-controls label.chk-inline {
+    font-size:10px;display:inline-flex;align-items:center;gap:3px;cursor:pointer;
+    color:var(--text-main);background:var(--bg-card);border:1px solid var(--border-neon);
+    padding:3px 6px;border-radius:4px;min-height:26px;white-space:nowrap;
+  }
+
   button,select,label.file-btn{
     background:var(--bg-base);color:var(--accent-cyan);border:1px solid var(--accent-cyan);
     padding:8px 12px;border-radius:4px;cursor:pointer;font-size:12px;font-weight:bold;
     touch-action:manipulation;user-select:none;display:inline-flex;align-items:center;justify-content:center;min-height:36px;
   }
   button:active,select:active,label.file-btn:active{background:var(--accent-cyan);color:var(--bg-base)}
-  .btn-save{background:var(--success);border-color:var(--success);color:#fff}
-  .btn-danger{background:var(--danger);border-color:var(--danger);color:#fff}
-  .btn-purple{background:var(--accent-purple);border-color:var(--accent-purple);color:#fff}
-  .btn-warn{background:var(--warn);border-color:var(--warn);color:#111}
+  .btn-save{background:var(--success)!important;border-color:var(--success)!important;color:#fff!important}
+  .btn-danger{background:var(--danger)!important;border-color:var(--danger)!important;color:#fff!important}
+  .btn-purple{background:var(--accent-purple)!important;border-color:var(--accent-purple)!important;color:#fff!important}
+  .btn-warn{background:var(--warn)!important;border-color:var(--warn)!important;color:#111!important}
   input[type=text]{font-family:inherit;font-size:13px;border-radius:4px;outline:none}
   .main-container{display:flex;flex:1;overflow:hidden;position:relative;width:100%;}
   aside.sidebar{width:260px;background:var(--bg-panel);border-right:1px solid var(--border-neon);display:flex;flex-direction:column;flex-shrink:0}
@@ -78,15 +108,15 @@
   .item-card strong{display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
   .item-card.active{border-color:var(--accent-cyan);background:#082f49}
   
-  /* Ajustado para ocupar todo o espaço da tela sem tarjas vazias ou limite central */
-  .editor-area{flex:1;display:flex;flex-direction:column;background:var(--bg-base);overflow-y:auto;padding:16px;scroll-behavior:auto;width:100%;}
+  /* Ocupa todo o espaço da tela sem tarjas vazias ou limite central */
+  .editor-area{flex:1;display:flex;flex-direction:column;background:var(--bg-base);overflow-y:auto;padding:12px;scroll-behavior:auto;width:100%;}
   #editorContent{
-    width:100%;flex:1;min-height:60vh;background:var(--bg-card);padding:20px;border-radius:4px;
+    width:100%;flex:1;min-height:65vh;background:var(--bg-card);padding:18px;border-radius:4px;
     border:1px solid var(--border-neon);outline:none;font-family:'Times New Roman',serif;font-size:16px;line-height:1.6;color:var(--text-main);
   }
   #editorContent p{margin-bottom:1em}
   .status-bar{
-    background:var(--bg-panel);border-top:1px solid var(--accent-cyan);padding:8px 16px;font-size:11px;color:var(--text-muted);
+    background:var(--bg-panel);border-top:1px solid var(--accent-cyan);padding:6px 12px;font-size:11px;color:var(--text-muted);
     display:flex;justify-content:space-between;flex-wrap:wrap;gap:6px;
   }
   #popupDeteccao{
@@ -115,9 +145,9 @@
   .popup-significado{font-size:13px;line-height:1.4;color:var(--text-main);max-height:130px;overflow-y:auto;background:var(--bg-card);padding:8px;border-radius:4px}
   .popup-acoes{display:flex;gap:6px;margin-top:10px;flex-wrap:wrap}
   .popup-acoes button{font-size:11px;padding:6px 8px;min-height:30px}
-  .painel-corpo{flex:1;padding:16px;overflow-y:auto;background:var(--bg-base);width:100%;}
+  .painel-corpo{flex:1;padding:12px;overflow-y:auto;background:var(--bg-base);width:100%;}
   
-  /* Cartão ajustado para expandir por completo */
+  /* Cartão expandido por completo */
   .cartao{width:100%;background:var(--bg-card);padding:16px;border-radius:4px;border:1px solid var(--border-neon)}
   
   .campo{padding:8px;background:var(--bg-base);color:#fff;border:1px solid var(--accent-cyan);width:100%}
@@ -196,11 +226,32 @@
   .char-avatar-box .no-photo{ font-size:10px;color:var(--text-muted); }
 
   @media(max-width:768px){
+    .top-wrapper { padding: 4px 6px; }
+    .header-top-line { margin-bottom: 3px; }
+    h1 { font-size: 11px; }
+    h1 span { display: none; }
+    /* No celular, coloca todos os botões em uma única linha compacta rolável horizontalmente para não comer altura vertical */
+    .unified-controls {
+      flex-wrap: nowrap;
+      overflow-x: auto;
+      -webkit-overflow-scrolling: touch;
+      scrollbar-width: none;
+      padding-bottom: 2px;
+      gap: 4px;
+    }
+    .unified-controls::-webkit-scrollbar { display: none; }
+    .unified-controls button,
+    .unified-controls select,
+    .unified-controls label.chk-inline {
+      padding: 3px 6px;
+      font-size: 10px;
+      min-height: 24px;
+      flex-shrink: 0;
+    }
     .main-container{flex-direction:column;overflow-y:auto}
-    aside.sidebar{width:100%;max-height:190px;border-right:none;border-bottom:1px solid var(--border-neon)}
-    .editor-area{padding:10px}
-    #editorContent{padding:14px;min-height:50vh}
-    .git-controls{width:100%;margin-left:0!important}
+    aside.sidebar{width:100%;max-height:150px;border-right:none;border-bottom:1px solid var(--border-neon)}
+    .editor-area{padding:8px}
+    #editorContent{padding:12px;min-height:60vh}
     .modal-conteudo{padding:18px}
     .atalho-linha{flex-direction:column;align-items:flex-start;gap:6px}
     .atalho-teclas{justify-content:flex-start}
@@ -210,45 +261,47 @@
 <body>
 
 <div class="top-wrapper" id="topWrapper">
-  <header>
-    <div>
-      <h1>SYS_GRAPHZO // <span>NEON V26 - RollUp</span></h1>
-      <div id="lastSavedBadge" style="font-size:10px;color:var(--success)">🕒 Pronto para edição</div>
-    </div>
-    <div style="display:flex;gap:6px;flex-wrap:wrap">
-      <button type="button" onclick="configurarGitHub()">⚙️ Config</button>
-      <button type="button" onclick="sincronizarTudo()">📥 Puxar</button>
-      <button type="button" class="btn-save" onclick="salvarNoGitHub()">☁️ Salvar</button>
-      <button type="button" class="btn-warn" onclick="forcarSalvamento()">⚡ Forçar</button>
-    </div>
-  </header>
-
-  <div class="nav-bar">
-    <button type="button" onclick="mudarAba('editor')">📂 01. Editor</button>
-    <button type="button" onclick="mudarAba('personagens')">👤 02. Personagens</button>
-    <button type="button" onclick="mudarAba('dicionario')">📖 03. Dicionário</button>
-    <div class="git-controls" style="margin-left:auto;display:flex;gap:6px;align-items:center;flex-wrap:wrap">
-      <button type="button" onclick="listarCommitsGitHub()">📜 Versões</button>
-      <select id="selectCommits" onchange="carregarVersaoSelecionada()" style="max-width:170px">
-        <option value="">-- Versões --</option>
-      </select>
-      <button type="button" class="btn-danger" onclick="descartarVersaoAtual()">🗑️</button>
-    </div>
+  <div class="header-top-line">
+    <h1>SYS_GRAPHZO // <span>NEON V25 - SalvarH</span></h1>
+    <div id="lastSavedBadge">🕒 Pronto para edição</div>
   </div>
 
-  <div class="toolbar" id="toolbarEditor">
-    <button type="button" onclick="formatar('bold')"><b>B</b></button>
-    <button type="button" onclick="formatar('italic')"><i>I</i></button>
-    <button type="button" onclick="formatar('underline')"><u>U</u></button>
-    <button type="button" onclick="inserirParagrafoID()">➕ Parágrafo</button>
-    <button type="button" onclick="criarNovoCapitulo()">📑 + Cap.</button>
-    <button type="button" class="btn-danger" onclick="deletarCapituloAtual()">🗑️ Cap.</button>
-    <label style="font-size:11px;display:flex;align-items:center;gap:5px;cursor:pointer">
-      <input type="checkbox" id="togglePopupAuto" checked> 🔍 Popup auto
-    </label>
-    <label style="font-size:11px;display:flex;align-items:center;gap:5px;cursor:pointer">
-      <input type="checkbox" id="toggleAutoProximo" checked> ⏭️ Auto-próximo cap.
-    </label>
+  <!-- CONTAINER ÚNICO PARA TODOS OS BOTÕES -->
+  <div class="unified-controls">
+    <!-- Abas -->
+    <button type="button" onclick="mudarAba('editor')">📂 Editor</button>
+    <button type="button" onclick="mudarAba('personagens')">👤 Elenco</button>
+    <button type="button" onclick="mudarAba('dicionario')">📖 Dicionário</button>
+
+    <div class="ctrl-sep"></div>
+
+    <!-- Ações Nuvem / Git -->
+    <button type="button" onclick="configurarGitHub()">⚙️ Config</button>
+    <button type="button" onclick="sincronizarTudo()">📥 Puxar</button>
+    <button type="button" class="btn-save" onclick="salvarNoGitHub()">☁️ Salvar</button>
+    <button type="button" class="btn-warn" onclick="forcarSalvamento()">⚡ Forçar</button>
+    <button type="button" onclick="listarCommitsGitHub()">📜 Versões</button>
+    <select id="selectCommits" onchange="carregarVersaoSelecionada()" style="max-width:130px">
+      <option value="">-- Versões --</option>
+    </select>
+    <button type="button" class="btn-danger" onclick="descartarVersaoAtual()">🗑️</button>
+
+    <!-- Ferramentas do Editor (exibidas/ocultadas dinamicamente) -->
+    <span id="toolbarEditor" style="display:inline-flex;align-items:center;gap:4px;">
+      <div class="ctrl-sep"></div>
+      <button type="button" onclick="formatar('bold')"><b>B</b></button>
+      <button type="button" onclick="formatar('italic')"><i>I</i></button>
+      <button type="button" onclick="formatar('underline')"><u>U</u></button>
+      <button type="button" onclick="inserirParagrafoID()">➕ Parág.</button>
+      <button type="button" onclick="criarNovoCapitulo()">📑 +Cap.</button>
+      <button type="button" class="btn-danger" onclick="deletarCapituloAtual()">🗑️ Cap.</button>
+      <label class="chk-inline">
+        <input type="checkbox" id="togglePopupAuto" checked> 🔍 Popup
+      </label>
+      <label class="chk-inline">
+        <input type="checkbox" id="toggleAutoProximo" checked> ⏭️ Auto-cap
+      </label>
+    </span>
   </div>
 </div>
 
@@ -703,11 +756,9 @@ function configurarCabecalhoRetratil() {
     if (!area) return;
     area.addEventListener("scroll", () => {
       const scrollAtual = area.scrollTop;
-      if (scrollAtual > ultimoScroll && scrollAtual > 40) {
-        // Rolando para baixo -> oculta o cabeçalho
+      if (scrollAtual > ultimoScroll && scrollAtual > 30) {
         topWrapper.classList.add("hidden");
       } else {
-        // Rolando para cima -> exibe o cabeçalho imediatamente
         topWrapper.classList.remove("hidden");
       }
       ultimoScroll = scrollAtual;
@@ -956,7 +1007,7 @@ function popupEditar(){
 function mudarAba(aba){
   abaAtual = aba;
   $("containerEditor").style.display   = aba === "editor" ? "flex" : "none";
-  $("toolbarEditor").style.display     = aba === "editor" ? "flex" : "none";
+  $("toolbarEditor").style.display     = aba === "editor" ? "inline-flex" : "none";
   $("painelPersonagens").style.display = aba === "personagens" ? "flex" : "none";
   $("painelDicionario").style.display  = aba === "dicionario" ? "flex" : "none";
   if (aba === "personagens"){
