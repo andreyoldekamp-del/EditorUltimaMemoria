@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>GraphZO // V2.9 - Viernes</title>
+<title>GraphZO // V3.0 - _East</title>
 <!-- Importação da fonte Comfortaa -->
 <link href="https://fonts.googleapis.com/css2?family=Comfortaa:wght@400;700&display=swap" rel="stylesheet">
 <style>
@@ -261,7 +261,7 @@
 
 <div class="top-wrapper" id="topWrapper">
   <div class="header-top-line">
-    <h1>SYS_GRAPHZO // <span>NEON V2.9 - Viernes</span></h1>
+    <h1>SYS_GRAPHZO // <span>NEW V3.0 - _East</span></h1>
     <div id="lastSavedBadge">🕒 Pronto para edição</div>
   </div>
 
@@ -486,7 +486,8 @@ let ultimaDigitacao = 0;
 
 let bufferEasterEgg = "";
 const SEGREDO_EASTER_EGG = "easteregg";
-const SEGREDO_SALVAR = "salvar história";
+const SEGREDO_SALVAR = "_salvar história";
+const SEGREDO_PROXIMO = "_próximo capítulo";
 
 const $ = id => document.getElementById(id);
 const agora = () => Date.now();
@@ -672,7 +673,7 @@ function dispararEasterEgg(){
   setTimeout(abrirModalAtalhos, 400);
 }
 
-function detectarEasterEggSalvar() {
+function detectarEasterEggsTexto() {
     if (abaAtual !== "editor") return;
     const sel = window.getSelection();
     if (!sel.rangeCount) return;
@@ -681,6 +682,7 @@ function detectarEasterEggSalvar() {
 
     if (node.nodeType === Node.TEXT_NODE) {
         const textoAntes = node.textContent.substring(0, range.startOffset).toLowerCase();
+        
         if (textoAntes.endsWith(SEGREDO_SALVAR)) {
             const textoOriginal = node.textContent;
             const inicio = textoOriginal.substring(0, range.startOffset - SEGREDO_SALVAR.length);
@@ -693,6 +695,24 @@ function detectarEasterEggSalvar() {
             sel.addRange(range);
             toast("🥚 Salvamento secreto ativado!");
             salvarNoGitHub();
+            return;
+        }
+
+        if (textoAntes.endsWith(SEGREDO_PROXIMO)) {
+            const textoOriginal = node.textContent;
+            const inicio = textoOriginal.substring(0, range.startOffset - SEGREDO_PROXIMO.length);
+            const fim = textoOriginal.substring(range.startOffset);
+            node.textContent = inicio + fim;
+            const novoCursor = range.startOffset - SEGREDO_PROXIMO.length;
+            range.setStart(node, novoCursor);
+            range.setEnd(node, novoCursor);
+            sel.removeAllRanges();
+            sel.addRange(range);
+            toast("🥚 Salvando e abrindo novo capítulo...");
+            salvarNoGitHub().then(() => {
+                criarNovoCapitulo();
+            });
+            return;
         }
     }
 }
@@ -832,13 +852,13 @@ window.addEventListener("DOMContentLoaded", async ()=>{
 });
 
 function aoDigitar(){
-  ultimaDigitacao = agora();
+  ultimaDigitacao = agoranos = agora();
   salvarCapituloAtualNaMemoria();
   atualizarTituloDeb();
   atualizarContadorDeb();
   detectarPopupAuto();
   detectarEasterEgg();
-  detectarEasterEggSalvar();
+  detectarEasterEggsTexto();
 }
 
 function detectarEasterEgg(){
@@ -873,7 +893,7 @@ function detectarPopupAuto(){
   for (let n = Math.min(3, palavras.length); n >= 1; n--){
     const candidato = normalizarChave(palavras.slice(-n).join(" "));
     if (candidato.length < 2 || candidato === ultimaChavePopup) continue;
-    if (candidato === SEGREDO_EASTER_EGG || candidato === SEGREDO_SALVAR) continue;
+    if (candidato === SEGREDO_EASTER_EGG || candidato === SEGREDO_SALVAR || candidato === SEGREDO_PROXIMO) continue;
     const achado = buscarNosIndices(candidato);
     if (achado){ ultimaChavePopup = candidato; exibirEncontrado(achado); return; }
   }
@@ -1021,8 +1041,8 @@ function criarNovoCapitulo(){
   projetoLivro.capitulos[id] = {
     titulo: `Capítulo ${n}`,
     conteudo_xhtml: `<p id="${id}_p1" style="font-family:'Comfortaa',cursive,sans-serif;font-size:22px;color:#ebac54;font-weight:bold;">Capítulo ${n}</p>` +
-                    `<p id="${id}_p2" style="font-family:'Comfortaa',cursive,sans-serif;font-size:18px;color:#ffffff;line-height:1.5;margin-bottom:1em;">Nome do capítulo</p>` +  /* <-- Altere aqui */
-                    `<p id="${id}_p3" style="font-family:'Comfortaa',cursive,sans-serif;font-size:18px;color:#ffffff;line-height:1.5;margin-bottom:1em;"><br></p>`             /* <-- E altere aqui */
+                    `<p id="${id}_p2" style="font-family:'Comfortaa',cursive,sans-serif;font-size:18px;color:#ffffff;line-height:1.5;margin-bottom:1em;">Nome do capítulo</p>` +
+                    `<p id="${id}_p3" style="font-family:'Comfortaa',cursive,sans-serif;font-size:18px;color:#ffffff;line-height:1.5;margin-bottom:1em;"><br></p>`
   };
   marcarProjetoAlterado();
   capituloAtual = id;
